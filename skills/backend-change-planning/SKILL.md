@@ -19,9 +19,11 @@ Use this skill before implementing non-trivial backend changes.
 
 ## Expected output
 
-- backend scope
-- required contract updates
-- required schema updates
-- risk areas
-- implementation order
-- test coverage plan
+1. contract impact
+2. schema and migration impact
+3. permission and ownership impact
+4. audit and side effects
+5. validation and error handling
+6. required tests
+
+This checklist should stay aligned with `.claude/agents/backend-architect.md` and `docs/agent-templates.md`.
