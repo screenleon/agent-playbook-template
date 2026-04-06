@@ -23,7 +23,7 @@ Always produce:
 10. test plan
 11. open questions and risks
 
-This checklist should stay aligned with `.claude/agents/feature-planner.md` and `docs/agent-templates.md`.
+This checklist should remain consistent with the planning guidance in `.claude/agents/feature-planner.md` and `docs/agent-templates.md`, while allowing this skill to keep its own structure. If guidance differs, follow `docs/agent-playbook.md` as the source of truth.
 
 ## Use this skill when
 

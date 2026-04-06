@@ -26,4 +26,4 @@ Use this skill before implementing non-trivial backend changes.
 5. validation and error handling
 6. required tests
 
-This checklist should stay aligned with `.claude/agents/backend-architect.md` and `docs/agent-templates.md`.
+Maintain this checklist consistently with the repository guidance in `docs/agent-playbook.md`, and update any related agent/template docs together when intentional workflow changes are made.
