@@ -1,5 +1,13 @@
 # Agent Playbook
 
+## Three-layer architecture
+
+All agent work follows three layers:
+
+1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
+2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, plus domain skills (planning, backend, frontend, design, docs).
+3. **Loop** — every implementation follows: Plan → Read → Implement → Test → Fix → Repeat → Record.
+
 ## Repository asset map
 
 - Global entrypoint: `AGENTS.md`
@@ -7,6 +15,8 @@
 - Reusable templates: `docs/agent-templates.md`
 - Reusable skills: `skills/*/SKILL.md`
 - Repo-wide Copilot instructions: `.github/copilot-instructions.md`
+- Decision log: `DECISIONS.md` (created per repo)
+- Architecture overview: `ARCHITECTURE.md` (created per repo)
 
 ## Source of truth and precedence
 
@@ -83,6 +93,15 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 - owns bug finding, regression detection, permission review, security review, and testing gaps
 
 ## Suggested workflow
+
+### Mandatory steps for all workflows
+
+Every workflow below implicitly includes these steps:
+
+1. **Discover** — run the `repo-exploration` skill before coding
+2. **Validate** — run the `test-and-fix-loop` skill after every code change
+3. **Recover** — use the `error-recovery` skill when anything fails
+4. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
 
 ### New feature
 
