@@ -51,7 +51,7 @@ Check in order:
 4. `go.mod` → `go test ./...`
 5. `Cargo.toml` → `cargo test`
 6. `pom.xml` / `build.gradle` → `mvn test` / `gradle test`
-7. `docs/operating-rules.md` → `Validation commands` section
+7. Repository documentation (for example `README.md`, `CONTRIBUTING.md`, or the adoption guide) → validation or verification commands
 
 If no test command is identifiable, state that explicitly.
 

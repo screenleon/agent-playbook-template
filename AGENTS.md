@@ -37,7 +37,7 @@ Defined in `skills/*/SKILL.md`:
 ### Layer 3: Loop (workflow)
 
 ```
-Plan → Read → Implement → Test → Fix → Repeat
+Plan → Read → Implement → Test → Fix → Repeat → Record
 ```
 
 Every implementation task follows this flow:
