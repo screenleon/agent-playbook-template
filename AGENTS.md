@@ -20,6 +20,6 @@ Core rules:
 
 Source of truth:
 
-- `docs/operating-rules.md` is the source of truth for safety and validation rules.
+- `docs/operating-rules.md` is the source of truth for safety, scope, validation, and review rules.
 - `docs/agent-playbook.md` is the source of truth for role routing and role ownership.
 - `docs/agent-templates.md`, `.claude/agents/`, `skills/`, and `.github/copilot-instructions.md` must stay aligned with those two files.

@@ -24,8 +24,8 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 ### Required
 
 - `AGENTS.md`
-- `docs/agent-playbook.md`
 - `docs/operating-rules.md`
+- `docs/agent-playbook.md`
 
 ### Strongly recommended
 

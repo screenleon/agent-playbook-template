@@ -18,7 +18,7 @@ Use this precedence order when documents overlap:
 4. `docs/agent-templates.md` as reusable prompt scaffolds
 5. `.claude/agents/`, `skills/`, and `.github/copilot-instructions.md` as tool-specific implementations of the same role model
 
-If a tool-specific file drifts from this playbook, update the tool-specific file to match the source documents.
+If a tool-specific file drifts from the source-of-truth docs (`docs/operating-rules.md` and this playbook), update the tool-specific file to match them.
 
 ## Tool portability
 
