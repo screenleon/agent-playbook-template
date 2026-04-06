@@ -11,3 +11,14 @@
 - Use `documentation-architect` for repository rules, ADRs, onboarding docs, and other durable documentation.
 - Use `risk-reviewer` before finalizing behavior-changing or high-risk work.
 - Keep reusable guidance in version-controlled markdown instead of chat-only instructions.
+
+## Mandatory workflow
+
+Before any implementation:
+1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
+2. Read `DECISIONS.md` and project-specific constraints.
+
+After any code change:
+3. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat.
+4. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
+5. Record decisions in `DECISIONS.md` when applicable.
