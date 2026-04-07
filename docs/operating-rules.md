@@ -76,15 +76,15 @@ Never treat a change as complete until verification passes. If the project has n
 
 Long tasks cause agents to forget instructions, skip format requirements, and drift from the original objective. These rules prevent that.
 
-### Mandatory chain-of-thought (CoT)
+### Mandatory structured preamble
 
-Before producing any solution or implementation, agents must explicitly state:
+Before producing any solution or implementation, agents must explicitly provide a brief, high-level summary of:
 
 1. **Assumptions** — what is being assumed about the request, codebase, or constraints
 2. **Constraints** — what limits apply (from `DECISIONS.md`, project-specific constraints, or the request itself)
-3. **Proposed approach** — the logic or steps before writing code
+3. **Proposed approach** — a short, high-level summary of the intended approach without detailed step-by-step reasoning
 
-This must appear in the output before any code or implementation. Skipping this step is not allowed.
+This must appear in the output before any code or implementation. Do not require or provide detailed internal reasoning.
 
 ### Context anchor
 

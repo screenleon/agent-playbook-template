@@ -99,7 +99,7 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 Every workflow below implicitly includes these steps:
 
 1. **Discover** — run the `repo-exploration` skill before coding
-2. **Chain-of-thought** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules)
+2. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules)
 3. **Validate** — run the `test-and-fix-loop` skill after every code change
 4. **Recover** — use the `error-recovery` skill when anything fails
 5. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs

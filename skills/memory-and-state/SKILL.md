@@ -58,16 +58,9 @@ This prevents re-discovery and reduces repeated mistakes within a session.
 
 ## Context anchor protocol
 
-For any task spanning more than one step or more than one file, maintain a context anchor:
+For any task spanning more than one step or more than one file, maintain a context anchor using the canonical template in `docs/operating-rules.md`.
 
-```markdown
-## Context anchor
-- **Objective**: [what we are trying to achieve]
-- **Current step**: [which step, e.g., "3 of 7"]
-- **Completed so far**: [brief list of what is done]
-- **Remaining**: [brief list of what is left]
-- **Active constraints**: [key constraints from DECISIONS.md or project rules]
-```
+Do not duplicate or redefine the template here; treat `docs/operating-rules.md` as the single source of truth for the anchor format and fields.
 
 Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan and current state.
 

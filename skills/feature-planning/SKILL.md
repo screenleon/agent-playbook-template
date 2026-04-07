@@ -33,7 +33,7 @@ Always produce:
 
 Every item must be addressed. If an item does not apply, write "N/A — [reason]" instead of omitting it.
 
-This checklist should remain consistent with the planning guidance in `.claude/agents/feature-planner.md` and `docs/agent-templates.md`, while allowing this skill to keep its own structure. If guidance differs, follow `docs/agent-playbook.md` as the source of truth.
+This checklist should remain consistent with the planning guidance in `.claude/agents/feature-planner.md` and `docs/agent-templates.md`, while allowing this skill to keep its own structure. If guidance differs, follow the documented precedence order: `docs/operating-rules.md` for mandatory rules first, then `docs/agent-playbook.md` for playbook guidance.
 
 ## Mandatory checkpoint
 
