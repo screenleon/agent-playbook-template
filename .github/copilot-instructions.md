@@ -10,7 +10,9 @@
 - Use `integration-engineer` to close wiring and flow gaps.
 - Use `documentation-architect` for repository rules, ADRs, onboarding docs, and other durable documentation.
 - Use `risk-reviewer` before finalizing behavior-changing or high-risk work.
+- Use `critic` after a plan or proposal is produced, before user approval, to challenge design quality.
 - Keep reusable guidance in version-controlled markdown instead of chat-only instructions.
+- Each role should run in a separate context (subagent invocation). Pass structured handoff artifacts between roles, not raw conversation history.
 
 ## Mandatory workflow
 
@@ -21,10 +23,11 @@ Before any implementation:
 4. State assumptions, constraints, and proposed approach before writing code.
 
 After planning (for complex work):
-5. Present the plan to the user and wait for approval before implementing.
+5. Invoke `critic` to challenge the plan before presenting to user.
+6. Present plan + critique to the user and wait for approval before implementing.
 
 After any code change:
-6. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat.
-7. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
-8. Record decisions in `DECISIONS.md` when applicable.
-9. If scope expands beyond the original plan, STOP and present the expanded scope for approval.
+7. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat.
+8. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
+9. Record decisions in `DECISIONS.md` when applicable.
+10. If scope expands beyond the original plan, STOP and present the expanded scope for approval.
