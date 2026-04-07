@@ -17,8 +17,14 @@
 Before any implementation:
 1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
 2. Read `DECISIONS.md` and project-specific constraints.
+3. Check whether the proposed work contradicts any existing decision. If so, STOP and present the contradiction.
+4. State assumptions, constraints, and proposed approach before writing code.
+
+After planning (for complex work):
+5. Present the plan to the user and wait for approval before implementing.
 
 After any code change:
-3. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat.
-4. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
-5. Record decisions in `DECISIONS.md` when applicable.
+6. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat.
+7. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
+8. Record decisions in `DECISIONS.md` when applicable.
+9. If scope expands beyond the original plan, STOP and present the expanded scope for approval.

@@ -15,6 +15,39 @@ This file is the source of truth for safety, scope control, validation, destruct
 - If a task is ambiguous, reduce ambiguity first through planning instead of guessing across multiple modules.
 - Keep fixes local unless the broader change is necessary for correctness.
 
+## Human checkpoint gates
+
+Agents must **STOP and wait for explicit user approval** at these points. Do not proceed automatically.
+
+### Mandatory checkpoints
+
+1. **Plan approval** — after the planning agent produces a plan, present it to the user and wait for "PROCEED" or revision before any implementation starts.
+2. **Destructive or irreversible actions** — before deleting files, dropping tables, force-pushing, resetting branches, or modifying shared infrastructure.
+3. **Scope expansion** — if work reveals that more modules, contracts, or schemas need to change than originally planned, stop and present the expanded scope for approval.
+4. **Stuck escalation** — after 3 failed attempts at the same error, stop and report instead of continuing to guess.
+
+### Recommended checkpoints
+
+5. **Mid-implementation review** — for tasks with more than 5 files changed, pause after completing the first logical group and present progress before continuing.
+6. **Before final merge** — present a summary of all changes for user review before marking work as complete.
+
+### Checkpoint format
+
+When stopping for approval, present:
+
+```
+## Checkpoint: [gate name]
+
+**Current state**: [what has been done so far]
+**Proposal**: [what will happen next]
+**Risks**: [what could go wrong]
+**Decision needed**: [specific yes/no or choice the user must make]
+
+Waiting for approval before proceeding.
+```
+
+Never silently skip a mandatory checkpoint. If a tool does not support interactive approval, write the checkpoint to the output and stop.
+
 ## Codebase discovery (repo-aware)
 
 Before writing or modifying any code, perform these steps:
@@ -38,6 +71,45 @@ After every code change, follow this mandatory loop:
 5. **Report** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user.
 
 Never treat a change as complete until verification passes. If the project has no test suite, state that explicitly and describe what manual verification was done or is still needed.
+
+## Structured output and anti-drift
+
+Long tasks cause agents to forget instructions, skip format requirements, and drift from the original objective. These rules prevent that.
+
+### Mandatory structured preamble
+
+Before producing any solution or implementation, agents must explicitly provide a brief, high-level summary of:
+
+1. **Assumptions** — what is being assumed about the request, codebase, or constraints
+2. **Constraints** — what limits apply (from `DECISIONS.md`, project-specific constraints, or the request itself)
+3. **Proposed approach** — a short, high-level summary of the intended approach without detailed step-by-step reasoning
+
+This must appear in the output before any code or implementation. Do not require or provide detailed internal reasoning.
+
+### Context anchor
+
+At the start of every long task (more than one step or more than one file), agents must produce a context summary:
+
+```
+## Context anchor
+- **Objective**: [what we are trying to achieve]
+- **Current step**: [which step we are on, e.g., "3 of 7"]
+- **Completed so far**: [brief list of what is done]
+- **Remaining**: [brief list of what is left]
+- **Active constraints**: [key constraints from DECISIONS.md or project rules]
+```
+
+Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan.
+
+### Output completeness check
+
+After producing structured output (plans, reviews, checklists), agents must verify:
+
+- Every item in the required checklist has been addressed (not skipped)
+- The output format matches the template (section headers, required fields)
+- No required section was silently omitted
+
+If a section is not applicable, write "N/A — [reason]" instead of omitting it.
 
 ## Error recovery
 
@@ -86,3 +158,47 @@ Maintain a `DECISIONS.md` file (or equivalent) at the repository root to record:
 - **Constraints** it introduces for future work
 
 Agents should read this file during codebase discovery and append to it when making architectural or behavioral decisions that future work depends on.
+
+### Mandatory read-before-write
+
+Before making any architectural or behavioral decision, agents **must**:
+
+1. Read `DECISIONS.md` in full
+2. Check whether the proposed change contradicts an existing decision
+3. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.
+
+### Automatic decision capture
+
+After any of these events, agents must append a new entry to `DECISIONS.md`:
+
+- A new technology, library, or pattern is introduced
+- A schema or contract is changed
+- A permission or security model is modified
+- An architectural boundary is created or moved
+- A tradeoff is made (performance vs. readability, scope vs. timeline, etc.)
+
+Use this format:
+
+```markdown
+## YYYY-MM-DD: [Decision title]
+- **Context**: Why this decision was needed
+- **Decision**: What was decided
+- **Alternatives considered**: What was rejected and why
+- **Constraints introduced**: What future work must respect
+```
+
+### Contradiction detection
+
+If an agent discovers that a proposed change conflicts with an existing entry in `DECISIONS.md`:
+
+```
+## Contradiction detected
+- **Existing decision**: [date and title from DECISIONS.md]
+- **Proposed change**: [what the current task wants to do]
+- **Conflict**: [why these are incompatible]
+- **Options**: (a) follow existing decision, (b) reverse existing decision with justification
+
+Waiting for user decision before proceeding.
+```
+
+This is a mandatory checkpoint — do not resolve contradictions autonomously.

@@ -6,7 +6,7 @@ All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Plan → Read → Implement → Test → Fix → Repeat → Record.
+3. **Loop** — every implementation follows: Plan → **Approve** → Read → Implement → Test → Fix → Repeat → Record.
 
 ## Repository asset map
 
@@ -99,17 +99,29 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 Every workflow below implicitly includes these steps:
 
 1. **Discover** — run the `repo-exploration` skill before coding
-2. **Validate** — run the `test-and-fix-loop` skill after every code change
-3. **Recover** — use the `error-recovery` skill when anything fails
-4. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
+2. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules)
+3. **Validate** — run the `test-and-fix-loop` skill after every code change
+4. **Recover** — use the `error-recovery` skill when anything fails
+5. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
+
+### Mandatory checkpoint gates
+
+These gates require the agent to **STOP and wait for user approval**:
+
+- **After planning, before implementation** — the planning agent presents its plan; implementation agents do not start until the user approves.
+- **On scope expansion** — if implementation reveals the need to change more modules or contracts than planned, stop and request approval for the expanded scope.
+- **On contradiction** — if the proposed work contradicts `DECISIONS.md`, stop and present the conflict.
+- **On stuck** — after 3 failed fix attempts, stop and escalate.
+
+See `docs/operating-rules.md` → Human checkpoint gates for the full list and format.
 
 ### New feature
 
-`feature-planner` -> `backend-architect`, `application-implementer`, and/or `ui-image-implementer` -> `integration-engineer` -> `documentation-architect` as needed -> `risk-reviewer`
+`feature-planner` -> **user approval** -> `backend-architect`, `application-implementer`, and/or `ui-image-implementer` -> `integration-engineer` -> `documentation-architect` as needed -> `risk-reviewer`
 
 ### High-risk backend change
 
-`feature-planner` -> `backend-architect` -> `risk-reviewer`
+`feature-planner` -> **user approval** -> `backend-architect` -> `risk-reviewer`
 
 ### General application change
 
@@ -119,7 +131,7 @@ If it is bounded and low ambiguity:
 
 If it also changes flow, state, or contracts:
 
-`feature-planner` -> `application-implementer` -> `integration-engineer` -> `risk-reviewer`
+`feature-planner` -> **user approval** -> `application-implementer` -> `integration-engineer` -> `risk-reviewer`
 
 ### Image-led UI change
 
@@ -129,11 +141,11 @@ If it is visual only:
 
 If it also changes logic or flow:
 
-`feature-planner` -> `ui-image-implementer` -> `integration-engineer` -> `risk-reviewer`
+`feature-planner` -> **user approval** -> `ui-image-implementer` -> `integration-engineer` -> `risk-reviewer`
 
 ### Documentation-heavy change
 
-`feature-planner` as needed -> `documentation-architect` -> `risk-reviewer` when technical correctness matters
+`feature-planner` as needed -> **user approval** -> `documentation-architect` -> `risk-reviewer` when technical correctness matters
 
 ## Ownership principles
 

@@ -7,6 +7,14 @@ description: Use when a request needs system-level planning before implementatio
 
 Use this skill to turn a request into a concrete implementation plan before code changes start.
 
+## Pre-planning checklist
+
+Before producing the plan:
+
+1. Read `DECISIONS.md` — check for prior decisions that affect this work
+2. Identify contradictions — if the request conflicts with an existing decision, flag it immediately
+3. State assumptions, constraints, and proposed approach explicitly
+
 ## Output checklist
 
 Always produce:
@@ -23,7 +31,18 @@ Always produce:
 10. test plan
 11. open questions and risks
 
-This checklist should remain consistent with the planning guidance in `.claude/agents/feature-planner.md` and `docs/agent-templates.md`, while allowing this skill to keep its own structure. If guidance differs, follow `docs/agent-playbook.md` as the source of truth.
+Every item must be addressed. If an item does not apply, write "N/A — [reason]" instead of omitting it.
+
+This checklist should remain consistent with the planning guidance in `.claude/agents/feature-planner.md` and `docs/agent-templates.md`, while allowing this skill to keep its own structure. If guidance differs, follow the documented precedence order: `docs/operating-rules.md` for mandatory rules first, then `docs/agent-playbook.md` for playbook guidance.
+
+## Mandatory checkpoint
+
+After producing the plan:
+
+**STOP.** Present the plan to the user and wait for explicit approval.
+Do not pass the plan to implementation agents until the user confirms.
+
+If the user requests changes, revise and present again.
 
 ## Use this skill when
 

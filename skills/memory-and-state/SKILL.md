@@ -24,9 +24,10 @@ Format:
 ```
 
 Rules:
-- Read `DECISIONS.md` at the start of every planning or implementation task.
+- Read `DECISIONS.md` at the start of every planning or implementation task. This is not optional.
 - Append to it when making a decision that future work depends on.
-- Never silently contradict an existing decision — either follow it or propose a reversal.
+- Never silently contradict an existing decision — either follow it or propose a reversal with user approval.
+- When appending, verify the new entry does not conflict with existing entries.
 
 ### 2. Architecture memory (`ARCHITECTURE.md`)
 
@@ -55,6 +56,32 @@ For in-progress tasks that span multiple agent interactions:
 
 This prevents re-discovery and reduces repeated mistakes within a session.
 
+## Context anchor protocol
+
+For any task spanning more than one step or more than one file, maintain a context anchor using the canonical template in `docs/operating-rules.md`.
+
+Do not duplicate or redefine the template here; treat `docs/operating-rules.md` as the single source of truth for the anchor format and fields.
+
+Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan and current state.
+
+## Contradiction detection
+
+Before making any decision, check `DECISIONS.md` for conflicts:
+
+1. Read the full decision log
+2. Compare each existing entry against the proposed change
+3. If a conflict exists, present it using this format:
+
+```markdown
+## Contradiction detected
+- **Existing decision**: [date and title]
+- **Proposed change**: [what the current task wants to do]
+- **Conflict**: [why these are incompatible]
+- **Options**: (a) follow existing decision, (b) reverse existing decision with justification
+```
+
+STOP and wait for user decision. Do not resolve contradictions autonomously.
+
 ## When to write memory
 
 | Event | Action |
@@ -64,6 +91,9 @@ This prevents re-discovery and reduces repeated mistakes within a session.
 | Constraint discovered during work | Add to `Project-specific constraints` in `docs/operating-rules.md` |
 | Error pattern found | Note in session memory to avoid repeating |
 | Task partially complete | Write progress to session notes |
+| Technology or library introduced | Append to `DECISIONS.md` |
+| Schema or contract changed | Append to `DECISIONS.md` |
+| Tradeoff made | Append to `DECISIONS.md` |
 
 ## When to read memory
 
@@ -73,6 +103,7 @@ This prevents re-discovery and reduces repeated mistakes within a session.
 | Encountering unfamiliar module | Read `ARCHITECTURE.md` |
 | Making a decision | Check `DECISIONS.md` for prior related decisions |
 | Resuming interrupted work | Read session notes |
+| Starting a long task | Produce a context anchor |
 
 ## Use this skill when
 
@@ -80,3 +111,4 @@ This prevents re-discovery and reduces repeated mistakes within a session.
 - Making decisions that affect future work
 - Resuming work after a break
 - Noticing that an agent is repeating a previously resolved mistake
+- Working on a task that spans more than one step or file
