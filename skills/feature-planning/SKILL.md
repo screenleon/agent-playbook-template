@@ -29,7 +29,8 @@ Always produce:
 8. permissions / security / audit impact
 9. implementation order
 10. test plan
-11. open questions and risks
+11. risks
+12. open questions
 
 Every item must be addressed. If an item does not apply, write "N/A — [reason]" instead of omitting it.
 
@@ -81,7 +82,7 @@ Output format:
 
 ## How to assess risk
 
-When listing open questions and risks (checklist item 11), evaluate each risk with:
+Include a dedicated `Risks` section before the separate `Open questions` section, and evaluate each risk with:
 
 1. **Likelihood** — how probable is this risk? (high / medium / low)
 2. **Impact** — if it happens, how severe? (high / medium / low)
@@ -109,7 +110,7 @@ Output format:
 
 ## How to define implementation order
 
-When specifying the dependency graph and implementation order (checklist items 9–10):
+When specifying the implementation order (checklist item 9):
 
 1. **Schema first** — migrations must be applied before code that depends on new columns or tables.
 2. **Contracts second** — API types, interfaces, and shared DTOs before the code that uses them.
