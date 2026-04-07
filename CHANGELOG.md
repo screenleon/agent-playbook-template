@@ -16,19 +16,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Automatic decision capture triggers** (`docs/operating-rules.md`) — expanded list of events that require `DECISIONS.md` entries: new technology/library, schema/contract changes, permission model changes, architectural boundary changes, tradeoffs.
 - **Context anchor protocol** (`skills/memory-and-state/SKILL.md`) — structured format for tracking objective, current step, completed work, remaining work, and active constraints during multi-step tasks.
 - **`DECISIONS.md` template** — version-controlled decision log template at repo root with example format and usage instructions.
+- **Module decomposition guide** (`skills/feature-planning/SKILL.md`) — concrete method for tracing user actions through call chains, listing touched boundaries, marking shared dependencies, and producing a module impact table.
+- **Validation criteria guide** (`skills/feature-planning/SKILL.md`) — structured approach for defining test scenarios: happy path, edge cases, error paths, permission boundaries, regression anchors, and integration verification, with table output format.
+- **Risk assessment guide** (`skills/feature-planning/SKILL.md`) — risk evaluation framework with likelihood/impact/mitigation/owner for each risk, plus common risk categories (data loss, breaking changes, performance, security, rollback difficulty).
+- **Early risk review** (`skills/feature-planning/SKILL.md`, `docs/agent-playbook.md`) — risk-reviewer can now be invoked during planning phase for high-risk plans before user approval, not only as final review.
+- **Risk-reviewer dual mode** (`.claude/agents/risk-reviewer.md`, `docs/agent-templates.md`) — Mode 1: plan risk assessment during planning; Mode 2: final implementation review after coding.
+- **Automatic documentation maintenance** (`skills/documentation-architecture/SKILL.md`) — triggers and actions for auto-updating `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes. Includes documentation sync check.
+- **`ARCHITECTURE.md` template** (`skills/documentation-architecture/SKILL.md`) — canonical structure: module map, key interfaces, data flow, external dependencies, known technical debt.
 
 ### Changed
 
 - **Workflow loop** (`AGENTS.md`, `docs/agent-playbook.md`) — changed from `Plan → Read → Implement → Test → Fix → Repeat → Record` to `Plan → Approve → Read → Implement → Test → Fix → Repeat → Record`. Mandatory user approval gate between planning and implementation.
 - **All suggested workflows** (`docs/agent-playbook.md`) — inserted `→ user approval →` step between planning and implementation agents in every multi-agent workflow.
+- **High-risk backend workflow** (`docs/agent-playbook.md`) — now includes risk-reviewer plan assessment before user approval and risk-reviewer final review after implementation.
 - **Mandatory workflow steps** (`docs/agent-playbook.md`) — added structured preamble requirement and mandatory checkpoint gates section to the workflow preamble.
 - **Common preamble** (`docs/agent-templates.md`) — now includes: contradiction check against `DECISIONS.md`, mandatory assumption/constraint/approach statement before solutions, and decision recording after implementation.
-- **Feature planner template** (`docs/agent-templates.md`, `.claude/agents/feature-planner.md`, `skills/feature-planning/SKILL.md`) — added pre-planning checklist (read decisions, check contradictions, state assumptions), output completeness verification, and mandatory STOP gate after plan production.
+- **Feature planner template** (`docs/agent-templates.md`, `.claude/agents/feature-planner.md`, `skills/feature-planning/SKILL.md`) — added pre-planning checklist, module decomposition guide, validation criteria table, risk assessment table with likelihood/impact/mitigation, implementation ordering rules, early risk review trigger, output completeness verification, and mandatory STOP gate.
 - **Backend architect template** (`docs/agent-templates.md`, `.claude/agents/backend-architect.md`) — added structured preamble, contradiction check, completeness verification, STOP gate for high-risk changes, and decision recording.
 - **Application implementer template** (`docs/agent-templates.md`, `.claude/agents/application-implementer.md`) — added structured preamble, contradiction check, scope expansion STOP gate, and decision recording.
 - **Integration engineer template** (`docs/agent-templates.md`, `.claude/agents/integration-engineer.md`) — added structured preamble, contradiction check, context anchor for long tasks, and decision recording.
-- **Risk reviewer template** (`docs/agent-templates.md`, `.claude/agents/risk-reviewer.md`) — added decision log compliance check, completeness verification, and contradiction flagging.
+- **Risk reviewer template** (`docs/agent-templates.md`, `.claude/agents/risk-reviewer.md`) — added dual-mode operation (plan assessment + final review), decision log compliance check, documentation sync check, completeness verification, and contradiction flagging.
+- **Documentation architect** (`docs/agent-templates.md`, `.claude/agents/documentation-architect.md`, `skills/documentation-architecture/SKILL.md`) — expanded from basic checklist to full automatic maintenance responsibilities (DECISIONS.md, ARCHITECTURE.md, constraints) with sync check and writing guidelines.
+- **Application implementation skill** (`skills/application-implementation/SKILL.md`) — expanded from 5-item checklist to full guide with implementation guidelines, error handling expectations, and common mistakes to avoid.
+- **Backend change planning skill** (`skills/backend-change-planning/SKILL.md`) — expanded from 7-item list to detailed guide with migration safety rules, query impact checks, implementation ordering, and common backend mistakes checklist.
+- **Design-to-code skill** (`skills/design-to-code/SKILL.md`) — expanded each breakdown step with concrete details (what to look for, how to map to project tokens), added implementation guidelines (reuse, tokens, mobile-first, accessibility), and common mistakes.
 - **Memory and state skill** (`skills/memory-and-state/SKILL.md`) — expanded with context anchor protocol, contradiction detection process, additional write triggers (technology introduced, schema changed, tradeoff made), and stronger enforcement language for mandatory decision log reads.
+- **`documentation-architect` role** (`docs/agent-playbook.md`) — added responsibility for automatic maintenance of DECISIONS.md, ARCHITECTURE.md, and project-specific constraints.
+- **`risk-reviewer` role** (`docs/agent-playbook.md`) — added early risk assessment capability during planning phase for high-risk work.
 - **Copilot instructions** (`.github/copilot-instructions.md`) — expanded mandatory workflow from 5 to 9 steps including contradiction check, structured preamble, plan approval, decision recording, and scope expansion gate.
 
 ---

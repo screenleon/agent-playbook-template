@@ -87,10 +87,12 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 
 - owns repository instructions, onboarding docs, ADRs, runbooks, process docs, and architecture explanations
 - optimizes for long-term maintainability and future agent readability
+- responsible for automatic maintenance of `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes
 
 ### `risk-reviewer`
 
 - owns bug finding, regression detection, permission review, security review, and testing gaps
+- also provides **early risk assessment during planning** for high-risk work (schema migrations, auth changes, payment logic, public API changes, cross-service changes)
 
 ## Suggested workflow
 
@@ -121,7 +123,7 @@ See `docs/operating-rules.md` → Human checkpoint gates for the full list and f
 
 ### High-risk backend change
 
-`feature-planner` -> **user approval** -> `backend-architect` -> `risk-reviewer`
+`feature-planner` -> `risk-reviewer` (plan assessment) -> **user approval** -> `backend-architect` -> `risk-reviewer` (final review)
 
 ### General application change
 
