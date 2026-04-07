@@ -32,3 +32,10 @@ Verify: every item is addressed. Write "N/A — [reason]" for items that do not 
 
 STOP. Present this plan to the user and wait for explicit approval.
 Do not pass the plan to implementation agents until the user confirms.
+
+After approval, produce a handoff artifact for the next agent:
+- Task: [one-sentence objective]
+- Deliverable: the approved plan
+- Key decisions: [decisions made, with DECISIONS.md references]
+- Open risks: [unresolved risks]
+- Constraints for next step: [what the target agent must respect]

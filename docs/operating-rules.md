@@ -15,6 +15,38 @@ This file is the source of truth for safety, scope control, validation, destruct
 - If a task is ambiguous, reduce ambiguity first through planning instead of guessing across multiple modules.
 - Keep fixes local unless the broader change is necessary for correctness.
 
+## Context isolation
+
+Roles sharing a single conversation context will eventually drift, contaminate each other's state, and lose control on long tasks. Prevent this by isolating contexts.
+
+### Task boundary rule
+
+Each conceptual role (planner, architect, implementer, critic, reviewer) should run as a **separate agent invocation** with its own context. Do not switch roles within one long conversation.
+
+- One task = one agent = one context.
+- If a tool supports named subagents or new sessions, use them.
+- If a tool only supports a single conversation, insert a **hard context break** between roles: summarize the previous role's output into a structured handoff artifact, then begin the next role with only that artifact as input.
+
+### Handoff artifact
+
+When one agent's work feeds into the next, pass a **structured handoff artifact** — not raw conversation history. The handoff artifact must contain:
+
+```
+## Handoff: [source role] → [target role]
+- **Task**: [one-sentence objective]
+- **Deliverable**: [what the source role produced]
+- **Key decisions**: [decisions made, with references to DECISIONS.md entries]
+- **Open risks**: [unresolved risks or questions]
+- **Constraints for next step**: [what the target role must respect]
+- **Attached output**: [the actual plan, review, or implementation summary]
+```
+
+### Anti-patterns (banned)
+
+- **Role ping-pong** — switching roles back and forth in the same context more than once. If you need a second opinion, spawn a new context.
+- **Implicit handoff** — continuing from one role to the next without an explicit handoff artifact. The next agent must not rely on "what was said earlier."
+- **Conversation-as-memory** — using scroll-back or prior messages as the source of truth. Use `DECISIONS.md`, handoff artifacts, and context anchors instead.
+
 ## Human checkpoint gates
 
 Agents must **STOP and wait for explicit user approval** at these points. Do not proceed automatically.
@@ -110,6 +142,33 @@ After producing structured output (plans, reviews, checklists), agents must veri
 - No required section was silently omitted
 
 If a section is not applicable, write "N/A — [reason]" instead of omitting it.
+
+### Mandatory deliverable structure
+
+Every agent role must produce its final output in this standardized format. This prevents freeform drift and ensures decision-quality information reaches the user.
+
+```
+## Deliverable: [title]
+
+### Proposal
+[What is being proposed — the solution, plan, or finding]
+
+### Alternatives considered
+[At least one alternative approach and why it was not chosen]
+
+### Pros / Cons
+| Pros | Cons |
+|------|------|
+| ...  | ...  |
+
+### Risks
+[Each risk with likelihood, impact, and mitigation — or "None identified"]
+
+### Recommendation
+[Clear, actionable recommendation for the user or the next agent]
+```
+
+Roles may add domain-specific sections (e.g., a planner adds "implementation order," a reviewer adds "findings"), but the five sections above are mandatory and must not be omitted. Write "N/A — [reason]" for any section that genuinely does not apply.
 
 ## Error recovery
 

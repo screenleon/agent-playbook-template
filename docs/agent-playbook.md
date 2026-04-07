@@ -6,7 +6,7 @@ All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Plan → **Approve** → Read → Implement → Test → Fix → Repeat → Record.
+3. **Loop** — every implementation follows: Plan → **Critique** → **Approve** → Read → Implement → Test → Fix → Repeat → Record.
 
 ## Repository asset map
 
@@ -94,6 +94,13 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 - owns bug finding, regression detection, permission review, security review, and testing gaps
 - also provides **early risk assessment during planning** for high-risk work (schema migrations, auth changes, payment logic, public API changes, cross-service changes)
 
+### `critic`
+
+- adversarial design reviewer invoked **after** a planner or architect produces a proposal and **before** the user decides
+- challenges proposals for over-engineering, hidden coupling, missing edge cases, constraint violations, scope creep, and unstated assumptions
+- does not rewrite proposals — states what is wrong and lets the proposer fix it
+- separate from `risk-reviewer`: critic challenges design quality; risk-reviewer checks implementation safety
+
 ## Suggested workflow
 
 ### Mandatory steps for all workflows
@@ -105,12 +112,14 @@ Every workflow below implicitly includes these steps:
 3. **Validate** — run the `test-and-fix-loop` skill after every code change
 4. **Recover** — use the `error-recovery` skill when anything fails
 5. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
+6. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below)
+7. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure)
 
 ### Mandatory checkpoint gates
 
 These gates require the agent to **STOP and wait for user approval**:
 
-- **After planning, before implementation** — the planning agent presents its plan; implementation agents do not start until the user approves.
+- **After planning, before implementation** — the planning agent presents its plan; the critic challenges it; then the user approves. Implementation agents do not start until the user confirms.
 - **On scope expansion** — if implementation reveals the need to change more modules or contracts than planned, stop and request approval for the expanded scope.
 - **On contradiction** — if the proposed work contradicts `DECISIONS.md`, stop and present the conflict.
 - **On stuck** — after 3 failed fix attempts, stop and escalate.
@@ -119,35 +128,64 @@ See `docs/operating-rules.md` → Human checkpoint gates for the full list and f
 
 ### New feature
 
-`feature-planner` -> **user approval** -> `backend-architect`, `application-implementer`, and/or `ui-image-implementer` -> `integration-engineer` -> `documentation-architect` as needed -> `risk-reviewer`
+`feature-planner` → `critic` → **user decision** → `backend-architect`, `application-implementer`, and/or `ui-image-implementer` → `integration-engineer` → `documentation-architect` as needed → `risk-reviewer`
 
 ### High-risk backend change
 
-`feature-planner` -> `risk-reviewer` (plan assessment) -> **user approval** -> `backend-architect` -> `risk-reviewer` (final review)
+`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user decision** → `backend-architect` → `risk-reviewer` (final review)
 
 ### General application change
 
 If it is bounded and low ambiguity:
 
-`application-implementer` -> `risk-reviewer`
+`application-implementer` → `risk-reviewer`
 
 If it also changes flow, state, or contracts:
 
-`feature-planner` -> **user approval** -> `application-implementer` -> `integration-engineer` -> `risk-reviewer`
+`feature-planner` → `critic` → **user decision** → `application-implementer` → `integration-engineer` → `risk-reviewer`
 
 ### Image-led UI change
 
 If it is visual only:
 
-`ui-image-implementer` -> `risk-reviewer`
+`ui-image-implementer` → `risk-reviewer`
 
 If it also changes logic or flow:
 
-`feature-planner` -> **user approval** -> `ui-image-implementer` -> `integration-engineer` -> `risk-reviewer`
+`feature-planner` → `critic` → **user decision** → `ui-image-implementer` → `integration-engineer` → `risk-reviewer`
 
 ### Documentation-heavy change
 
-`feature-planner` as needed -> **user approval** -> `documentation-architect` -> `risk-reviewer` when technical correctness matters
+`feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` when technical correctness matters
+
+## Context isolation
+
+Each agent role must run in its own context (separate invocation, session, or subagent call). Do not chain roles in a single long conversation.
+
+### Why
+
+Role switching within one context causes:
+- **Context drift** — the agent forgets which role it is playing
+- **Long-task loss of control** — instructions from early in the conversation are ignored
+- **Memory contamination** — reasoning from one role leaks into and distorts the next
+
+### How
+
+- Each step in a workflow is a **separate agent invocation**.
+- Agents communicate through **handoff artifacts** (see `docs/operating-rules.md` → Context isolation → Handoff artifact), not through shared conversation history.
+- If the tool does not support separate sessions, insert a hard context break: summarize the output into a handoff artifact and restart with only that artifact.
+
+### Workflow with context boundaries
+
+```
+[Context 1] feature-planner → produces plan artifact
+[Context 2] critic → receives plan artifact → produces critique artifact
+[User]      reviews plan + critique → decides
+[Context 3] backend-architect → receives approved plan → produces implementation
+[Context 4] risk-reviewer → receives implementation summary → produces review
+```
+
+Each `[Context N]` is an isolated invocation. No context carries forward except through explicit handoff artifacts.
 
 ## Ownership principles
 
