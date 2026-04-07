@@ -37,17 +37,18 @@ Defined in `skills/*/SKILL.md`:
 ### Layer 3: Loop (workflow)
 
 ```
-Plan → Read → Implement → Test → Fix → Repeat → Record
+Plan → Approve → Read → Implement → Test → Fix → Repeat → Record
 ```
 
 Every implementation task follows this flow:
 1. **Plan** — use feature-planner for complex work, or confirm scope for simple work
-2. **Read** — discover the codebase (repo-exploration skill)
-3. **Implement** — write code following project conventions
-4. **Test** — run the validation loop (test-and-fix-loop skill)
-5. **Fix** — use error-recovery skill if anything fails
-6. **Repeat** — iterate until tests pass and code is verified
-7. **Record** — update decision log and architecture docs if needed
+2. **Approve** — present the plan to the user and wait for explicit approval before implementing (mandatory checkpoint)
+3. **Read** — discover the codebase (repo-exploration skill)
+4. **Implement** — write code following project conventions; state assumptions/constraints/approach before writing code
+5. **Test** — run the validation loop (test-and-fix-loop skill)
+6. **Fix** — use error-recovery skill if anything fails
+7. **Repeat** — iterate until tests pass and code is verified
+8. **Record** — update decision log and architecture docs
 
 Core rules:
 
