@@ -19,6 +19,13 @@ See `skills/memory-and-state/SKILL.md` for when to read and write.
 
 <!-- Add real decisions below this line -->
 
+## 2026-04-09: Memory lifecycle management for persistent memory files
+
+- **Context**: Persistent memory files (especially `DECISIONS.md`) grow unboundedly over time. A real-world instance reached ~20,000 characters, consuming significant context tokens and slowing agent discovery. No archival, pruning, or selective-read mechanism existed.
+- **Decision**: Introduced a memory lifecycle management system with four mechanisms: (1) decision archive rules — entries older than 90 days with no recent references move to `DECISIONS_ARCHIVE.md`; (2) selective read strategy — tiered reading (always read active decisions, search archive only for legacy tasks); (3) session memory hygiene — unpromoted session notes are deleted at session end; (4) memory health indicators — thresholds (>50 entries, >30 KB) trigger maintenance actions.
+- **Alternatives considered**: Date-based auto-archive without reference check — rejected because age alone does not indicate irrelevance; recently referenced old decisions should remain active. Multi-file topic-based split — rejected because it fragments the decision log and increases discovery cost.
+- **Constraints introduced**: Archive operations require safety checks (search for references before moving); archived decisions retain full content (no lossy compression); agents must search archive before concluding no prior decision exists for legacy module work; quarterly memory health reviews are expected.
+
 ## 2026-04-08: Feedback loop governance for process stability and quality
 
 - **Context**: Workflow rules were strengthened, but sustained quality requires a closed loop that continuously captures friction, measures adherence, and triggers wording updates when recurring misses appear.

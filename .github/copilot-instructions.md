@@ -20,8 +20,8 @@ Before any implementation:
 1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
 2. Classify the task scale (`skills/demand-triage/SKILL.md`): Small, Medium, or Large. Adapt workflow intensity accordingly.
 3. In the first response, publish a compliance block: files/docs read, `[SCALE: ...]` + reason, selected workflow path, and expected checkpoints.
-4. Read `DECISIONS.md` and project-specific constraints.
-5. Check whether the proposed work contradicts any existing decision. If so, STOP and present the contradiction.
+4. Read `DECISIONS.md` and project-specific constraints. For tasks involving legacy modules, also search `DECISIONS_ARCHIVE.md` if it exists.
+5. Check whether the proposed work contradicts any existing decision. If no match in active decisions, search archive before concluding no prior decision exists. If contradiction found, STOP and present it.
 6. State assumptions, constraints, and proposed approach before writing code. For Small tasks, this may be inline (1-2 sentences), but it is still mandatory.
 
 After planning (for Medium/Large work):

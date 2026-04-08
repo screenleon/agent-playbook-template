@@ -301,13 +301,24 @@ Maintain a `DECISIONS.md` file (or equivalent) at the repository root to record:
 
 Agents should read this file during codebase discovery and append to it when making architectural or behavioral decisions that future work depends on.
 
+### Decision archive lifecycle
+
+When `DECISIONS.md` exceeds 50 entries or during quarterly maintenance, archive inactive decisions to `DECISIONS_ARCHIVE.md`. See `skills/memory-and-state/SKILL.md` → Memory lifecycle management for the full procedure and safety checks.
+
+Key rules:
+- Archive only entries whose constraints are no longer enforced by current code
+- Never archive based on date alone
+- Each archived entry must include the reason it was archived
+- Agents read `DECISIONS.md` by default; read archive only when working with legacy modules or when contradiction detection finds no match in active decisions
+
 ### Mandatory read-before-write
 
 Before making any architectural or behavioral decision, agents **must**:
 
 1. Read `DECISIONS.md` in full
 2. Check whether the proposed change contradicts an existing decision
-3. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.
+3. If no match is found in `DECISIONS.md` but the task involves legacy code or historical migrations, also search `DECISIONS_ARCHIVE.md`
+4. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.
 
 ### Automatic decision capture
 

@@ -14,6 +14,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.6.0] - 2026-04-09
+
+### Added
+
+- **Memory lifecycle management** (`skills/memory-and-state/SKILL.md`) — added decision archive rules (when/how to move stale entries to `DECISIONS_ARCHIVE.md`), selective read strategy (tiered reading table for decisions, architecture memory, session memory), session memory hygiene (promotion rule, cleanup cadence), and memory health indicators (thresholds and actions).
+- **Decision archive lifecycle** (`docs/operating-rules.md`) — added archive lifecycle subsection under decision log guidance; expanded mandatory read-before-write to include archive search for legacy module tasks.
+- **Archive-aware contradiction detection** (`.github/copilot-instructions.md`) — updated steps 4–5 so agents search `DECISIONS_ARCHIVE.md` when working on legacy modules or when no match is found in active decisions.
+- **Quarterly memory health check** (`docs/adoption-guide.md`) — added step 7 to the maintenance loop: archive if >50 entries, purge unpromoted session memory, verify no stale constraint references.
+
+### Changed
+
+- **Record step update** (`docs/agent-playbook.md`) — Record step now includes a lifecycle maintenance check via the `memory-and-state` skill.
+
+---
+
 ## [0.5.0] - 2026-04-08
 
 ### Changed

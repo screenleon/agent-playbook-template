@@ -143,6 +143,92 @@ When the `demand-triage` skill classifies a task as Small, **before implementing
 3. If a matching pattern is found, follow it rather than re-analyzing from scratch
 4. If no match exists, proceed normally — then capture the pattern in the task completion summary
 
+## Memory lifecycle management
+
+Persistent memory files grow over time. Without active lifecycle management, they consume excessive tokens on every read and eventually exceed context windows.
+
+### Decision archive (cold storage)
+
+#### When to archive
+
+- `DECISIONS.md` exceeds **50 entries**, OR
+- During quarterly maintenance (whichever comes first)
+
+#### Archive procedure
+
+1. Review each entry in `DECISIONS.md`
+2. For each entry, check: **are the constraints introduced still actively referenced by current code or docs?**
+3. If the constraints are **no longer active** (the code has moved on, the pattern was replaced, etc.), move the entry to `DECISIONS_ARCHIVE.md`
+4. If the constraints are **still enforced**, keep the entry in `DECISIONS.md`
+
+Never archive based on date alone — a 2-year-old decision with active constraints stays in `DECISIONS.md`.
+
+#### Archive file format
+
+```markdown
+# Decision Archive
+
+Archived decisions that no longer constrain current work.
+For active decisions, see `DECISIONS.md`.
+
+<!-- Each entry keeps its original format and date. -->
+<!-- Add "Archived on: YYYY-MM-DD" and reason below each entry. -->
+
+## YYYY-MM-DD: [Original decision title]
+- **Context**: [original]
+- **Decision**: [original]
+- **Alternatives considered**: [original]
+- **Constraints introduced**: [original]
+- **Archived on**: YYYY-MM-DD — [why this is no longer active, e.g., "replaced by decision X" or "feature removed"]
+```
+
+#### Safety checks before archiving
+
+- [ ] Every entry marked for archive has constraints that are verifiably no longer enforced
+- [ ] No current code imports, references, or depends on the archived pattern
+- [ ] The archive entry includes the reason it was archived
+- [ ] `DECISIONS.md` still contains all decisions with active constraints after the move
+
+### Selective read strategy
+
+Agents should not read the full archive on every task. Use a tiered approach:
+
+| Situation | What to read |
+|-----------|-------------|
+| Normal task | `DECISIONS.md` only (active constraints) |
+| Task involves legacy module or old migration | `DECISIONS.md` + search `DECISIONS_ARCHIVE.md` for module name |
+| Contradiction detection finds no match in active | Search `DECISIONS_ARCHIVE.md` before concluding "no prior decision" |
+| Quarterly maintenance | Read both files in full |
+
+### Session memory hygiene
+
+Session-scoped memory (scratch notes, in-progress tracking) should not accumulate without bound.
+
+#### Promotion rule
+
+After task completion, promote session memory to repo-level memory **only if**:
+
+- The pattern was reused 2+ times in different tasks, OR
+- The feedback loop mini retrospective flagged it as "most useful"
+
+All other session notes are disposable after the task completion summary is produced.
+
+#### Cleanup cadence
+
+- At the end of each task: review session notes, promote or discard
+- At the end of each week (or every 10 tasks): purge session memory that was not promoted
+
+### Memory health indicators
+
+Track during feedback loop quality signal reviews:
+
+| Indicator | Healthy | Needs attention |
+|-----------|---------|-----------------|
+| `DECISIONS.md` entry count | ≤ 50 | > 50 without recent archive |
+| `DECISIONS_ARCHIVE.md` exists | Yes, if project > 3 months old | No, with 50+ decisions |
+| Session memory files | ≤ 5 active | > 10 without cleanup |
+| Stale constraint references | 0 | Any archived constraint still referenced in code |
+
 ## Context compaction protocol
 
 Long tasks cause context to grow, increasing cost and reducing model accuracy. Use compaction to prevent this.
