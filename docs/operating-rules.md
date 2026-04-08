@@ -203,6 +203,19 @@ Do not silently ignore errors. Do not remove failing tests to make the suite pas
 - If a tool does not support named subagents, use the equivalent prompt template or local instruction file instead.
 - Do not assume one vendor-specific feature exists in another tool.
 
+## Workflow synchronization guardrail
+
+When updating workflow stage names or order (for example the loop sequence), keep all canonical references synchronized in the same change.
+
+Minimum sync targets:
+
+- `AGENTS.md` loop string and numbered flow breakdown
+- `docs/agent-playbook.md` three-layer loop summary and mandatory steps section
+- `.github/copilot-instructions.md` mandatory workflow steps
+- `CHANGELOG.md` entry describing the workflow update
+
+Do not leave stale stage names (for example `Read` as a standalone stage after switching to `Discover`) in any of these files.
+
 ## Project-specific constraints
 
 <!-- Teams MUST fill this section when adopting the template. -->

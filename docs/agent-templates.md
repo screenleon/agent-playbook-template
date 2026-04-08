@@ -34,6 +34,12 @@ Before starting any implementation:
    When your task is done, produce a handoff artifact for the next role.
 10. After completing the task, produce a task completion summary
     (see the Task completion summary template below).
+
+Deliverable rule reminder:
+- The task completion summary is additional to the mandatory deliverable structure
+   required by docs/operating-rules.md.
+- For Small tasks, keep the mandatory structure concise; do not replace it with
+   summary-only output.
 ```
 
 ## Task intake

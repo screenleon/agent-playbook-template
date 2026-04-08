@@ -114,8 +114,8 @@ Every workflow below implicitly includes these steps:
 5. **Recover** — use the `error-recovery` skill when anything fails
 6. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
 7. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
-8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, a brief change summary replaces the full structure
-9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This enables future pattern reuse and prevents context loss across sessions
+8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
+9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 
 ### Mandatory checkpoint gates
 

@@ -42,15 +42,17 @@ Discover → Triage → Plan → Critique → Approve → Implement → Test →
 ```
 
 Every implementation task follows this flow:
-1. **Plan** — use feature-planner for complex work, or confirm scope for simple work
-2. **Critique** — invoke the critic to challenge the plan before the user sees it
-3. **Approve** — present plan + critique to the user and wait for explicit approval before implementing (mandatory checkpoint)
-4. **Read** — discover the codebase (repo-exploration skill)
-5. **Implement** — write code following project conventions; state assumptions/constraints/approach before writing code
-6. **Test** — run the validation loop (test-and-fix-loop skill)
-7. **Fix** — use error-recovery skill if anything fails
-8. **Repeat** — iterate until tests pass and code is verified
-9. **Record** — update decision log and architecture docs
+1. **Discover** — understand the codebase first (repo-exploration skill)
+2. **Triage** — classify task scale (Small/Medium/Large) and adapt workflow intensity (demand-triage skill)
+3. **Plan** — use feature-planner for complex work, or confirm scope for simple work
+4. **Critique** — invoke the critic to challenge the plan before the user sees it (required for Medium/Large planning paths)
+5. **Approve** — present plan + critique to the user and wait for explicit approval before implementing when required by checkpoint gates
+6. **Implement** — write code following project conventions; state assumptions/constraints/approach before writing code
+7. **Test** — run the validation loop (test-and-fix-loop skill)
+8. **Fix** — use error-recovery skill if anything fails
+9. **Repeat** — iterate until tests pass and code is verified
+10. **Record** — update decision log and architecture docs
+11. **Summarize** — produce a brief task completion summary for memory and handoff continuity
 
 Core rules:
 
