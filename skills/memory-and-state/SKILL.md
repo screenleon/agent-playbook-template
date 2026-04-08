@@ -192,14 +192,14 @@ For active decisions, see `DECISIONS.md`.
 
 ### Selective read strategy
 
-Agents should not read the full archive on every task. Use a tiered approach:
+Agents should not read the full archive on every task. Use a tiered approach. If `DECISIONS_ARCHIVE.md` does not exist yet, treat archive searches as returning no matches and skip any archive-read step that would otherwise require the file.
 
 | Situation | What to read |
 |-----------|-------------|
 | Normal task | `DECISIONS.md` only (active constraints) |
-| Task involves legacy module or old migration | `DECISIONS.md` + search `DECISIONS_ARCHIVE.md` for module name |
-| Contradiction detection finds no match in active | Search `DECISIONS_ARCHIVE.md` before concluding "no prior decision" |
-| Periodic maintenance review | Read both files in full |
+| Task involves legacy module or old migration | `DECISIONS.md` + search `DECISIONS_ARCHIVE.md` for module name, if the archive file exists |
+| Contradiction detection finds no match in active | Search `DECISIONS_ARCHIVE.md` before concluding "no prior decision", if the archive file exists; otherwise treat as no archived match |
+| Periodic maintenance review | Read both files in full if `DECISIONS_ARCHIVE.md` exists; otherwise read `DECISIONS.md` only |
 
 ### Session memory hygiene
 

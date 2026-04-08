@@ -316,8 +316,8 @@ Key rules:
 Before making any architectural or behavioral decision, agents **must**:
 
 1. Read `DECISIONS.md` in full
-2. Check whether the proposed change contradicts an existing decision
-3. If no match is found in `DECISIONS.md` but the task involves legacy code or historical migrations, also search `DECISIONS_ARCHIVE.md`
+2. If the task involves legacy code or historical migrations, search `DECISIONS_ARCHIVE.md` for related prior decisions if the archive file exists
+3. Check whether the proposed change contradicts any relevant decision found in the active log or archive search results
 4. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.
 
 ### Automatic decision capture
