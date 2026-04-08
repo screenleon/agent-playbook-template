@@ -80,13 +80,16 @@ Files affected: [list]
 
 ### Small tasks — conditional simplifications
 
-When a task is classified as Small, the following workflow steps become **optional** (may be skipped unless the task specifically requires them):
+When a task is classified as Small, the following workflow steps are **skippable** (may be skipped unless the task specifically requires them):
 
 - **Full planning agent** — replace with a 1–2 sentence inline plan stating what will change and why
 - **Critic review** — skip unless the change touches a pattern used across the codebase
 - **Risk-reviewer** — skip unless the change is in a sensitive area (even if file count is small)
-- **Mandatory deliverable structure** (5 sections: Proposal, Alternatives, Pros/Cons, Risks, Recommendation) — keep it concise for Small tasks; do not skip it
 - **Context anchor** — skip (single-step tasks do not need drift prevention)
+
+For Small tasks, the following remain required but may be **simplified**:
+
+- **Mandatory deliverable structure** (5 sections: Proposal, Alternatives, Pros/Cons, Risks, Recommendation) — keep it concise; do not skip it
 - **Structured preamble** — may be inline (1–2 sentences) rather than a separate section
 
 The following steps **remain mandatory** even for Small tasks:
