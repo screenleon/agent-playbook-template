@@ -151,8 +151,9 @@ Persistent memory files grow over time. Without active lifecycle management, the
 
 #### When to archive
 
-- `DECISIONS.md` exceeds **50 entries**, OR
-- During quarterly maintenance (whichever comes first)
+- `DECISIONS.md` exceeds **50 entries** or **30 KB**, OR
+- Any memory health indicator (see below) reaches the "needs attention" threshold, OR
+- During periodic maintenance review (quarterly for low-volume projects; more frequently when thresholds are hit)
 
 #### Archive procedure
 
@@ -198,7 +199,7 @@ Agents should not read the full archive on every task. Use a tiered approach:
 | Normal task | `DECISIONS.md` only (active constraints) |
 | Task involves legacy module or old migration | `DECISIONS.md` + search `DECISIONS_ARCHIVE.md` for module name |
 | Contradiction detection finds no match in active | Search `DECISIONS_ARCHIVE.md` before concluding "no prior decision" |
-| Quarterly maintenance | Read both files in full |
+| Periodic maintenance review | Read both files in full |
 
 ### Session memory hygiene
 
@@ -225,7 +226,7 @@ Track during feedback loop quality signal reviews:
 | Indicator | Healthy | Needs attention |
 |-----------|---------|-----------------|
 | `DECISIONS.md` entry count | ≤ 50 | > 50 without recent archive |
-| `DECISIONS_ARCHIVE.md` exists | Yes, if project > 3 months old | No, with 50+ decisions |
+| `DECISIONS_ARCHIVE.md` exists | Yes, once any archiving has occurred | No, with 50+ active decisions |
 | Session memory files | ≤ 5 active | > 10 without cleanup |
 | Stale constraint references | 0 | Any archived constraint still referenced in code |
 

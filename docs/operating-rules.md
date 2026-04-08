@@ -303,7 +303,7 @@ Agents should read this file during codebase discovery and append to it when mak
 
 ### Decision archive lifecycle
 
-When `DECISIONS.md` exceeds 50 entries or during quarterly maintenance, archive inactive decisions to `DECISIONS_ARCHIVE.md`. See `skills/memory-and-state/SKILL.md` → Memory lifecycle management for the full procedure and safety checks.
+When `DECISIONS.md` exceeds 50 entries or 30 KB, or when any memory health indicator reaches the "needs attention" threshold, archive inactive decisions to `DECISIONS_ARCHIVE.md`. See `skills/memory-and-state/SKILL.md` → Memory lifecycle management for the full procedure, safety checks, and health indicators.
 
 Key rules:
 - Archive only entries whose constraints are no longer enforced by current code
