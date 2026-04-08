@@ -122,7 +122,7 @@ Every workflow below implicitly includes these steps:
 In the first response of a task, make compliance visible by explicitly stating:
 
 1. **Read set** — which source-of-truth files were read for this task
-2. **Scale classification** — `[SCALE: SMALL|MEDIUM|LARGE]` with 1-2 sentence evidence-based reason and affected files
+2. **Scale classification** — `[SCALE: SMALL|MEDIUM|LARGE]` with 1-2 sentence evidence-based reason
 3. **Path decision** — whether this task uses Small simplification or Medium/Large planning path, and why
 4. **Checkpoint expectations** — which mandatory checkpoints will apply in this run (or `N/A` with reason)
 

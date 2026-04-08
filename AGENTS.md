@@ -56,7 +56,7 @@ Every implementation task follows this flow:
 10. **Record** — update decision log and architecture docs
 11. **Summarize** — produce a brief task completion summary for memory and handoff continuity
 
-Before implementation begins, the first response must make workflow selection visible by stating: files/docs read, triage scale, selected path, and why that path is valid.
+Before implementation begins, the first response must make workflow selection visible by stating: files/docs read, triage scale, selected path, checkpoint map/checkpoint expectations, and why that path is valid.
 
 Core rules:
 
