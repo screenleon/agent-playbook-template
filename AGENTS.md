@@ -24,6 +24,7 @@ Defined in `docs/operating-rules.md`:
 ### Layer 2: Skills (capabilities)
 
 Defined in `skills/*/SKILL.md`:
+- `demand-triage` — classify task scale and adapt workflow intensity
 - `repo-exploration` — understand the codebase before coding
 - `test-and-fix-loop` — enforce iterative validation after code changes
 - `error-recovery` — diagnose and fix compile errors, test failures, runtime issues
@@ -37,7 +38,7 @@ Defined in `skills/*/SKILL.md`:
 ### Layer 3: Loop (workflow)
 
 ```
-Plan → Critique → Approve → Read → Implement → Test → Fix → Repeat → Record
+Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize
 ```
 
 Every implementation task follows this flow:

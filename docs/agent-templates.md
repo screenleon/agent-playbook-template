@@ -13,18 +13,27 @@ Before starting any implementation:
    - Read the files you will change and their direct dependents.
    - Identify existing patterns (naming, error handling, logging, test style).
    - Check the project-specific constraints in docs/operating-rules.md.
-4. Before producing any solution, explicitly state:
+4. Classify the task scale using the demand-triage skill:
+   - Read skills/demand-triage/SKILL.md for classification criteria.
+   - Based on evidence from codebase discovery, classify as Small, Medium, or Large.
+   - State the classification with brief reasoning: [SCALE: SMALL|MEDIUM|LARGE]
+   - Adapt workflow intensity accordingly (see demand-triage skill for details).
+5. Before producing any solution, explicitly state:
    - Assumptions: what you are assuming about the request or codebase
    - Constraints: what limits apply (from DECISIONS.md, project rules, or the request)
    - Proposed approach: the logic or steps you will follow
-5. Follow the validation loop after every code change:
+   (For Small tasks, this may be inline — 1-2 sentences instead of a separate section.)
+6. Follow the validation loop after every code change:
    - Run tests → run static analysis → fix errors → repeat until green.
    - Never treat a change as done until verification passes.
-6. If you encounter errors, follow the error recovery protocol in docs/operating-rules.md.
-7. After making architectural or behavioral decisions, append them to DECISIONS.md.
-8. Each role runs in its own context. If you receive a handoff artifact from a
+   - For Small tasks, run at least the targeted tests for the changed file.
+7. If you encounter errors, follow the error recovery protocol in docs/operating-rules.md.
+8. After making architectural or behavioral decisions, append them to DECISIONS.md.
+9. Each role runs in its own context. If you receive a handoff artifact from a
    previous role, use it as your primary input — do not rely on prior conversation.
    When your task is done, produce a handoff artifact for the next role.
+10. After completing the task, produce a task completion summary
+    (see the Task completion summary template below).
 ```
 
 ## Task intake
@@ -372,4 +381,42 @@ Rules:
 - Every claim must reference a specific part of the proposal.
 - Do not rewrite the proposal. State what is wrong and let the proposer fix it.
 - If no significant issues exist, say so explicitly — do not invent problems.
+```
+
+## Task completion summary
+
+```text
+After completing any task, produce this summary. This enables memory reuse and
+provides observability into what was done.
+
+## Task summary
+- **Scale**: [SMALL | MEDIUM | LARGE]
+- **What changed**: [1–2 sentences describing the change]
+- **Files modified**: [list of files]
+- **Key decisions**: [decisions made during this task, with DECISIONS.md references — or "None"]
+- **Pattern learned**: [reusable pattern for similar future tasks — or "None"]
+- **Tests**: [what was run and the result]
+- **Open items**: [anything deferred or left for follow-up — or "None"]
+
+For Small tasks: if "Pattern learned" is not "None", store it in change-pattern
+memory for future reuse (see skills/memory-and-state/SKILL.md).
+For Medium/Large tasks: this summary also feeds into documentation sync checks.
+```
+
+## Demand classification
+
+```text
+When classifying task scale, use this format:
+
+[SCALE: SMALL | MEDIUM | LARGE]
+Reason: [1–2 sentences based on evidence from codebase discovery]
+Files affected: [list]
+
+Classification criteria (from skills/demand-triage/SKILL.md):
+- Small: single file, no contract/schema/auth/security changes, well-understood
+- Medium: 2–5 files within one module, no breaking changes or migrations
+- Large: multi-module, architecture change, breaking changes, auth/security/migration
+
+If uncertain, default to Medium.
+Hard blockers that force non-Small: auth, security, schema migration, breaking changes.
 ```

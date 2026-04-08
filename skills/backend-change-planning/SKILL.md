@@ -57,3 +57,13 @@ Write "N/A — [reason]" for items that do not apply.
 - Missing rate limiting or pagination on new list endpoints
 
 Maintain this checklist consistently with the repository guidance in `docs/agent-playbook.md`, and update any related agent/template docs together when intentional workflow changes are made.
+
+## Conformance self-check
+
+Before marking backend planning as complete, verify:
+
+- [ ] All 7 checklist items are addressed (N/A with reason if not applicable)
+- [ ] `DECISIONS.md` was read and no contradictions exist
+- [ ] Implementation order follows: migrations → shared types → repository → service → handlers → tests
+- [ ] Common backend mistakes were checked against
+- [ ] For high-risk changes: plan was presented to user for approval before implementing

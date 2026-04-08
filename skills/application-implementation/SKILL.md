@@ -35,8 +35,49 @@ Use this skill for ordinary application changes — frontend, service-layer, or 
 - Skipping the validation loop after changes
 - Introducing a new state management pattern when one already exists
 
+## Anti-patterns and negative examples
+
+These are concrete examples of what **not** to do. Use them as a mental checklist.
+
+### Do not guess file structure
+
+Bad: Assuming `src/components/Button.tsx` exists because it sounds right.
+Good: Use `repo-exploration` to discover the actual file paths before making changes.
+
+### Do not add abstractions for single use
+
+Bad: Creating a `FormValidationHelper` class to validate one field in one form.
+Good: Inline the validation logic. Extract only when a second consumer appears.
+
+### Do not change error handling style mid-codebase
+
+Bad: Introducing `try/catch` with custom error classes when the codebase uses `Result<T, E>` pattern.
+Good: Follow the existing error handling convention, even if you prefer a different style.
+
+### Do not bundle refactoring with feature work
+
+Bad: Renaming variables and restructuring imports while adding a new feature.
+Good: Ship the feature first. Propose refactoring as a separate task.
+
+### Do not ignore the demand triage classification
+
+Bad: Running the full planning → critic → review workflow for a one-line copy change.
+Good: Check the scale classification. For Small tasks, use the lightweight path.
+
 ## Use this skill when
 
 - the task is ordinary product implementation
 - the task is frontend or app behavior work without a dedicated visual source
 - the task needs code changes but not a new architecture pass
+
+## Conformance self-check
+
+Before marking implementation as complete, verify:
+
+- [ ] The change matches the stated target behavior (or inline plan for Small tasks)
+- [ ] All affected states are handled (loading, empty, error, success) where applicable
+- [ ] No scope expansion occurred without approval
+- [ ] The validation loop was run and passed
+- [ ] Existing patterns were followed (no new patterns introduced without justification)
+- [ ] DECISIONS.md was checked for contradictions
+- [ ] A task completion summary was produced (see `docs/agent-templates.md`)

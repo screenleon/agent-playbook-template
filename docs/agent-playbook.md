@@ -6,7 +6,7 @@ All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Plan → **Critique** → **Approve** → Read → Implement → Test → Fix → Repeat → Record.
+3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**.
 
 ## Repository asset map
 
@@ -108,12 +108,14 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 Every workflow below implicitly includes these steps:
 
 1. **Discover** — run the `repo-exploration` skill before coding
-2. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules)
-3. **Validate** — run the `test-and-fix-loop` skill after every code change
-4. **Recover** — use the `error-recovery` skill when anything fails
-5. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
-6. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below)
-7. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure)
+2. **Triage** — run the `demand-triage` skill to classify task scale (Small / Medium / Large) based on evidence from discovery. This determines which subsequent steps are mandatory vs. optional. See `skills/demand-triage/SKILL.md` for classification criteria and workflow adaptation rules
+3. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules). For Small tasks, this may be inline (1–2 sentences)
+4. **Validate** — run the `test-and-fix-loop` skill after every code change. For Small tasks, run only targeted tests for the changed file
+5. **Recover** — use the `error-recovery` skill when anything fails
+6. **Record** — use the `memory-and-state` skill to log decisions and update architecture docs
+7. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
+8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, a brief change summary replaces the full structure
+9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This enables future pattern reuse and prevents context loss across sessions
 
 ### Mandatory checkpoint gates
 
@@ -134,9 +136,17 @@ See `docs/operating-rules.md` → Human checkpoint gates for the full list and f
 
 `feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user decision** → `backend-architect` → `risk-reviewer` (final review)
 
+### Small change
+
+If the `demand-triage` skill classifies the task as Small:
+
+`application-implementer` (with inline 1–2 sentence plan) → targeted validation only
+
+No planning agent, critic, or risk-reviewer required. The implementer reads the file, states the change in 1–2 sentences, implements, and runs targeted tests. See `skills/demand-triage/SKILL.md` for the full list of what is mandatory vs. optional on the Small path.
+
 ### General application change
 
-If it is bounded and low ambiguity:
+If it is bounded and low ambiguity (Medium scale):
 
 `application-implementer` → `risk-reviewer`
 
