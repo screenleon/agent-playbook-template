@@ -118,3 +118,7 @@ Good candidates to remove early:
 4. Remove stale roles rather than letting them drift.
 5. Update `DECISIONS.md` when architectural decisions are made or reversed.
 6. Review `Project-specific constraints` quarterly — remove stale rules, add new ones.
+7. Run a **memory health check** whenever a health indicator triggers (>50 entries, >30 KB, >10 session files), or at least quarterly for low-volume projects:
+   - If `DECISIONS.md` exceeds 50 entries or 30 KB, archive inactive decisions to `DECISIONS_ARCHIVE.md` (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
+   - Purge session memory files that were not promoted to repo memory
+   - Verify no archived constraint is still referenced by current code
