@@ -8,43 +8,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- No changes yet.
+
+---
+
+## [0.4.0] - 2026-04-08
+
 ### Added
 
-- **Context isolation model** (`docs/operating-rules.md`, `docs/agent-playbook.md`) — each role must run in a separate context (separate invocation). Defines task boundary rule, handoff artifact format, and banned anti-patterns (role ping-pong, implicit handoff, conversation-as-memory).
-- **Handoff artifact protocol** (`docs/operating-rules.md`) — structured format for passing context between agents: task, deliverable, key decisions, open risks, constraints, and attached output.
-- **Mandatory deliverable structure** (`docs/operating-rules.md`) — every agent role must output: Proposal, Alternatives considered, Pros/Cons table, Risks, and Recommendation. Prevents freeform drift.
-- **`critic` role** (`docs/agent-playbook.md`, `.claude/agents/critic.md`, `docs/agent-templates.md`) — adversarial design reviewer invoked after a planner/architect produces a proposal and before user approval. Checks for over-engineering, hidden coupling, missing edge cases, constraint violations, scope creep, and assumption gaps.
-- **Human checkpoint gates** (`docs/operating-rules.md`) — mandatory STOP points where agents must wait for user approval: after planning (before implementation), on scope expansion, on decision contradiction, and on stuck escalation. Includes checkpoint output format and recommended mid-implementation review gate.
-- **Structured output and anti-drift rules** (`docs/operating-rules.md`) — mandatory structured preamble (assumptions, constraints, proposed approach) before any implementation; context anchor protocol for multi-step tasks; output completeness checks requiring "N/A" instead of silent omission.
-- **Contradiction detection protocol** (`docs/operating-rules.md`, `skills/memory-and-state/SKILL.md`) — agents must check `DECISIONS.md` before making decisions and STOP if a conflict is found, presenting both the existing decision and the proposed change.
-- **Automatic decision capture triggers** (`docs/operating-rules.md`) — expanded list of events that require `DECISIONS.md` entries: new technology/library, schema/contract changes, permission model changes, architectural boundary changes, tradeoffs.
-- **Context anchor protocol** (`skills/memory-and-state/SKILL.md`) — structured format for tracking objective, current step, completed work, remaining work, and active constraints during multi-step tasks.
-- **`DECISIONS.md` template** — version-controlled decision log template at repo root with example format and usage instructions.
-- **Module decomposition guide** (`skills/feature-planning/SKILL.md`) — concrete method for tracing user actions through call chains, listing touched boundaries, marking shared dependencies, and producing a module impact table.
-- **Validation criteria guide** (`skills/feature-planning/SKILL.md`) — structured approach for defining test scenarios: happy path, edge cases, error paths, permission boundaries, regression anchors, and integration verification, with table output format.
-- **Risk assessment guide** (`skills/feature-planning/SKILL.md`) — risk evaluation framework with likelihood/impact/mitigation/owner for each risk, plus common risk categories (data loss, breaking changes, performance, security, rollback difficulty).
-- **Early risk review** (`skills/feature-planning/SKILL.md`, `docs/agent-playbook.md`) — risk-reviewer can now be invoked during planning phase for high-risk plans before user approval, not only as final review.
-- **Risk-reviewer dual mode** (`.claude/agents/risk-reviewer.md`, `docs/agent-templates.md`) — Mode 1: plan risk assessment during planning; Mode 2: final implementation review after coding.
-- **Automatic documentation maintenance** (`skills/documentation-architecture/SKILL.md`) — triggers and actions for auto-updating `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes. Includes documentation sync check.
-- **`ARCHITECTURE.md` template** (`skills/documentation-architecture/SKILL.md`) — canonical structure: module map, key interfaces, data flow, external dependencies, known technical debt.
+- **New skill: `demand-triage`** (`skills/demand-triage/SKILL.md`) — introduces scale classification (Small / Medium / Large), hard blockers, reclassification guidance, and conformance self-check.
+- **Scale-aware templates** (`docs/agent-templates.md`) — added demand classification template and task completion summary template for consistent reporting.
 
 ### Changed
 
-- **Workflow loop** (`AGENTS.md`, `docs/agent-playbook.md`) — changed from `Plan → Approve → Read → Implement...` to `Plan → Critique → Approve → Read → Implement → Test → Fix → Repeat → Record`. Critic step added between planning and user approval.
-- **All suggested workflows** (`docs/agent-playbook.md`) — inserted `→ critic →` step between planning and user decision in every multi-agent workflow. Arrow style changed from `->` to `→`.
-- **Mandatory workflow steps** (`docs/agent-playbook.md`) — added context isolation (step 6) and mandatory deliverable structure (step 7) to the universal mandatory steps list.
-- **Mandatory checkpoint gates** (`docs/agent-playbook.md`) — updated to include critic challenging the plan before user approval.
-- **Common preamble** (`docs/agent-templates.md`) — added step 8: handoff artifact awareness for context isolation.
-- **Feature planner template** (`docs/agent-templates.md`, `.claude/agents/feature-planner.md`) — now produces a handoff artifact after user approval for the next agent.
-- **All Claude agents** (`.claude/agents/*.md`) — added handoff artifact awareness: agents accept handoff artifacts as primary input and produce them as output.
-- **High-risk backend workflow** (`docs/agent-playbook.md`) — now includes critic step: `planner → critic → risk-reviewer (plan) → user decision → architect → risk-reviewer (final)`.
-- **Copilot instructions** (`.github/copilot-instructions.md`) — added critic step (step 5), context isolation rule, expanded mandatory workflow from 9 to 10 steps.
-- **Application implementation skill** (`skills/application-implementation/SKILL.md`) — expanded from 5-item checklist to full guide with implementation guidelines, error handling expectations, and common mistakes to avoid.
-- **Backend change planning skill** (`skills/backend-change-planning/SKILL.md`) — expanded from 7-item list to detailed guide with migration safety rules, query impact checks, implementation ordering, and common backend mistakes checklist.
-- **Design-to-code skill** (`skills/design-to-code/SKILL.md`) — expanded each breakdown step with concrete details (what to look for, how to map to project tokens), added implementation guidelines (reuse, tokens, mobile-first, accessibility), and common mistakes.
-- **Memory and state skill** (`skills/memory-and-state/SKILL.md`) — expanded with context anchor protocol, contradiction detection process, additional write triggers, and stronger enforcement language.
-- **`documentation-architect` role** (`docs/agent-playbook.md`) — added responsibility for automatic maintenance of DECISIONS.md, ARCHITECTURE.md, and project-specific constraints.
-- **`risk-reviewer` role** (`docs/agent-playbook.md`) — added early risk assessment capability during planning phase for high-risk work.
+- **Core workflow synchronization** (`AGENTS.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — aligned loop and step ordering around `Discover → Triage → ... → Summarize`, and synchronized mandatory workflow guidance across docs.
+- **Small-task deliverable rule consistency** (`docs/agent-playbook.md`, `skills/demand-triage/SKILL.md`, `docs/agent-templates.md`) — clarified that mandatory deliverable structure remains required for Small tasks, but can be concise; summary is additional, not a replacement.
+- **Context compaction guidance** (`docs/operating-rules.md`, `skills/memory-and-state/SKILL.md`) — added compaction protocol and workflow synchronization guardrail to reduce drift and stale instruction risk.
+- **Skill quality upgrades** (`skills/application-implementation/SKILL.md`, `skills/backend-change-planning/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`) — added conformance self-checks; expanded testing guidance with scale-aware strategy and test-first recommendations.
+- **Decision log update** (`DECISIONS.md`) — recorded the adaptive-workflow decision and corrected context wording to match actual process.
+
+### Metadata
+
+- **Diff vs main**: 13 files changed, 461 insertions, 24 deletions.
+- **Changed files**: `.github/copilot-instructions.md`, `AGENTS.md`, `DECISIONS.md`, `docs/agent-playbook.md`, `docs/agent-templates.md`, `docs/operating-rules.md`, `skills/application-implementation/SKILL.md`, `skills/backend-change-planning/SKILL.md`, `skills/demand-triage/SKILL.md` (new), `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/memory-and-state/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`.
 
 ---
 
@@ -126,5 +114,6 @@ Initial release of the agent playbook template.
 ---
 
 [0.3.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.2.0...v0.3.0
+[0.4.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.3.0...v0.4.0
 [0.2.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/screenleon/agent-playbook-template/releases/tag/v0.1.0

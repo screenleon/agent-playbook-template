@@ -147,3 +147,15 @@ If the user requests changes, revise and present again.
 - contract or schema changes are likely
 - auth, permissions, upload, audit, or security are involved
 - the user asks for planning, sequencing, scope, or risk analysis
+
+## Conformance self-check
+
+Before presenting the plan to the user, verify:
+
+- [ ] All 12 output checklist items are addressed (N/A with reason if not applicable)
+- [ ] `DECISIONS.md` was read and no contradictions exist
+- [ ] Assumptions, constraints, and proposed approach are explicitly stated
+- [ ] The test plan covers happy path, edge cases, error paths, and permission boundaries
+- [ ] Risks include likelihood, impact, and mitigation for each
+- [ ] Implementation order follows the canonical sequence (schema → contracts → logic → wiring → tests)
+- [ ] The plan does not quietly expand beyond the original request

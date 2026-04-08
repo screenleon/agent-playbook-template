@@ -133,6 +133,15 @@ At the start of every long task (more than one step or more than one file), agen
 
 Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan.
 
+### Context compaction
+
+Long tasks cause context growth that increases cost and reduces model accuracy. To prevent this:
+
+- After completing each phase of a multi-phase task, produce a progress summary and store it in session memory (see `skills/memory-and-state/SKILL.md` → Context compaction protocol).
+- Continue subsequent work from the summary, not from the full conversation history.
+- For inter-agent handoffs, the compaction summary becomes the handoff artifact defined in the Context isolation section above.
+- If a tool or agent session does not support explicit compaction, produce the summary in the output and instruct the next step to use it as primary input.
+
 ### Output completeness check
 
 After producing structured output (plans, reviews, checklists), agents must verify:
@@ -193,6 +202,19 @@ Do not silently ignore errors. Do not remove failing tests to make the suite pas
 - Use tool-specific implementations only as surfaces for the same conceptual roles.
 - If a tool does not support named subagents, use the equivalent prompt template or local instruction file instead.
 - Do not assume one vendor-specific feature exists in another tool.
+
+## Workflow synchronization guardrail
+
+When updating workflow stage names or order (for example the loop sequence), keep all canonical references synchronized in the same change.
+
+Minimum sync targets:
+
+- `AGENTS.md` loop string and numbered flow breakdown
+- `docs/agent-playbook.md` three-layer loop summary and mandatory steps section
+- `.github/copilot-instructions.md` mandatory workflow steps
+- `CHANGELOG.md` entry describing the workflow update
+
+Do not leave stale stage names (for example `Read` as a standalone stage after switching to `Discover`) in any of these files.
 
 ## Project-specific constraints
 

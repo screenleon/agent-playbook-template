@@ -72,3 +72,13 @@ Suggested next step: [what a human should check]
 - The build does not compile
 - You see unexpected runtime behavior
 - Static analysis reports new warnings
+
+## Conformance self-check
+
+Before marking error recovery as complete, verify:
+
+- [ ] The full error message was read (not guessed from partial output)
+- [ ] Root cause was identified and stated
+- [ ] The fix was minimal (no unrelated changes bundled)
+- [ ] Re-verification was run and passed
+- [ ] If escalated: the escalation report includes error message, attempts, hypothesis, and suggested next step
