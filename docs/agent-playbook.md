@@ -116,6 +116,7 @@ Every workflow below implicitly includes these steps:
 7. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
 8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
 9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+10. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
 ### First-response compliance block (mandatory)
 
@@ -186,6 +187,25 @@ If it also changes logic or flow:
 ### Documentation-heavy change
 
 `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` when technical correctness matters
+
+## Feedback loop execution
+
+Use feedback loop outputs to improve process wording and reduce repeat misses.
+
+### Minimum output per completed task
+
+After the task completion summary, include:
+
+1. Friction observed
+2. Miss risk
+3. Most useful rule
+4. Next improvement candidate
+
+### Cadence and ownership
+
+- Review quality signals every 10 tasks (or weekly)
+- `documentation-architect` owns wording updates and synchronization when recurring friction is detected
+- `risk-reviewer` should flag repeated process misses even when code-level outcomes are correct
 
 ## Context isolation
 

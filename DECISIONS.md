@@ -19,6 +19,13 @@ See `skills/memory-and-state/SKILL.md` for when to read and write.
 
 <!-- Add real decisions below this line -->
 
+## 2026-04-08: Feedback loop governance for process stability and quality
+
+- **Context**: Workflow rules were strengthened, but sustained quality requires a closed loop that continuously captures friction, measures adherence, and triggers wording updates when recurring misses appear.
+- **Decision**: Introduced a formal feedback loop requirement with task-end mini retrospectives, rolling quality signals, and a recurrence escalation rule (3 repeated misses triggers source-of-truth update + synchronization + changelog entry).
+- **Alternatives considered**: Keep feedback collection informal in ad-hoc comments only. Rejected because informal feedback is hard to aggregate, easy to forget, and does not reliably trigger policy updates.
+- **Constraints introduced**: Completed tasks must include feedback mini retrospectives; teams should review quality signals every 10 tasks or weekly; recurring process failures must be corrected through synchronized documentation updates.
+
 ## 2026-04-08: Explicit workflow declaration and Small-path output hardening
 
 - **Context**: Recent feedback identified three recurring failure modes: (1) the canonical loop looked universally mandatory while Small path text appeared to permit implicit shortcutting, (2) users could not verify whether required discovery/triage steps were performed, and (3) Small-task minimum output expectations were not consistently enforced across source-of-truth and tool-specific files.

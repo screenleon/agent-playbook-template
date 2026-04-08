@@ -69,6 +69,18 @@ Acceptance criteria:
 - tests:
 ```
 
+## Feedback loop mini retrospective
+
+```text
+Friction observed:
+
+Miss risk:
+
+Most useful rule:
+
+Next improvement:
+```
+
 ## Feature planner
 
 ```text
