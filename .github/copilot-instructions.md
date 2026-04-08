@@ -19,17 +19,18 @@
 Before any implementation:
 1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
 2. Classify the task scale (`skills/demand-triage/SKILL.md`): Small, Medium, or Large. Adapt workflow intensity accordingly.
-3. Read `DECISIONS.md` and project-specific constraints.
-4. Check whether the proposed work contradicts any existing decision. If so, STOP and present the contradiction.
-5. State assumptions, constraints, and proposed approach before writing code. For Small tasks, this may be inline (1-2 sentences).
+3. In the first response, publish a compliance block: files/docs read, `[SCALE: ...]` + reason, selected workflow path, and expected checkpoints.
+4. Read `DECISIONS.md` and project-specific constraints.
+5. Check whether the proposed work contradicts any existing decision. If so, STOP and present the contradiction.
+6. State assumptions, constraints, and proposed approach before writing code. For Small tasks, this may be inline (1-2 sentences), but it is still mandatory.
 
 After planning (for Medium/Large work):
-6. Invoke `critic` to challenge the plan before presenting to user.
-7. Present plan + critique to the user and wait for approval before implementing.
+7. Invoke `critic` to challenge the plan before presenting to user.
+8. Present plan + critique to the user and wait for approval before implementing.
 
 After any code change:
-8. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat. For Small tasks, run targeted tests only.
-9. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
-10. Record decisions in `DECISIONS.md` when applicable.
-11. If scope expands beyond the original plan, STOP and present the expanded scope for approval.
-12. Produce a task completion summary (`docs/agent-templates.md` → Task completion summary).
+9. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`): tests → lint → fix → repeat. For Small tasks, run targeted tests only.
+10. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails.
+11. Record decisions in `DECISIONS.md` when applicable.
+12. If scope expands beyond the original plan, STOP and present the expanded scope for approval.
+13. Produce a task completion summary (`docs/agent-templates.md` → Task completion summary).

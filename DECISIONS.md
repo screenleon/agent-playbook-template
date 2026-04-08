@@ -19,6 +19,13 @@ See `skills/memory-and-state/SKILL.md` for when to read and write.
 
 <!-- Add real decisions below this line -->
 
+## 2026-04-08: Explicit workflow declaration and Small-path output hardening
+
+- **Context**: Recent feedback identified three recurring failure modes: (1) the canonical loop looked universally mandatory while Small path text appeared to permit implicit shortcutting, (2) users could not verify whether required discovery/triage steps were performed, and (3) Small-task minimum output expectations were not consistently enforced across source-of-truth and tool-specific files.
+- **Decision**: Hardened workflow guidance across canonical and tool-specific docs by introducing a mandatory first-response compliance block, defining the loop as a canonical superset with explicit post-triage path selection, and codifying a non-skippable Small-task minimum output contract.
+- **Alternatives considered**: Keep existing wording and rely on reviewer enforcement only. Rejected because non-explicit requirements are difficult to audit and are frequently interpreted as optional under time pressure.
+- **Constraints introduced**: Implementation must not begin without a visible compliance block; Small-path usage must remain explicit and verifiable; workflow-related changes must synchronize `AGENTS.md`, `docs/agent-playbook.md`, `docs/operating-rules.md`, `.github/copilot-instructions.md`, `skills/demand-triage/SKILL.md`, and `CHANGELOG.md`.
+
 ## 2026-04-07: Adaptive workflow with demand triage, context compaction, and skill quality enhancements
 
 - **Context**: The playbook applied the same full pre-change workflow of discovery, planning, critique, approval, implementation, the test/lint/fix/repeat validation loop, and decision recording to all tasks regardless of scale. Small tasks (typo fixes, config changes, single-line bug fixes) consumed excessive tokens and time by going through planning agents, critics, risk-reviewers, full deliverable structures, and context anchors. Additionally, long tasks suffered from context bloat with no compaction mechanism, and skills lacked self-verification checklists.

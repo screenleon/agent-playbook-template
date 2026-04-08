@@ -14,6 +14,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.0] - 2026-04-08
+
+### Changed
+
+- **Workflow clarity hardening** (`AGENTS.md`, `docs/agent-playbook.md`) — defined the loop as a canonical superset and required explicit path selection after triage so Small path simplification is not interpreted as implicit step skipping.
+- **Verifiable first-response requirement** (`docs/agent-playbook.md`, `docs/operating-rules.md`, `.github/copilot-instructions.md`) — added a mandatory compliance block (read set, scale, path decision, checkpoint map) before implementation starts.
+- **Small-path minimum output contract** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `skills/demand-triage/SKILL.md`) — codified non-skippable explicit outputs for Small tasks: preamble, contradiction check result, validation reporting, and concise deliverable structure.
+- **Workflow sync guardrail expansion** (`docs/operating-rules.md`) — added `skills/demand-triage/SKILL.md` to required synchronization targets for workflow-related updates.
+
+---
+
 ## [0.4.0] - 2026-04-08
 
 ### Added
@@ -114,6 +125,7 @@ Initial release of the agent playbook template.
 ---
 
 [0.3.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.2.0...v0.3.0
+[0.5.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.3.0...v0.4.0
 [0.2.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/screenleon/agent-playbook-template/releases/tag/v0.1.0

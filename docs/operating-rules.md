@@ -118,6 +118,19 @@ Before producing any solution or implementation, agents must explicitly provide 
 
 This must appear in the output before any code or implementation. Do not require or provide detailed internal reasoning.
 
+### Mandatory first-response compliance block
+
+The first response of any implementation task must include a visible compliance block so users can verify process adherence.
+
+Required fields:
+
+1. **Read set** — list the files/rules read before implementation
+2. **Scale** — `[SCALE: SMALL|MEDIUM|LARGE]` and evidence-based reason
+3. **Workflow path** — Small simplification path or Medium/Large planning path, with justification
+4. **Checkpoint map** — mandatory checkpoints that will be used in this task (or `N/A` with reason)
+
+If this block is missing, the workflow is considered not started.
+
 ### Context anchor
 
 At the start of every long task (more than one step or more than one file), agents must produce a context summary:
@@ -179,6 +192,18 @@ Every agent role must produce its final output in this standardized format. This
 
 Roles may add domain-specific sections (e.g., a planner adds "implementation order," a reviewer adds "findings"), but the five sections above are mandatory and must not be omitted. Write "N/A — [reason]" for any section that genuinely does not apply.
 
+### Small-task minimum output contract
+
+Small tasks may simplify depth, but must keep explicit structure. The minimum acceptable output for Small tasks is:
+
+1. Compliance block (from above)
+2. Structured preamble (Assumptions, Constraints, Proposed approach; inline allowed)
+3. DECISIONS.md contradiction check result
+4. Validation plan and targeted verification outcome
+5. Mandatory deliverable structure with concise content and explicit `N/A` where applicable
+
+Small tasks must not skip explicit workflow declaration or verification reporting.
+
 ## Error recovery
 
 When you encounter a compile error, test failure, or unexpected runtime behavior:
@@ -212,6 +237,7 @@ Minimum sync targets:
 - `AGENTS.md` loop string and numbered flow breakdown
 - `docs/agent-playbook.md` three-layer loop summary and mandatory steps section
 - `.github/copilot-instructions.md` mandatory workflow steps
+- `skills/demand-triage/SKILL.md` Small-path requirements
 - `CHANGELOG.md` entry describing the workflow update
 
 Do not leave stale stage names (for example `Read` as a standalone stage after switching to `Discover`) in any of these files.

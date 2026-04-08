@@ -94,11 +94,14 @@ For Small tasks, the following remain required but may be **simplified**:
 
 The following steps **remain mandatory** even for Small tasks:
 
+- **First-response compliance block** — must declare read set, `[SCALE: ...]`, selected path, and checkpoint expectations
 - **Codebase discovery** — at minimum, read the file being changed and its direct dependents
 - **DECISIONS.md check** — verify no contradiction with existing decisions
 - **Validation loop** — run at least the targeted tests for the changed file
 - **Error recovery** — follow the standard protocol if tests fail
 - **Security check** — do not skip even for trivial-looking changes in sensitive areas
+
+Small path means explicit simplification, not implicit skipping. If required fields are omitted, the task is non-conformant even if the code change itself is correct.
 
 ### Medium tasks — full workflow
 

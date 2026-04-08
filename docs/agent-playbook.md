@@ -117,6 +117,17 @@ Every workflow below implicitly includes these steps:
 8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
 9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 
+### First-response compliance block (mandatory)
+
+In the first response of a task, make compliance visible by explicitly stating:
+
+1. **Read set** — which source-of-truth files were read for this task
+2. **Scale classification** — `[SCALE: SMALL|MEDIUM|LARGE]` with 1-2 sentence evidence-based reason and affected files
+3. **Path decision** — whether this task uses Small simplification or Medium/Large planning path, and why
+4. **Checkpoint expectations** — which mandatory checkpoints will apply in this run (or `N/A` with reason)
+
+Do not start implementation before this block is present.
+
 ### Mandatory checkpoint gates
 
 These gates require the agent to **STOP and wait for user approval**:
@@ -143,6 +154,14 @@ If the `demand-triage` skill classifies the task as Small:
 `application-implementer` (with inline 1–2 sentence plan) → targeted validation only
 
 No planning agent, critic, or risk-reviewer required. The implementer reads the file, states the change in 1–2 sentences, implements, and runs targeted tests. See `skills/demand-triage/SKILL.md` for the full list of what is mandatory vs. optional on the Small path.
+
+Small means **simplified**, not **implicit**. Even on the Small path, the following remain explicit and mandatory:
+
+1. First-response compliance block
+2. Structured preamble (inline 1–2 sentences is acceptable)
+3. DECISIONS.md contradiction check outcome
+4. Validation plan and targeted verification result
+5. Mandatory deliverable structure (concise is allowed; omission is not)
 
 ### General application change
 
