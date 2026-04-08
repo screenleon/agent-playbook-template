@@ -118,6 +118,19 @@ Before producing any solution or implementation, agents must explicitly provide 
 
 This must appear in the output before any code or implementation. Do not require or provide detailed internal reasoning.
 
+### Mandatory first-response compliance block
+
+The first response of any implementation task must include a visible compliance block so users can verify process adherence.
+
+Required fields:
+
+1. **Read set** — list the files/rules read before implementation
+2. **Scale** — `[SCALE: SMALL|MEDIUM|LARGE]` and evidence-based reason
+3. **Workflow path** — Small simplification path or Medium/Large planning path, with justification
+4. **Checkpoint map** — mandatory checkpoints that will be used in this task (or `N/A` with reason)
+
+If this block is missing, the workflow is considered not started.
+
 ### Context anchor
 
 At the start of every long task (more than one step or more than one file), agents must produce a context summary:
@@ -179,6 +192,53 @@ Every agent role must produce its final output in this standardized format. This
 
 Roles may add domain-specific sections (e.g., a planner adds "implementation order," a reviewer adds "findings"), but the five sections above are mandatory and must not be omitted. Write "N/A — [reason]" for any section that genuinely does not apply.
 
+### Small-task minimum output contract
+
+Small tasks may simplify depth, but must keep explicit structure. The minimum acceptable output for Small tasks is:
+
+1. Compliance block (from above)
+2. Structured preamble (Assumptions, Constraints, Proposed approach; inline allowed)
+3. DECISIONS.md contradiction check result
+4. Validation plan and targeted verification outcome
+5. Mandatory deliverable structure with concise content and explicit `N/A` where applicable
+
+Small tasks must not skip explicit workflow declaration or verification reporting.
+
+## Feedback loop and quality signals
+
+Process quality must be monitored continuously, not only during one-off reviews.
+
+### Task-end mini retrospective (mandatory)
+
+After the mandatory deliverable and task completion summary, add a short feedback block:
+
+1. **Friction observed** — which rule or step was hardest to follow
+2. **Miss risk** — which required output was most likely to be skipped
+3. **Most useful rule** — which rule prevented drift or rework
+4. **Next improvement** — one concrete wording/process improvement candidate
+
+Keep this to 3-6 lines. This is a process signal, not a long narrative.
+
+### Quality signals (tracked over a rolling window)
+
+Track these metrics every 10 tasks (or weekly, whichever comes first):
+
+1. **Compliance-block completeness rate** — percentage of tasks with all required first-response fields
+2. **Small-path explicitness rate** — percentage of Small tasks that include validation reporting and contradiction-check output
+3. **Scope-expansion reclassification rate** — percentage of tasks reclassified upward after implementation starts
+
+Record results in a concise note (for example in session/repo memory or a team tracking doc).
+
+### Escalation rule for recurring friction
+
+If the same process failure appears 3 times in the rolling window:
+
+1. Update source-of-truth wording (`docs/operating-rules.md` and/or `docs/agent-playbook.md`)
+2. Synchronize tool-specific files (`.github/copilot-instructions.md`, relevant skills)
+3. Add a `CHANGELOG.md` entry describing the process correction
+
+Do not rely on ad-hoc reminders once recurrence is detected.
+
 ## Error recovery
 
 When you encounter a compile error, test failure, or unexpected runtime behavior:
@@ -212,6 +272,7 @@ Minimum sync targets:
 - `AGENTS.md` loop string and numbered flow breakdown
 - `docs/agent-playbook.md` three-layer loop summary and mandatory steps section
 - `.github/copilot-instructions.md` mandatory workflow steps
+- `skills/demand-triage/SKILL.md` Small-path requirements
 - `CHANGELOG.md` entry describing the workflow update
 
 Do not leave stale stage names (for example `Read` as a standalone stage after switching to `Discover`) in any of these files.

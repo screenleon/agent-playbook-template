@@ -41,10 +41,12 @@ Defined in `skills/*/SKILL.md`:
 Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize
 ```
 
+Treat this loop as the **canonical superset**. After Triage, some steps may be simplified or skipped only when explicitly allowed by `docs/agent-playbook.md` and `skills/demand-triage/SKILL.md`.
+
 Every implementation task follows this flow:
 1. **Discover** — understand the codebase first (repo-exploration skill)
 2. **Triage** — classify task scale (Small/Medium/Large) and adapt workflow intensity (demand-triage skill)
-3. **Plan** — use feature-planner for complex work, or confirm scope for simple work
+3. **Plan** — select the applicable path explicitly (Small simplification vs. Medium/Large planning path)
 4. **Critique** — invoke the critic to challenge the plan before the user sees it (required for Medium/Large planning paths)
 5. **Approve** — present plan + critique to the user and wait for explicit approval before implementing when required by checkpoint gates
 6. **Implement** — write code following project conventions; state assumptions/constraints/approach before writing code
@@ -53,6 +55,8 @@ Every implementation task follows this flow:
 9. **Repeat** — iterate until tests pass and code is verified
 10. **Record** — update decision log and architecture docs
 11. **Summarize** — produce a brief task completion summary for memory and handoff continuity
+
+Before implementation begins, the first response must make workflow selection visible by stating: files/docs read, triage scale, selected path, checkpoint map/checkpoint expectations, and why that path is valid.
 
 Core rules:
 

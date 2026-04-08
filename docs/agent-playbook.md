@@ -116,6 +116,18 @@ Every workflow below implicitly includes these steps:
 7. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
 8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
 9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+10. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
+
+### First-response compliance block (mandatory)
+
+In the first response of a task, make compliance visible by explicitly stating:
+
+1. **Read set** — which source-of-truth files were read for this task
+2. **Scale classification** — `[SCALE: SMALL|MEDIUM|LARGE]` with 1-2 sentence evidence-based reason
+3. **Path decision** — whether this task uses Small simplification or Medium/Large planning path, and why
+4. **Checkpoint expectations** — which mandatory checkpoints will apply in this run (or `N/A` with reason)
+
+Do not start implementation before this block is present.
 
 ### Mandatory checkpoint gates
 
@@ -144,6 +156,14 @@ If the `demand-triage` skill classifies the task as Small:
 
 No planning agent, critic, or risk-reviewer required. The implementer reads the file, states the change in 1–2 sentences, implements, and runs targeted tests. See `skills/demand-triage/SKILL.md` for the full list of what is mandatory vs. optional on the Small path.
 
+Small means **simplified**, not **implicit**. Even on the Small path, the following remain explicit and mandatory:
+
+1. First-response compliance block
+2. Structured preamble (inline 1–2 sentences is acceptable)
+3. DECISIONS.md contradiction check outcome
+4. Validation plan and targeted verification result
+5. Mandatory deliverable structure (concise is allowed; omission is not)
+
 ### General application change
 
 If it is bounded and low ambiguity (Medium scale):
@@ -167,6 +187,25 @@ If it also changes logic or flow:
 ### Documentation-heavy change
 
 `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` when technical correctness matters
+
+## Feedback loop execution
+
+Use feedback loop outputs to improve process wording and reduce repeat misses.
+
+### Minimum output per completed task
+
+After the task completion summary, include:
+
+1. Friction observed
+2. Miss risk
+3. Most useful rule
+4. Next improvement candidate
+
+### Cadence and ownership
+
+- Review quality signals every 10 tasks (or weekly)
+- `documentation-architect` owns wording updates and synchronization when recurring friction is detected
+- `risk-reviewer` should flag repeated process misses even when code-level outcomes are correct
 
 ## Context isolation
 
