@@ -19,6 +19,12 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 - reusable skills you can adapt into your own agent ecosystem
 - repo-wide Copilot instructions
 
+## Current asset inventory
+
+- Claude subagents: 8 (`.claude/agents/*.md`)
+- Reusable skills: 11 (`skills/*/SKILL.md`)
+- Source-of-truth docs: `AGENTS.md`, `docs/operating-rules.md`, `docs/agent-playbook.md`
+
 ## Required vs optional files
 
 ### Required
@@ -29,6 +35,7 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 
 ### Strongly recommended
 
+- `DECISIONS.md`
 - `.github/copilot-instructions.md`
 - `.claude/agents/`
 - `skills/`
@@ -48,6 +55,8 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 5. Keep, rename, or remove subagents in `.claude/agents/` based on the tools your team actually uses.
 6. Keep, rename, or remove skills in `skills/` based on the workflows you repeat often.
 7. Update `.github/copilot-instructions.md` so it reflects the same role model.
+8. Keep `DECISIONS.md` active from day one so agents can run contradiction checks before planning/implementation.
+9. Apply memory lifecycle rules from `skills/memory-and-state/SKILL.md` (archive stale decisions when thresholds are hit and use selective reads for active vs. archived decisions).
 
 ## Customization checklist
 

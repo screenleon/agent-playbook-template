@@ -5,7 +5,7 @@
 All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
-2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, plus domain skills (planning, backend, frontend, design, docs).
+2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, plus domain skills (planning, backend, frontend, design, docs).
 3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**.
 
 ## Repository asset map
@@ -113,32 +113,19 @@ Every workflow below implicitly includes these steps:
 4. **Validate** — run the `test-and-fix-loop` skill after every code change. For Small tasks, run only targeted tests for the changed file
 5. **Recover** — use the `error-recovery` skill when anything fails
 6. **Record** — use the `memory-and-state` skill to log decisions, update architecture docs, and check whether memory lifecycle maintenance is needed (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
-7. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
-8. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
-9. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
-10. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
+7. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
+8. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
+9. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
+10. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+11. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
 ### First-response compliance block (mandatory)
 
-In the first response of a task, make compliance visible by explicitly stating:
-
-1. **Read set** — which source-of-truth files were read for this task
-2. **Scale classification** — `[SCALE: SMALL|MEDIUM|LARGE]` with 1-2 sentence evidence-based reason
-3. **Path decision** — whether this task uses Small simplification or Medium/Large planning path, and why
-4. **Checkpoint expectations** — which mandatory checkpoints will apply in this run (or `N/A` with reason)
-
-Do not start implementation before this block is present.
+Before starting implementation, publish the compliance block defined in `docs/operating-rules.md` → Mandatory first-response compliance block. Required fields: read set, scale classification, path decision, checkpoint expectations.
 
 ### Mandatory checkpoint gates
 
-These gates require the agent to **STOP and wait for user approval**:
-
-- **After planning, before implementation** — the planning agent presents its plan; the critic challenges it; then the user approves. Implementation agents do not start until the user confirms.
-- **On scope expansion** — if implementation reveals the need to change more modules or contracts than planned, stop and request approval for the expanded scope.
-- **On contradiction** — if the proposed work contradicts `DECISIONS.md`, stop and present the conflict.
-- **On stuck** — after 3 failed fix attempts, stop and escalate.
-
-See `docs/operating-rules.md` → Human checkpoint gates for the full list and format.
+Agents must STOP and wait for user approval at the gates defined in `docs/operating-rules.md` → Human checkpoint gates. Key gates: after planning (before implementation), on scope expansion, on contradiction with `DECISIONS.md`, and after 3 failed fix attempts.
 
 ### New feature
 

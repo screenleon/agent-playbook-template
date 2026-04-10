@@ -8,9 +8,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Prompt budget trimming guide** (`docs/adoption-guide.md`) — five-step guide for adopting projects to self-trim: remove unused roles, remove unused skills, simplify format templates, configure Layer 2 loading strategy, and set up `prompt-budget.yml`. Includes per-action token savings estimates.
+- **`prompt-budget.yml` configuration** (`skills/prompt-cache-optimization/SKILL.md`) — reference schema and agent usage rules for declaring enabled/disabled roles and skills, token budget targets per layer, and trimming thresholds. Agents read this file to respect the declared budget.
+- **Format templates section** (`docs/agent-templates.md`) — canonical checkpoint, handoff artifact, context anchor, and deliverable templates moved from `docs/operating-rules.md`.
+- **New skill: `prompt-cache-optimization`** (`skills/prompt-cache-optimization/SKILL.md`) — four-layer instruction loading order (static rules → stable skills → project state → volatile context) to maximize prompt cache hit rates across all LLM providers. Includes canonical skill sets per task type, file size guidelines, provider-specific notes (Anthropic, OpenAI, Google, vLLM/SGLang), tool-specific adaptation patterns, and conformance self-check.
+- **Tool definition stability** (`skills/prompt-cache-optimization/SKILL.md`) — new section covering deterministic tool ordering, task-type tool subsets, stable schemas, and the tool registry pattern for custom API callers.
+- **Conversation memory tiering** (`skills/memory-and-state/SKILL.md`) — three-tier model: short-term (3–5 raw turns), mid-term (compressed summaries), long-term (persistent retrieval with optional RAG). Includes token budget guidelines (~8,500 tokens total).
+- **Cache-aware loading step** (`docs/agent-playbook.md`) — added step 7 to mandatory workflow steps referencing the prompt cache skill.
+- **Loading order hint** (`.github/copilot-instructions.md`) — added instruction for Copilot agents to follow the four-layer loading order.
+
 ### Changed
 
-- No changes yet.
+- **Format template extraction** (`docs/operating-rules.md`) — replaced four verbose format blocks (checkpoint, handoff artifact, context anchor, deliverable structure) with one-line descriptions referencing `docs/agent-templates.md`. Saves ~500 tokens from Layer 1.
+- **Common preamble replaced** (`docs/agent-templates.md`) — replaced ~400-token preamble with compact note referencing `docs/operating-rules.md` to eliminate duplication.
+- **Demand classification condensed** (`docs/agent-templates.md`) — replaced inline criteria duplication with reference to `skills/demand-triage/SKILL.md`.
+- **Cross-file deduplication** — collapsed duplicate definitions of three-layer architecture (`AGENTS.md`), instruction loading order (`docs/operating-rules.md`), compliance block and checkpoint gates (`docs/agent-playbook.md`), and mandatory workflow steps (`.github/copilot-instructions.md`). Each concept now has one source of truth; other files use brief references + links. Estimated savings: ~4,050 tokens per request.
+- **Instruction loading order** (`docs/operating-rules.md`) — condensed to a 3-line summary referencing `skills/prompt-cache-optimization/SKILL.md` as the single source.
+- **Three-layer architecture** (`AGENTS.md`) — replaced full definition with a compact index referencing `docs/agent-playbook.md`.
+- **Compliance block and checkpoint gates** (`docs/agent-playbook.md`) — replaced inline definitions with references to `docs/operating-rules.md`.
+- **Mandatory workflow** (`.github/copilot-instructions.md`) — streamlined from 13 steps to 11, aligned with canonical loop.
+- **Skill count** (`README.md`) — updated from 10 to 11.
 
 ---
 

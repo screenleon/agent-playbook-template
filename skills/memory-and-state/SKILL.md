@@ -56,6 +56,68 @@ For in-progress tasks that span multiple agent interactions:
 
 This prevents re-discovery and reduces repeated mistakes within a session.
 
+## Conversation memory tiering
+
+Within a single conversation or agent session, manage history in three tiers to prevent context window exhaustion while preserving relevant information.
+
+### Tier 1 — Short-term (raw recent turns)
+
+Keep the most recent **3–5 turns** of conversation as raw, unmodified content. This preserves full fidelity for the active working context.
+
+- Adjust the window size based on turn complexity: if turns are long (>500 tokens each), reduce to 2–3 turns.
+- This tier occupies Layer 4 (volatile context) in the prompt cache loading order.
+
+### Tier 2 — Mid-term (compressed summaries)
+
+When turns age out of the short-term window, compress them into structured summaries:
+
+```
+## Conversation summary (turns 1–N)
+- **Decisions made**: [list]
+- **Files changed**: [list]
+- **Errors encountered and resolved**: [list]
+- **Open questions**: [list]
+- **Current plan state**: [brief]
+```
+
+Rules:
+- Produce a summary when the short-term window shifts (i.e., every time a turn exits the window).
+- For batch efficiency, summarize in groups of 3–5 turns rather than one at a time.
+- Store summaries in session memory. The most recent summary replaces (not appends to) older summaries.
+- This tier integrates with the existing context compaction protocol in `docs/operating-rules.md`.
+
+### Tier 3 — Long-term (persistent retrieval)
+
+For knowledge that persists beyond a single session, use the existing persistent stores:
+
+| Store | Content | Retrieval |
+|-------|---------|-----------|
+| `DECISIONS.md` | Architectural and behavioral decisions | Read at task start |
+| `ARCHITECTURE.md` | Module map, interfaces, data flow | Read when working on unfamiliar modules |
+| Repo memory files | Reusable patterns, component-level notes | Search by module name or task type keywords |
+| `DECISIONS_ARCHIVE.md` | Inactive past decisions | Search only for legacy module work |
+
+**Advanced (optional):** For teams with vector database or embedding infrastructure, long-term memory can be augmented with semantic retrieval (RAG):
+
+- Index `DECISIONS.md`, `ARCHITECTURE.md`, session summaries, and past task completion summaries as embeddings.
+- At task start, retrieve the top-K most relevant entries by query similarity instead of reading full files.
+- This is an optimization for large codebases where file-based reads exceed practical token budgets. It is not required for the playbook to function.
+
+### Token budget guideline
+
+| Tier | Target budget | Enforcement |
+|------|--------------|-------------|
+| Short-term (raw turns) | ≤ 4,000 tokens | Trim oldest turn when exceeded |
+| Mid-term (summary) | ≤ 1,500 tokens | Regenerate summary with tighter compression |
+| Long-term (persistent reads) | ≤ 3,000 tokens per task | Use selective read strategy (see below) |
+| **Total conversation memory** | **≤ 8,500 tokens** | Roughly 6–7% of a 128K context window |
+
+### Interaction with prompt cache optimization
+
+Conversation memory is entirely within Layer 4 (volatile context). It does not affect the cached prefix in Layers 1–3. However, keeping conversation memory compact:
+- Leaves more context window for actual code and tool outputs.
+- Reduces per-request cost even when cache misses occur.
+
 ## Context anchor protocol
 
 For any task spanning more than one step or more than one file, maintain a context anchor using the canonical template in `docs/operating-rules.md`.

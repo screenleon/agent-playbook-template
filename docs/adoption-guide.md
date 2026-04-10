@@ -110,6 +110,107 @@ Good candidates to remove early:
 - `ui-image-implementer` in a backend-only repo
 - `documentation-architect` if documentation is not a repeated workflow yet
 
+## Prompt budget trimming
+
+The full template loads all skills, roles, and format templates in every request. When adopted by a real project, trimming unused content reduces per-request token cost significantly.
+
+### Step 1: Remove unused role templates
+
+Delete agent definitions and templates for roles your project does not use. Common removals:
+
+| If your project is… | Safe to remove |
+|----------------------|----------------|
+| Frontend-only | `backend-architect` agent + template |
+| Backend-only | `ui-image-implementer` agent + template, `skills/design-to-code/` |
+| Small team (1–2 devs) | `critic`, `risk-reviewer` (inline reviews instead) |
+| No documentation workflow | `documentation-architect` agent + template, `skills/documentation-architecture/` |
+
+Update `docs/agent-playbook.md` routing table and `.github/copilot-instructions.md` after removing roles.
+
+### Step 2: Remove unused skills
+
+Each skill adds ~1,500–3,500 tokens when loaded. Delete skill folders that do not match your workflow:
+
+- `skills/design-to-code/` — only needed for screenshot-driven UI work
+- `skills/documentation-architecture/` — only needed for docs-as-deliverable workflows
+- `skills/feature-planning/` — can be removed if all work is Small/Medium scale
+- `skills/backend-change-planning/` — can be removed in frontend-only projects
+
+### Step 3: Simplify format templates
+
+After your team is comfortable with the workflow, consider condensing verbose format templates:
+
+- **Deliverable structure** — if your team always produces the same 3 sections, reduce the 5-section template to match
+- **Checkpoint format** — if your tool enforces approval natively, the checkpoint template can be shortened
+- **Handoff artifact** — if you rarely chain agents, this can be removed entirely
+
+### Step 4: Configure Layer 2 loading strategy
+
+Use the prompt cache optimization skill (`skills/prompt-cache-optimization/SKILL.md`) to choose which skills load per task type. For small projects:
+
+- **Minimal set**: `demand-triage` + `repo-exploration` only (all task types)
+- **Standard set**: add `test-and-fix-loop` for implementation tasks
+- **Full set**: use the canonical skill sets from the prompt cache skill (recommended for teams > 3)
+
+### Step 5: Set a token budget with `prompt-budget.yml`
+
+Create a `prompt-budget.yml` at the repo root to declare your project's prompt configuration:
+
+```yaml
+# prompt-budget.yml — Prompt budget configuration for this project
+# Agents read this file to determine which skills and roles to load.
+
+budget:
+  layer1_target_tokens: 3000    # Target for static rules (operating-rules + agent-playbook)
+  layer2_max_tokens: 6000       # Max for skills loaded per request
+  layer3_max_tokens: 3000       # Max for DECISIONS.md + ARCHITECTURE.md
+
+roles:
+  enabled:
+    - feature-planner
+    - application-implementer
+    - risk-reviewer
+    - critic
+  disabled:
+    - backend-architect          # Not needed: frontend-only project
+    - ui-image-implementer       # Not needed: no design-to-code workflow
+    - documentation-architect    # Not needed: docs are informal
+
+skills:
+  always_load:
+    - demand-triage
+    - repo-exploration
+  on_demand:
+    - test-and-fix-loop
+    - error-recovery
+    - memory-and-state
+    - prompt-cache-optimization
+  disabled:
+    - design-to-code             # Not needed
+    - documentation-architecture # Not needed
+    - feature-planning           # All tasks are Small/Medium
+    - backend-change-planning    # Frontend-only
+
+trimming:
+  decisions_archive_threshold_kb: 30
+  decisions_archive_threshold_entries: 50
+  session_memory_max_files: 10
+```
+
+This file is informational — agents use it as guidance to select which skills and role templates to load. It does not enforce hard limits but makes the intended budget visible and auditable.
+
+### Trimming impact estimate
+
+| Action | Estimated savings per request |
+|--------|-------------------------------|
+| Remove 1 unused role template | ~200–400 tokens |
+| Remove 1 unused skill | ~1,500–3,500 tokens |
+| Condense format templates | ~300–500 tokens |
+| Configure Layer 2 minimal set | ~3,000–6,000 tokens vs full set |
+| Total (aggressive trim) | ~5,000–10,000 tokens |
+
+For a project running 50 agent requests/day, aggressive trimming can save 250K–500K tokens/day.
+
 ## Recommended maintenance loop
 
 1. Update the source-of-truth docs first.
