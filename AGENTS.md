@@ -11,52 +11,13 @@ Read `docs/external-practices-notes.md` only when evolving the framework itself.
 
 ## Three-layer architecture
 
-### Layer 1: Rules (constraints)
+See `docs/agent-playbook.md` → Three-layer architecture for the full definition. Summary:
 
-Defined in `docs/operating-rules.md`:
-- Safety, scope, and validation rules
-- Codebase discovery requirements (repo-aware)
-- Validation loop (write → test → fix → repeat)
-- Error recovery protocol
-- Project-specific constraints (must be filled per repo)
-- Decision log expectations
+1. **Rules** — `docs/operating-rules.md` (safety, scope, validation, constraints)
+2. **Skills** — `skills/*/SKILL.md` (11 skills: demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state, feature-planning, backend-change-planning, application-implementation, design-to-code, documentation-architecture, prompt-cache-optimization)
+3. **Loop** — `Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`
 
-### Layer 2: Skills (capabilities)
-
-Defined in `skills/*/SKILL.md`:
-- `demand-triage` — classify task scale and adapt workflow intensity
-- `repo-exploration` — understand the codebase before coding
-- `test-and-fix-loop` — enforce iterative validation after code changes
-- `error-recovery` — diagnose and fix compile errors, test failures, runtime issues
-- `memory-and-state` — maintain persistent context across sessions
-- `feature-planning` — system-level planning before implementation
-- `backend-change-planning` — contract-first backend design
-- `application-implementation` — general product implementation
-- `design-to-code` — screenshot/mockup to code
-- `documentation-architecture` — maintainable documentation
-
-### Layer 3: Loop (workflow)
-
-```
-Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize
-```
-
-Treat this loop as the **canonical superset**. After Triage, some steps may be simplified or skipped only when explicitly allowed by `docs/agent-playbook.md` and `skills/demand-triage/SKILL.md`.
-
-Every implementation task follows this flow:
-1. **Discover** — understand the codebase first (repo-exploration skill)
-2. **Triage** — classify task scale (Small/Medium/Large) and adapt workflow intensity (demand-triage skill)
-3. **Plan** — select the applicable path explicitly (Small simplification vs. Medium/Large planning path)
-4. **Critique** — invoke the critic to challenge the plan before the user sees it (required for Medium/Large planning paths)
-5. **Approve** — present plan + critique to the user and wait for explicit approval before implementing when required by checkpoint gates
-6. **Implement** — write code following project conventions; state assumptions/constraints/approach before writing code
-7. **Test** — run the validation loop (test-and-fix-loop skill)
-8. **Fix** — use error-recovery skill if anything fails
-9. **Repeat** — iterate until tests pass and code is verified
-10. **Record** — update decision log and architecture docs
-11. **Summarize** — produce a brief task completion summary for memory and handoff continuity
-
-Before implementation begins, the first response must make workflow selection visible by stating: files/docs read, triage scale, selected path, checkpoint map/checkpoint expectations, and why that path is valid.
+Before implementation begins, the first response must include a compliance block: files/docs read, triage scale, selected path, and checkpoint expectations. See `docs/operating-rules.md` → Mandatory first-response compliance block for the required fields.
 
 Core rules:
 

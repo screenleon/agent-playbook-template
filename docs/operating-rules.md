@@ -29,17 +29,7 @@ Each conceptual role (planner, architect, implementer, critic, reviewer) should 
 
 ### Handoff artifact
 
-When one agent's work feeds into the next, pass a **structured handoff artifact** — not raw conversation history. The handoff artifact must contain:
-
-```
-## Handoff: [source role] → [target role]
-- **Task**: [one-sentence objective]
-- **Deliverable**: [what the source role produced]
-- **Key decisions**: [decisions made, with references to DECISIONS.md entries]
-- **Open risks**: [unresolved risks or questions]
-- **Constraints for next step**: [what the target role must respect]
-- **Attached output**: [the actual plan, review, or implementation summary]
-```
+When one agent's work feeds into the next, pass a **structured handoff artifact** — not raw conversation history. Include: task, deliverable, key decisions (with DECISIONS.md refs), open risks, constraints for next step, and attached output. See `docs/agent-templates.md` → Handoff artifact template for the full format.
 
 ### Anti-patterns (banned)
 
@@ -65,20 +55,7 @@ Agents must **STOP and wait for explicit user approval** at these points. Do not
 
 ### Checkpoint format
 
-When stopping for approval, present:
-
-```
-## Checkpoint: [gate name]
-
-**Current state**: [what has been done so far]
-**Proposal**: [what will happen next]
-**Risks**: [what could go wrong]
-**Decision needed**: [specific yes/no or choice the user must make]
-
-Waiting for approval before proceeding.
-```
-
-Never silently skip a mandatory checkpoint. If a tool does not support interactive approval, write the checkpoint to the output and stop.
+When stopping for approval, present: gate name, current state, proposal, risks, and decision needed. See `docs/agent-templates.md` → Checkpoint template for the full format. Never silently skip a mandatory checkpoint.
 
 ## Codebase discovery (repo-aware)
 
@@ -133,18 +110,7 @@ If this block is missing, the workflow is considered not started.
 
 ### Context anchor
 
-At the start of every long task (more than one step or more than one file), agents must produce a context summary:
-
-```
-## Context anchor
-- **Objective**: [what we are trying to achieve]
-- **Current step**: [which step we are on, e.g., "3 of 7"]
-- **Completed so far**: [brief list of what is done]
-- **Remaining**: [brief list of what is left]
-- **Active constraints**: [key constraints from DECISIONS.md or project rules]
-```
-
-Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan.
+At the start of every long task (more than one step or more than one file), produce a context summary with: objective, current step, completed items, remaining items, and active constraints. Update before each major step. See `docs/agent-templates.md` → Context anchor template for the format.
 
 ### Context compaction
 
@@ -154,6 +120,10 @@ Long tasks cause context growth that increases cost and reduces model accuracy. 
 - Continue subsequent work from the summary, not from the full conversation history.
 - For inter-agent handoffs, the compaction summary becomes the handoff artifact defined in the Context isolation section above.
 - If a tool or agent session does not support explicit compaction, produce the summary in the output and instruct the next step to use it as primary input.
+
+### Instruction loading order
+
+Load instruction content in layer order: static rules → stable skills → project state → volatile context. Never reorder layers; never inject per-request content into the static or skill layers. See `skills/prompt-cache-optimization/SKILL.md` for the full four-layer model, canonical skill sets, provider-specific notes, and file size guidelines.
 
 ### Output completeness check
 
@@ -167,30 +137,7 @@ If a section is not applicable, write "N/A — [reason]" instead of omitting it.
 
 ### Mandatory deliverable structure
 
-Every agent role must produce its final output in this standardized format. This prevents freeform drift and ensures decision-quality information reaches the user.
-
-```
-## Deliverable: [title]
-
-### Proposal
-[What is being proposed — the solution, plan, or finding]
-
-### Alternatives considered
-[At least one alternative approach and why it was not chosen]
-
-### Pros / Cons
-| Pros | Cons |
-|------|------|
-| ...  | ...  |
-
-### Risks
-[Each risk with likelihood, impact, and mitigation — or "None identified"]
-
-### Recommendation
-[Clear, actionable recommendation for the user or the next agent]
-```
-
-Roles may add domain-specific sections (e.g., a planner adds "implementation order," a reviewer adds "findings"), but the five sections above are mandatory and must not be omitted. Write "N/A — [reason]" for any section that genuinely does not apply.
+Every agent role must produce its final output using the Deliverable template in `docs/agent-templates.md`. The five required sections are: Proposal, Alternatives considered, Pros/Cons, Risks, Recommendation. Roles may add domain-specific sections but must not omit these five. Write "N/A — [reason]" for any section that genuinely does not apply.
 
 ### Small-task minimum output contract
 

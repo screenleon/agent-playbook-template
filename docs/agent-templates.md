@@ -1,46 +1,82 @@
 # Agent Templates
 
-## Common preamble (include in every agent prompt)
+## Format templates
+
+These templates are the canonical formats referenced by `docs/operating-rules.md`. Agents should use these exact structures when producing structured output.
+
+### Checkpoint template
 
 ```text
-Before starting any implementation:
+## Checkpoint: [gate name]
 
-1. Read docs/operating-rules.md for mandatory rules.
-2. Read DECISIONS.md (if it exists) for prior architectural decisions.
-   - Check whether your proposed changes contradict any existing decision.
-   - If a contradiction exists, STOP and present it to the user before proceeding.
-3. Discover the codebase:
-   - Read the files you will change and their direct dependents.
-   - Identify existing patterns (naming, error handling, logging, test style).
-   - Check the project-specific constraints in docs/operating-rules.md.
-4. Classify the task scale using the demand-triage skill:
-   - Read skills/demand-triage/SKILL.md for classification criteria.
-   - Based on evidence from codebase discovery, classify as Small, Medium, or Large.
-   - State the classification with brief reasoning: [SCALE: SMALL|MEDIUM|LARGE]
-   - Adapt workflow intensity accordingly (see demand-triage skill for details).
-5. Before producing any solution, explicitly state:
-   - Assumptions: what you are assuming about the request or codebase
-   - Constraints: what limits apply (from DECISIONS.md, project rules, or the request)
-   - Proposed approach: the logic or steps you will follow
-   (For Small tasks, this may be inline — 1-2 sentences instead of a separate section.)
-6. Follow the validation loop after every code change:
-   - Run tests → run static analysis → fix errors → repeat until green.
-   - Never treat a change as done until verification passes.
-   - For Small tasks, run at least the targeted tests for the changed file.
-7. If you encounter errors, follow the error recovery protocol in docs/operating-rules.md.
-8. After making architectural or behavioral decisions, append them to DECISIONS.md.
-9. Each role runs in its own context. If you receive a handoff artifact from a
-   previous role, use it as your primary input — do not rely on prior conversation.
-   When your task is done, produce a handoff artifact for the next role.
-10. After completing the task, produce a task completion summary
-    (see the Task completion summary template below).
+**Current state**: [what has been done so far]
+**Proposal**: [what will happen next]
+**Risks**: [what could go wrong]
+**Decision needed**: [specific yes/no or choice the user must make]
 
-Deliverable rule reminder:
-- The task completion summary is additional to the mandatory deliverable structure
-   required by docs/operating-rules.md.
-- For Small tasks, keep the mandatory structure concise; do not replace it with
-   summary-only output.
+Waiting for approval before proceeding.
 ```
+
+If a tool does not support interactive approval, write the checkpoint to the output and stop.
+
+### Handoff artifact template
+
+```text
+## Handoff: [source role] → [target role]
+- **Task**: [one-sentence objective]
+- **Deliverable**: [what the source role produced]
+- **Key decisions**: [decisions made, with references to DECISIONS.md entries]
+- **Open risks**: [unresolved risks or questions]
+- **Constraints for next step**: [what the target role must respect]
+- **Attached output**: [the actual plan, review, or implementation summary]
+```
+
+### Context anchor template
+
+```text
+## Context anchor
+- **Objective**: [what we are trying to achieve]
+- **Current step**: [which step we are on, e.g., "3 of 7"]
+- **Completed so far**: [brief list of what is done]
+- **Remaining**: [brief list of what is left]
+- **Active constraints**: [key constraints from DECISIONS.md or project rules]
+```
+
+### Deliverable template
+
+```text
+## Deliverable: [title]
+
+### Proposal
+[What is being proposed — the solution, plan, or finding]
+
+### Alternatives considered
+[At least one alternative approach and why it was not chosen]
+
+### Pros / Cons
+| Pros | Cons |
+|------|------|
+| ...  | ...  |
+
+### Risks
+[Each risk with likelihood, impact, and mitigation — or "None identified"]
+
+### Recommendation
+[Clear, actionable recommendation for the user or the next agent]
+```
+
+## Agent preamble
+
+> **Note**: Ensure `docs/operating-rules.md` is loaded or read as Layer 1 before using these templates. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools. In tools that already auto-load `docs/operating-rules.md`, do not duplicate these instructions in the system prompt.
+
+Key steps (see `docs/operating-rules.md` for full definitions):
+
+1. Read `docs/operating-rules.md` and `DECISIONS.md`
+2. Discover the codebase
+3. Classify task scale (`skills/demand-triage/SKILL.md`)
+4. State assumptions, constraints, proposed approach
+5. Follow validation loop after every code change
+6. Produce task completion summary
 
 ## Task intake
 
@@ -423,18 +459,10 @@ For Medium/Large tasks: this summary also feeds into documentation sync checks.
 
 ## Demand classification
 
-```text
-When classifying task scale, use this format:
+> **Note**: The full classification criteria, evidence rules, and scale thresholds are defined in `skills/demand-triage/SKILL.md`. Use this short format for output:
 
+```text
 [SCALE: SMALL | MEDIUM | LARGE]
 Reason: [1–2 sentences based on evidence from codebase discovery]
 Files affected: [list]
-
-Classification criteria (from skills/demand-triage/SKILL.md):
-- Small: single file, no contract/schema/auth/security changes, well-understood
-- Medium: 2–5 files within one module, no breaking changes or migrations
-- Large: multi-module, architecture change, breaking changes, auth/security/migration
-
-If uncertain, default to Medium.
-Hard blockers that force non-Small: auth, security, schema migration, breaking changes.
 ```
