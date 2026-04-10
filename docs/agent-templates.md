@@ -67,7 +67,7 @@ If a tool does not support interactive approval, write the checkpoint to the out
 
 ## Agent preamble
 
-> **Note**: Agents already receive mandatory workflow steps via `docs/operating-rules.md` (read automatically as Layer 1). The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools. Do not duplicate these into system prompts that already load operating-rules.md.
+> **Note**: Ensure `docs/operating-rules.md` is loaded or read as Layer 1 before using these templates. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools. In tools that already auto-load `docs/operating-rules.md`, do not duplicate these instructions in the system prompt.
 
 Key steps (see `docs/operating-rules.md` for full definitions):
 

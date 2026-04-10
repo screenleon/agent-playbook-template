@@ -207,5 +207,5 @@ Before completing a task where this skill applies, verify:
 - [ ] Skills were loaded in alphabetical order within Layer 2
 - [ ] DECISIONS.md and project state files are in Layer 3, not Layer 1 or 2
 - [ ] Volatile content (user query, current file, session notes) is in Layer 4 only
-- [ ] No single instruction file exceeds 8 KB
+- [ ] Always-loaded instruction files stay within the 8 KB guideline; justified exceptions are limited to on-demand skills
 - [ ] DECISIONS.md is within the 30 KB threshold (or archive has been triggered)

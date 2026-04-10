@@ -138,7 +138,9 @@ Each skill adds ~1,500–3,500 tokens when loaded. Delete skill folders that do 
 
 ### Step 3: Simplify format templates
 
-After your team is comfortable with the workflow, consider condensing verbose format templates:
+After your team is comfortable with the workflow, consider condensing verbose format templates.
+
+If you change or remove any template structure here, also update the corresponding requirements in `docs/operating-rules.md` (and any other repo rules documents) so the documented rules stay consistent with the templates your team is expected to use.
 
 - **Deliverable structure** — if your team always produces the same 3 sections, reduce the 5-section template to match
 - **Checkpoint format** — if your tool enforces approval natively, the checkpoint template can be shortened

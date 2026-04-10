@@ -120,9 +120,9 @@ Conversation memory is entirely within Layer 4 (volatile context). It does not a
 
 ## Context anchor protocol
 
-For any task spanning more than one step or more than one file, maintain a context anchor using the canonical template in `docs/operating-rules.md`.
+For any task spanning more than one step or more than one file, maintain a context anchor using the canonical template in `docs/agent-templates.md` → Context anchor template.
 
-Do not duplicate or redefine the template here; treat `docs/operating-rules.md` as the single source of truth for the anchor format and fields.
+Do not duplicate or redefine the template here; treat `docs/agent-templates.md` as the single source of truth for the anchor format.
 
 Update this anchor before each major step. This prevents drift by forcing the agent to re-read the plan and current state.
 
@@ -132,15 +132,7 @@ Before making any decision, check `DECISIONS.md` for conflicts:
 
 1. Read the full decision log
 2. Compare each existing entry against the proposed change
-3. If a conflict exists, present it using this format:
-
-```markdown
-## Contradiction detected
-- **Existing decision**: [date and title]
-- **Proposed change**: [what the current task wants to do]
-- **Conflict**: [why these are incompatible]
-- **Options**: (a) follow existing decision, (b) reverse existing decision with justification
-```
+3. If a conflict exists, state: the existing decision (date + title), the proposed change, why they conflict, and options (follow existing or reverse with justification)
 
 STOP and wait for user decision. Do not resolve contradictions autonomously.
 
@@ -170,40 +162,13 @@ STOP and wait for user decision. Do not resolve contradictions autonomously.
 
 ## Categorized memory structure
 
-Organize persistent memory into categories to enable efficient retrieval, especially for Small tasks where speed matters:
+| Category | Content | Primary store | Query when |
+|----------|---------|---------------|------------|
+| Project-level | Architectural decisions, global conventions, tech choices | `DECISIONS.md`, `ARCHITECTURE.md` | Starting any task, making architectural choices |
+| Component-level | Per-module patterns, quirks, module-specific constraints | Module READMEs, session/repo memory files | Working on a specific or unfamiliar module (search by module name/path) |
+| Change-pattern | Recurring fix patterns, validated approaches for similar tasks | Session/repo memory files | Starting a Small task (search by task-type keywords, e.g., "validation", "config update") |
 
-### Project-level memory
-
-Architectural decisions, global conventions, technology choices, build/deploy patterns.
-
-- Primary store: `DECISIONS.md`, `ARCHITECTURE.md`
-- Query when: starting any task, making architectural choices
-
-### Component-level memory
-
-Per-module patterns, common conventions, known quirks, module-specific constraints.
-
-- Primary store: inline comments, module READMEs, session notes, or repo memory files
-- Query when: working on a specific module, especially an unfamiliar one
-- How to search: look for session notes or repo memory files related to the module name or directory path
-
-### Change-pattern memory
-
-Recurring task patterns — how similar small changes were handled before, common fix patterns, validated approaches.
-
-- Primary store: session notes or repo memory files
-- Query when: starting a Small task — check if a similar change has been done before and reuse the approach
-- Write when: completing a task that establishes a reusable pattern (captured in the task completion summary)
-- How to search: look for session notes or repo memory containing keywords from the current task type (e.g., "validation", "config update", "copy change")
-
-### Memory retrieval for Small tasks
-
-When the `demand-triage` skill classifies a task as Small, **before implementing**, check for similar past changes:
-
-1. Search session notes and repo memory for the affected module name or file path
-2. Search for keywords matching the task type (e.g., "add validation", "fix typo", "update config")
-3. If a matching pattern is found, follow it rather than re-analyzing from scratch
-4. If no match exists, proceed normally — then capture the pattern in the task completion summary
+**Small task retrieval**: Before implementing a Small task, search session/repo memory for the affected module or task-type keywords. If a matching pattern exists, follow it. If not, proceed normally and capture the pattern in the task completion summary.
 
 ## Memory lifecycle management
 
@@ -228,29 +193,14 @@ Never archive based on date alone — a 2-year-old decision with active constrai
 
 #### Archive file format
 
-```markdown
-# Decision Archive
-
-Archived decisions that no longer constrain current work.
-For active decisions, see `DECISIONS.md`.
-
-<!-- Each entry keeps its original format and date. -->
-<!-- Add "Archived on: YYYY-MM-DD" and reason below each entry. -->
-
-## YYYY-MM-DD: [Original decision title]
-- **Context**: [original]
-- **Decision**: [original]
-- **Alternatives considered**: [original]
-- **Constraints introduced**: [original]
-- **Archived on**: YYYY-MM-DD — [why this is no longer active, e.g., "replaced by decision X" or "feature removed"]
-```
+`DECISIONS_ARCHIVE.md` uses the same entry format as `DECISIONS.md`, with one addition: append `- **Archived on**: YYYY-MM-DD — [reason, e.g., "replaced by decision X"]` to each entry.
 
 #### Safety checks before archiving
 
-- [ ] Every entry marked for archive has constraints that are verifiably no longer enforced
-- [ ] No current code imports, references, or depends on the archived pattern
-- [ ] The archive entry includes the reason it was archived
-- [ ] `DECISIONS.md` still contains all decisions with active constraints after the move
+- [ ] Archived entry's constraints are verifiably no longer enforced
+- [ ] No current code depends on the archived pattern
+- [ ] Archive entry includes the reason
+- [ ] `DECISIONS.md` retains all entries with active constraints
 
 ### Selective read strategy
 

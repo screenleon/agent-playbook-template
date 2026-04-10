@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [0.7.0] - 2026-04-10
 
 ### Added
 
@@ -30,6 +30,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Compliance block and checkpoint gates** (`docs/agent-playbook.md`) — replaced inline definitions with references to `docs/operating-rules.md`.
 - **Mandatory workflow** (`.github/copilot-instructions.md`) — streamlined from 13 steps to 11, aligned with canonical loop.
 - **Skill count** (`README.md`) — updated from 10 to 11.
+- **Stale reference fix** (`skills/memory-and-state/SKILL.md`) — context anchor protocol now references `docs/agent-templates.md` (where the template was moved) instead of `docs/operating-rules.md`.
+- **Conformance self-check precision** (`skills/prompt-cache-optimization/SKILL.md`) — 8 KB guideline now scoped to always-loaded files; on-demand skills may exceed with justification.
+- **Agent preamble note** (`docs/agent-templates.md`) — rephrased auto-load assumption to conditional instruction for cross-tool accuracy.
+- **Template consistency warning** (`docs/adoption-guide.md`) — Step 3 now warns adopters to update `docs/operating-rules.md` when simplifying templates.
+- **Memory-and-state content optimization** (`skills/memory-and-state/SKILL.md`) — condensed categorized memory (3 subsections → 1 table), simplified contradiction detection and archive format blocks. 14,748 → 13,237 bytes (−10%).
 
 ---
 
