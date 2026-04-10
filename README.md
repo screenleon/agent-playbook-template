@@ -1,5 +1,16 @@
 # Agent Playbook Template
 
+## 30-Second TL;DR
+
+This repository gives your team a reusable AI delivery workflow: clear agent roles, stable operating rules, reusable skills, and decision logging.
+
+Start here in order:
+1. `AGENTS.md` (entrypoint)
+2. `docs/operating-rules.md` (safety, scope, validation)
+3. `docs/agent-playbook.md` (role routing and workflow)
+
+Best for teams looking for: AI coding agent playbook, multi-agent software workflow, and documentation-driven engineering.
+
 Reusable repository assets for AI-assisted software delivery:
 
 - repo-wide agent rules
@@ -9,6 +20,93 @@ Reusable repository assets for AI-assisted software delivery:
 - external-practice notes
 
 This template is intentionally project-agnostic. Copy, adapt, and version it in any repository where you want stable agent behavior across planning, implementation, integration, review, and documentation.
+
+## Quick Start (3 steps)
+
+1. Copy this template into your repository (or create a repo from this template).
+2. Edit the three source-of-truth files first: `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions.
+
+If you only do one thing on day one: keep `DECISIONS.md` updated so future agent runs can perform contradiction checks.
+
+## Example: Complete Use Case
+
+Use case: add a new repository rule that all API handlers must enforce request id logging.
+
+1. Update rule source: add the non-negotiable rule in `docs/operating-rules.md` under Project-specific constraints.
+2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
+3. Sync tool instructions: update `.github/copilot-instructions.md` to keep tool-specific guidance consistent.
+4. Record the decision: append a dated entry to `DECISIONS.md` with context, decision, alternatives, and constraints.
+5. Validate consistency: ensure no contradiction between `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+
+Outcome: every future implementation task follows the same logging requirement with traceable reasoning.
+
+## Copy and Paste Snippets
+
+### 1) Task kickoff prompt
+
+```text
+Goal: [what to change]
+Scope: [files/modules allowed]
+Constraints: follow AGENTS.md and docs/operating-rules.md
+Deliverable: proposal + implementation + validation results
+```
+
+### 2) Mandatory first-response compliance block
+
+```text
+Read set: [list of files read]
+Scale: [SMALL|MEDIUM|LARGE] + reason
+Workflow path: [small simplification | medium/large full path]
+Checkpoint map: [plan approval, destructive actions, scope expansion]
+```
+
+### 3) Decision log entry template
+
+```markdown
+## YYYY-MM-DD: [Decision title]
+- **Context**: Why this decision was needed
+- **Decision**: What was decided
+- **Alternatives considered**: What was rejected and why
+- **Constraints introduced**: What future work must respect
+```
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+	A[User Task Request] --> B[AGENTS.md]
+	B --> C[docs/operating-rules.md]
+	B --> D[docs/agent-playbook.md]
+	D --> E[Role Selection]
+	E --> F[skills/*/SKILL.md]
+	F --> G[Implementation + Validation Loop]
+	G --> H[DECISIONS.md Update]
+	H --> I[Future Contradiction Checks]
+```
+
+## End-to-End Flow
+
+1. Discover context: read relevant code/docs and existing decisions.
+2. Triage task scale: classify as Small, Medium, or Large using evidence.
+3. Plan path: Small uses simplified path, Medium/Large uses full planning path.
+4. Implement safely: keep scope tight and follow repository patterns.
+5. Validate: run targeted checks/tests, fix, and repeat until stable.
+6. Record durable state: update `DECISIONS.md` when behavior or architecture choices are made.
+
+This flow is what makes the template useful in real teams: predictable output quality, lower drift, and faster onboarding.
+
+## Search Keywords and Discoverability
+
+This template is designed for teams searching for:
+
+- AI coding agent playbook template
+- GitHub Copilot repository instructions template
+- multi-agent software workflow for planning and implementation
+- documentation-driven engineering workflow
+- decision log and contradiction-check workflow
+
+If you maintain a fork, keep these phrases in your repository description and README summary so more users can discover and adopt your workflow.
 
 ## What this repository gives you
 
