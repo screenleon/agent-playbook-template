@@ -31,7 +31,7 @@ If you only do one thing on day one: keep `DECISIONS.md` updated so future agent
 
 ## Example: Complete Use Case
 
-Use case: add a new repository rule that all API handlers must enforce request id logging.
+Use case: add a new repository rule that all API handlers must enforce request ID logging.
 
 1. Update rule source: add the non-negotiable rule in `docs/operating-rules.md` under Project-specific constraints.
 2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
