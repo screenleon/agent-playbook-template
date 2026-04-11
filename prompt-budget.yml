@@ -5,6 +5,7 @@
 # which roles and skills are active and to respect token budget targets.
 #
 # See docs/adoption-guide.md → Prompt budget trimming for step-by-step guidance.
+# See docs/adoption-guide.md → Autonomous execution mode for execution_mode guidance.
 # See skills/prompt-cache-optimization/SKILL.md → Prompt budget configuration
 # for how agents use this file.
 #
@@ -14,14 +15,58 @@
 # 2. Enable only the roles your project actually uses.
 # 3. Disable skills that do not match your workflow.
 # 4. Adjust token targets based on your model's context window.
+# 5. Set execution_mode if you want autonomous (unattended) operation.
 #
 # This file is informational — agents use it as guidance to select which
 # skills and role templates to load. It does not enforce hard API-level limits.
 #
 # TEMPLATE DEFAULT
 # ─────────────────
-# The defaults below represent a full-featured team project with all roles active.
-# See the commented sections for smaller project configurations.
+# The defaults below represent a full-featured team project with all roles active
+# and supervised (human-in-the-loop) execution. See commented sections below
+# for autonomous and smaller project configurations.
+
+# ── Execution mode ─────────────────────────────────────────────────────────────
+#
+# supervised (default) — agents STOP at checkpoint gates and wait for user approval.
+# autonomous           — agents auto-proceed at most gates and log decisions instead.
+#
+# IMPORTANT: autonomous mode is opt-in and must be declared explicitly here.
+# Agents must never infer autonomous mode from context.
+# See docs/operating-rules.md → Autonomous execution mode for the full behavior spec.
+#
+execution_mode: supervised  # supervised | autonomous
+
+# ── Autonomous mode options ─────────────────────────────────────────────────────
+# Only read when execution_mode is autonomous. Ignored in supervised mode.
+#
+autonomous_mode:
+  # Gate 1: Plan approval — auto-proceed and log to DECISIONS.md?
+  # Set false to keep manual approval even in autonomous mode.
+  auto_proceed_on_plan: true
+
+  # Gate 3: Scope expansion — auto-proceed if expansion is within original intent?
+  # Agents will still stop if an unrelated module is added.
+  auto_proceed_on_scope_expansion: true
+
+  # Gate 2: Destructive/irreversible actions — always recommended true.
+  # Set false ONLY in fully isolated test/sandbox environments.
+  halt_on_destructive_actions: true
+
+  # Gate 4: Stuck escalation (3 failed fix attempts) — always recommended true.
+  # Setting false risks infinite loops. Do not disable unless you have external timeouts.
+  halt_on_stuck_escalation: true
+
+  # Whether to skip the critic role entirely in autonomous workflows.
+  # Default false — critic improves implementation quality even without human review.
+  # The critic's output is embedded in the handoff artifact and addressed by implementers.
+  skip_critic_role: false
+
+  # Whether to require risk-reviewer to stop on severity-high findings during plan assessment.
+  # Default true — severity-high risks require human review even in autonomous mode.
+  halt_on_high_severity_risk: true
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 budget:
   # Target for Layer 1 (docs/operating-rules.md + docs/agent-playbook.md)

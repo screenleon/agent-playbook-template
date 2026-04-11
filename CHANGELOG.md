@@ -6,9 +6,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [0.8.0] - 2026-04-11
+## [0.9.0] - 2026-04-11
 
 ### Added
+
+- **Autonomous execution mode** — opt-in mode (`execution_mode: autonomous` in `prompt-budget.yml`) that replaces human checkpoint wait states with auto-proceed + `DECISIONS.md` logging. Full specification in `docs/operating-rules.md` → Autonomous execution mode.
+  - Checkpoint gate substitution table (gates 1–6 in supervised vs. autonomous)
+  - Non-bypassable rules: destructive actions (gate 2), stuck escalation (gate 4), DECISIONS.md contradictions, and severity-high risk-reviewer findings always remain hard stops
+  - Mandatory audit log format — every auto-proceeded gate produces a `DECISIONS.md` entry with `Execution mode: Autonomous` field
+  - Critic behavior in autonomous mode: critique embedded in handoff artifact; implementers must address each point
+  - Risk-reviewer behavior: always runs after implementation; severity-high findings stop the agent even in autonomous mode
+  - "Autonomous mode is not skip planning" — the full workflow structure is preserved; only human wait states are removed
+- **`autonomous_mode` block in `prompt-budget.yml`** — six configurable flags: `auto_proceed_on_plan`, `auto_proceed_on_scope_expansion`, `halt_on_destructive_actions`, `halt_on_stuck_escalation`, `skip_critic_role`, `halt_on_high_severity_risk`. Defaults keep all hard stops active.
+- **Autonomous mode adoption guide** (`docs/adoption-guide.md`) — step-by-step setup (4 steps), risk tradeoff table, "when not to use" list. Placed in its own top-level section before the tool adapter reference.
+- **Autonomous workflow variants table** (`docs/agent-playbook.md`) — maps each supervised workflow to its autonomous equivalent; lists retained hard stops.
+
+### Changed
+
+- `AGENTS.md` — added one-line reference to `prompt-budget.yml` execution mode and adoption guide link.
+- `.github/copilot-instructions.md` — added instruction to check `prompt-budget.yml` for `execution_mode` before acting on checkpoint gates.
+
+---
+
+## [0.8.0] - 2026-04-11
 
 - **`ARCHITECTURE.md` template skeleton** — adopter-ready blank template with sections for module map, data flow, key interfaces, external service dependencies, deployment units, and known technical debt. Agents read this file before working on unfamiliar modules (see `skills/memory-and-state/SKILL.md` → Architecture memory).
 - **`DECISIONS_ARCHIVE.md`** — created with template development history (decisions from 0.1.0–0.7.0). Adopters now inherit a clean `DECISIONS.md` and can find template design rationale in the archive.

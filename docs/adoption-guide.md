@@ -226,6 +226,70 @@ For a project running 50 agent requests/day, aggressive trimming can save 250K�
    - Purge session memory files that were not promoted to repo memory
    - Verify no archived constraint is still referenced by current code
 
+## Autonomous execution mode
+
+By default, agents pause at checkpoint gates and wait for human approval ("PROCEED"). For teams that want agents to operate without human confirmation — for example in CI/CD pipelines or prototyping environments — the template supports an autonomous mode that replaces human wait states with automatic logging and proceeding.
+
+### What autonomous mode changes
+
+Autonomous mode removes the **human wait states**, not the **work steps**. The agent still discovers the codebase, classifies scale, plans, critiques, implements, validates, and records decisions. The only change is that the agent proceeds automatically instead of pausing for your "PROCEED" signal.
+
+| Step | Supervised mode | Autonomous mode |
+|------|----------------|-----------------|
+| Plan approval | Agent stops and waits | Agent logs plan to `DECISIONS.md`, proceeds |
+| Scope expansion | Agent stops and presents | Agent logs expansion, proceeds if within original intent |
+| Mid-implementation review | Agent pauses (recommended) | Agent skips |
+| Before-merge review | Agent pauses (recommended) | Agent skips |
+
+### What autonomous mode does NOT change
+
+These remain hard stops in every mode:
+
+- **Destructive or irreversible actions** — file deletion, table drops, force-push, branch reset. These always need your approval.
+- **Stuck escalation** — if an error persists after 3 fix attempts, the agent stops and reports. It never loops forever.
+- **DECISIONS.md contradictions** — if a proposed change conflicts with an existing decision, the agent stops and presents both sides. Auto-resolution is never allowed.
+- **Severity-high risk findings** — if the risk-reviewer finds a severity-high issue during plan assessment, the agent stops.
+
+### How to enable autonomous mode
+
+**Step 1**: Add (or uncomment) `execution_mode: autonomous` in `prompt-budget.yml`:
+
+```yaml
+execution_mode: autonomous
+
+autonomous_mode:
+  auto_proceed_on_plan: true
+  auto_proceed_on_scope_expansion: true
+  halt_on_destructive_actions: true      # Keep true unless fully sandboxed
+  halt_on_stuck_escalation: true         # Always keep true
+  skip_critic_role: false                # Keep false for better quality
+  halt_on_high_severity_risk: true       # Keep true for safety
+```
+
+**Step 2**: Ensure `DECISIONS.md` is in a good state before enabling autonomous mode. The agent will auto-log decisions here — a messy decision log will produce noisy entries.
+
+**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document those in `Project-specific constraints` in `docs/operating-rules.md` so the agent knows which destructive operations are pre-approved.
+
+**Step 4**: Review `DECISIONS.md` after the first few autonomous runs to verify the auto-logged entries are sensible.
+
+### Risk tradeoffs
+
+| Risk | Mitigation |
+|------|-----------|
+| Agent makes a wrong architectural decision without human review | Plan is logged to `DECISIONS.md`; review logs post-hoc and add a correcting entry if needed |
+| Scope creeps silently | Gate 3 (scope expansion within original intent) is still logged; unrelated module additions always stop |
+| Destructive action executed automatically | Gate 2 is non-bypassable by default (`halt_on_destructive_actions: true`) |
+| Critic findings ignored | Critique is embedded in the handoff artifact; implementers must address each point |
+| Agent loops on errors | Gate 4 is non-bypassable by default (`halt_on_stuck_escalation: true`) |
+
+### When not to use autonomous mode
+
+- Schema migrations on production data
+- Permission or security model changes
+- Payment, billing, or financial logic
+- Any task that will be run unreviewed in a production environment
+- First run on a new codebase (discover patterns in supervised mode first)
+
 ## Tool adapter reference
 
 The role model in this template is conceptual. Use the table below to find the right integration surface for each tool.
