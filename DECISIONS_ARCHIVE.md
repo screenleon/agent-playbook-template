@@ -2,9 +2,9 @@
 
 This file holds decisions that were made during the development of this template itself (not of any adopting project). They are preserved here for historical context and to explain the design rationale behind the template's rules and structure.
 
-**Adopters**: These entries reflect template design choices. They are not constraints for your project. Start your own `DECISIONS.md` from the blank header in the active file.
+**Adopters**: You should not need this file for your day-to-day work. Use the active `DECISIONS.md` for your own project decisions. Only read this archive if you are modifying the template framework itself (e.g., changing `docs/operating-rules.md`, `docs/agent-playbook.md`, or the skill files) and need to understand why a structural choice was made.
 
-Agents should search this archive only when working on the template's own framework files (e.g., `docs/operating-rules.md`, `docs/agent-playbook.md`, skills) — not for ordinary adopter tasks.
+Agents should search this archive only when working on the template's own framework files — not for ordinary adopter tasks.
 
 See `skills/memory-and-state/SKILL.md` → Selective read strategy for when to read this file.
 
