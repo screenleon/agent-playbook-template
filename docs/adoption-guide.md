@@ -252,7 +252,7 @@ These remain hard stops in every mode:
 
 ### How to enable autonomous mode
 
-**Step 1**: Add (or uncomment) `execution_mode: autonomous` in `prompt-budget.yml`:
+**Step 1**: In `prompt-budget.yml`, change `execution_mode` from `supervised` to `autonomous`:
 
 ```yaml
 execution_mode: autonomous

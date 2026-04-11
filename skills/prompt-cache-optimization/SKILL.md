@@ -124,17 +124,18 @@ Tool/function schemas are part of the prompt and count toward the prefix. Unstab
 
 ### Tool registry pattern (for custom API callers)
 
-When building custom agent orchestration on top of LLM APIs, avoid sending full JSON schema on every request:
+When building custom agent orchestration on top of LLM APIs, avoid sending full JSON schema on every request. Use a two-part model: a server-side registry that stores the full schema, and a lightweight per-request payload that references it by name and hash.
+
+Registry (stored server-side or in project config):
 
 ```yaml
-# Registry (stored server-side or in project config)
 tools:
   create_order_v2:
     schema_hash: "abc123"
     schema: { ... full JSON schema ... }
-
-# Per-request payload (lightweight)
 ```
+
+Per-request payload (lightweight — references the registered schema by name and version):
 
 ```json
 {
