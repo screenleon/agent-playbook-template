@@ -291,7 +291,7 @@ Use this format:
 
 If an agent discovers that a proposed change conflicts with an existing entry in `DECISIONS.md`:
 
-```
+```markdown
 ## Contradiction detected
 - **Existing decision**: [date and title from DECISIONS.md]
 - **Proposed change**: [what the current task wants to do]

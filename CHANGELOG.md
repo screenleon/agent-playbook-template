@@ -6,6 +6,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.8.0] - 2026-04-11
+
+### Added
+
+- **`ARCHITECTURE.md` template skeleton** — adopter-ready blank template with sections for module map, data flow, key interfaces, external service dependencies, deployment units, and known technical debt. Agents read this file before working on unfamiliar modules (see `skills/memory-and-state/SKILL.md` → Architecture memory).
+- **`DECISIONS_ARCHIVE.md`** — created with template development history (decisions from 0.1.0–0.7.0). Adopters now inherit a clean `DECISIONS.md` and can find template design rationale in the archive.
+- **`docs/example-task-walkthrough.md`** — end-to-end example showing a complete Medium task (add `last_login` field) from codebase discovery through mini retrospective. Demonstrates compliance block, demand triage, structured preamble, contradiction check, implementation, validation loop, deliverable, task completion summary, and mini retrospective — all in one document.
+- **`prompt-budget.yml`** — reference configuration file with full schema, inline comments, and commented examples for smaller project configurations. Covers `budget`, `roles`, `skills`, and `trimming` sections.
+- **`.github/workflows/markdown-lint.yml`** — CI workflow that runs `markdownlint-cli2` on all Markdown files on push and pull request. Catches missing code block languages, hard tabs, and other formatting issues automatically.
+- **`.markdownlint.yml`** — markdownlint configuration with explicit rule documentation. Enables MD040 (fenced code block language) and disables rules with intentional exceptions (MD013, MD024, MD029, MD032, MD033, MD034, MD041, MD060).
+- **Tool adapter reference** (`docs/adoption-guide.md`) — new section covering Claude Code, GitHub Copilot, Cursor, Windsurf, custom OpenAI API, and Codex CLI setups. Includes step-by-step Cursor and Windsurf setup and OpenAI API layer-mapping instructions.
+
+### Changed
+
+- **`DECISIONS.md` cleanup** — moved all template development decisions (2026-04-07 through 2026-04-10) to `DECISIONS_ARCHIVE.md`. Active file now contains only the header, adopter guidance, and the blank format example. Adopters fork with a clean decision log.
+- **`skills/design-to-code/SKILL.md` strengthened** — added pre-implementation checklist, scale adaptation table (Small/Medium/Large), expanded anti-patterns table with "why" and "what to do instead" columns, "Do not use this skill when" section, and conformance self-check with 10 items. Aligned with the quality level of other skill files.
+- **`README.md` updated** — added `ARCHITECTURE.md` and `prompt-budget.yml` to the asset inventory and file lists; added `docs/example-task-walkthrough.md` to optional files; updated adoption path to 11 steps; added tool adapter note to customization checklist.
+- **Fenced code block language fixes** — added language specifiers to all unlabeled fenced code blocks across 10 files (`.claude/agents/critic.md`, `docs/agent-playbook.md`, `docs/example-task-walkthrough.md`, `skills/demand-triage/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/memory-and-state/SKILL.md`, `skills/prompt-cache-optimization/SKILL.md`, `skills/repo-exploration/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`). Zero markdownlint errors.
+- **Hard tabs replaced** (`README.md`) — replaced tab-indented mermaid diagram with spaces.
+
+---
+
 ## [0.7.0] - 2026-04-10
 
 ### Added

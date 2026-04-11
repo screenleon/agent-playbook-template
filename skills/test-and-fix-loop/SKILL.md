@@ -9,7 +9,7 @@ Use this skill to enforce iterative validation after every code change.
 
 ## The loop
 
-```
+```text
 ┌─────────────┐
 │  Write code  │
 └──────┬──────┘

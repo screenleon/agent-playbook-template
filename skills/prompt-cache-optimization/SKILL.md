@@ -17,7 +17,7 @@ This skill ensures that the project's instruction files are loaded in a consiste
 
 Instruction content is classified into four layers by **change frequency**, loaded from most stable to most volatile:
 
-```
+```text
 Layer 1 — Static rules (rarely change)
   ├── docs/operating-rules.md
   └── docs/agent-playbook.md
@@ -46,7 +46,7 @@ Layer 4 — Volatile context (changes every request)
 
 ### Cache boundary visualization
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │  Layer 1: Static rules                      │  ← Cached across ALL requests
 │  Layer 2: Stable skills                     │  ← Cached across same-type tasks
@@ -126,7 +126,7 @@ Tool/function schemas are part of the prompt and count toward the prefix. Unstab
 
 When building custom agent orchestration on top of LLM APIs, avoid sending full JSON schema on every request:
 
-```
+```yaml
 # Registry (stored server-side or in project config)
 tools:
   create_order_v2:
@@ -134,6 +134,9 @@ tools:
     schema: { ... full JSON schema ... }
 
 # Per-request payload (lightweight)
+```
+
+```json
 {
   "tools": ["create_order_v2"],
   "tool_schema_version": "abc123"

@@ -213,7 +213,7 @@ Role switching within one context causes:
 
 ### Workflow with context boundaries
 
-```
+```text
 [Context 1] feature-planner → produces plan artifact
 [Context 2] critic → receives plan artifact → produces critique artifact
 [User]      reviews plan + critique → decides

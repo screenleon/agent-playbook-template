@@ -225,3 +225,42 @@ For a project running 50 agent requests/day, aggressive trimming can save 250K�
    - If `DECISIONS.md` exceeds 50 entries or 30 KB, archive inactive decisions to `DECISIONS_ARCHIVE.md` (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
    - Purge session memory files that were not promoted to repo memory
    - Verify no archived constraint is still referenced by current code
+
+## Tool adapter reference
+
+The role model in this template is conceptual. Use the table below to find the right integration surface for each tool.
+
+| Tool | System-level instructions | Per-task instructions | Subagent / role support |
+|------|--------------------------|----------------------|------------------------|
+| **Claude Code** | `.claude/agents/*.md` auto-loaded per role | `skills/*/SKILL.md` referenced on demand | Named subagents via `.claude/agents/` |
+| **GitHub Copilot** | `.github/copilot-instructions.md` auto-injected | `.github/prompts/*.prompt.md` invoked via `#` | No native subagents; use prompt files as role templates |
+| **Cursor** | `.cursor/rules/*.mdc` or `.cursorrules` | Inline `@`-mentioned files | No native subagents; use rules files as role templates |
+| **Windsurf** | `.windsurfrules` | Referenced files | No native subagents; use rules file per role |
+| **Custom OpenAI API** | `system` message (Layer 1+2) | `user` message prefix (Layer 3+4) | No native subagents; spawn separate API calls per role |
+| **Codex CLI** | `AGENTS.md` + `docs/operating-rules.md` via repo context | Role templates from `docs/agent-templates.md` | No native subagents; use prompt templates |
+
+### Cursor setup
+
+1. Create `.cursor/rules/` directory (or use `.cursorrules` at the repo root for older versions).
+2. Create one `.mdc` file per always-loaded instruction, e.g.:
+   - `.cursor/rules/operating-rules.mdc` — paste or reference `docs/operating-rules.md`
+   - `.cursor/rules/agent-playbook.mdc` — paste or reference `docs/agent-playbook.md`
+3. For role-specific behavior, create a rule file per role and use it in the relevant context.
+4. Reference skills by asking the agent to read the relevant `skills/*/SKILL.md` file at the start of a task.
+
+### Windsurf setup
+
+1. Create `.windsurfrules` at the repo root.
+2. Include the core instructions from `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+3. For token efficiency, summarize only the most critical rules and link to full files for on-demand reading.
+4. Skills and role templates work as referenced files — ask the agent to read them as needed.
+
+### Custom OpenAI API setup
+
+1. Place Layer 1 (`docs/operating-rules.md` + `docs/agent-playbook.md`) in the `system` message.
+2. Place Layer 2 (selected skills) at the start of the `user` message, before the task description.
+3. Place Layer 3 (`DECISIONS.md`, `ARCHITECTURE.md`) after Layer 2 in the `user` message.
+4. Place the actual task query and current file content last (Layer 4).
+5. For multi-role workflows, spawn separate API calls for each role using the same Layer 1 `system` message to maximize cache hits.
+
+See `skills/prompt-cache-optimization/SKILL.md` → Tool-specific adaptation for more detail on cache-aware loading per tool.

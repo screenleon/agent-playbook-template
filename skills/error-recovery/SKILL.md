@@ -47,7 +47,7 @@ Use this skill when something goes wrong during implementation.
 
 If 3 fix attempts fail, report to the user:
 
-```
+```text
 Error: [exact error message]
 File: [file:line]
 Attempts:

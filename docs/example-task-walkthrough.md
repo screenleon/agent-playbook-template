@@ -10,7 +10,7 @@ This document shows a complete task from initial request to final delivery, demo
 
 _Agent reads relevant files before anything else. Outputs a brief summary of what was found._
 
-```
+```text
 Files read: src/api/users.ts, src/services/user.ts, src/repos/user.ts,
             db/migrations/, DECISIONS.md, ARCHITECTURE.md
 Patterns identified:
@@ -27,7 +27,7 @@ Patterns identified:
 
 _Agent classifies scale after discovery, not before. Provides explicit evidence._
 
-```
+```text
 [SCALE: MEDIUM]
 Reason: Affects 3 files (migration + repo + handler) within the same module.
         No contract breaking changes (additive field only), no auth changes.
@@ -42,7 +42,7 @@ Files affected: db/migrations/NNNN_add_last_login.sql, src/repos/user.ts,
 
 _Required at the start of every implementation. Published before any code is written._
 
-```
+```text
 Read set: src/api/users.ts, src/services/user.ts, src/repos/user.ts,
           db/migrations/ (last 3 files), DECISIONS.md, ARCHITECTURE.md,
           docs/operating-rules.md (project-specific constraints)
@@ -81,7 +81,7 @@ _Assumptions, constraints, and proposed approach stated before any code._
 
 _Required for every task, even Small. Result must be stated explicitly._
 
-```
+```text
 Contradiction check result: No contradictions found.
   - DECISIONS.md entry "2024-02-01: Use raw SQL with sqlc" is respected
     (migration + SQL query approach).
@@ -139,7 +139,7 @@ router.get('/:id', async (req, res) => {
 
 _Agent runs tests after every code change. Results must be reported explicitly._
 
-```
+```text
 Command run: npm test -- --testPathPattern=users
 Result: 7 passed, 0 failed
   ✓ GET /users/:id returns 200 with user object
@@ -160,7 +160,7 @@ _An entry is appended when an architectural or behavioral decision was made. Not
 
 For this task, no new architectural decision was made (the "use sqlc" decision already existed). No entry appended. This must be stated explicitly:
 
-```
+```text
 DECISIONS.md update: No new entry required.
   - Added an additive column following the existing sqlc pattern.
   - The existing "use raw SQL with sqlc" entry covers this change.
@@ -172,7 +172,7 @@ DECISIONS.md update: No new entry required.
 
 _Every task produces this structure. Small tasks may keep it concise; Medium/Large tasks fill it in fully._
 
-```
+```markdown
 ## Deliverable: Add last_login to user profile API
 
 ### Proposal
@@ -207,7 +207,7 @@ Ship as described. Migration first, then handler update.
 
 _Required after every task. Enables memory reuse across sessions._
 
-```
+```markdown
 ## Task summary
 - Scale: MEDIUM
 - What changed: Added nullable `last_login` column to users table and exposed it
@@ -227,7 +227,7 @@ _Required after every task. Enables memory reuse across sessions._
 
 _Required at the end of every task. Feeds into the rolling quality signals._
 
-```
+```text
 Friction observed: Deploy order dependency (migration before code) was easy to miss
   when writing the deliverable risks section.
 Miss risk: DECISIONS.md contradiction check was most likely to be skipped since
