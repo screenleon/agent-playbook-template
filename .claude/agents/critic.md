@@ -27,7 +27,7 @@ For the proposal, systematically check:
 
 Produce your output using the mandatory deliverable structure:
 
-```
+```markdown
 ## Deliverable: Critique of [proposal title]
 
 ### Proposal

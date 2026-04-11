@@ -57,6 +57,86 @@ Agents must **STOP and wait for explicit user approval** at these points. Do not
 
 When stopping for approval, present: gate name, current state, proposal, risks, and decision needed. See `docs/agent-templates.md` → Checkpoint template for the full format. Never silently skip a mandatory checkpoint.
 
+## Autonomous execution mode
+
+When `execution_mode: autonomous` is declared in `prompt-budget.yml` (or an equivalent project configuration file), agents substitute logged auto-proceed for the human wait states at most checkpoint gates.
+
+**This mode is explicitly opt-in.** The default is `supervised`. Never infer autonomous mode from context — it must be declared in configuration.
+
+### When to use autonomous mode
+
+Autonomous mode is appropriate for:
+
+- CI/CD pipelines and unattended batch workflows where no human is available to approve steps
+- Prototyping environments where iteration speed outweighs manual review overhead
+- Teams that have validated agent judgment on a given codebase and accept fully automated decisions
+- Scripted or integration-test tasks with a well-defined scope and no destructive actions
+
+Do not use autonomous mode for tasks involving schema migrations on production data, permission or security model changes, payment or billing logic, deletion of user data, or any operation that cannot be safely reverted.
+
+### Checkpoint gate behavior in autonomous mode
+
+| Gate | Supervised behavior | Autonomous behavior |
+|------|---------------------|---------------------|
+| 1. Plan approval | STOP — wait for "PROCEED" | Log plan to `DECISIONS.md`, then auto-proceed |
+| 2. Destructive / irreversible actions | STOP — wait | **Always stop. Not bypassable.** |
+| 3. Scope expansion | STOP — present expanded scope | If expansion is within original intent: log and proceed. If unrelated module added: stop. |
+| 4. Stuck escalation (3 fails) | STOP — report | **Always stop. Not bypassable.** |
+| 5. Mid-implementation review | Recommended stop | Skip |
+| 6. Before final merge | Recommended stop | Skip |
+
+### Non-bypassable rules in autonomous mode
+
+Even with `execution_mode: autonomous`, the following remain hard stops:
+
+- **Contradiction with `DECISIONS.md`** — never auto-resolve a contradiction. Stop and present the conflict with options. Proceeding autonomously on a known contradiction violates the decision log contract. This rule has no configuration override.
+
+The rules below are enforced by default and **strongly recommended** to keep enabled. They can be relaxed in `prompt-budget.yml` under `autonomous_mode` only for fully isolated or sandboxed environments where the corresponding risk is explicitly accepted:
+
+- **Destructive or irreversible actions** (gate 2) — deleting files, dropping tables, force-pushing, resetting branches, modifying shared infrastructure. Controlled by `halt_on_destructive_actions`. Keep `true` unless the environment is fully sandboxed.
+- **Stuck escalation after 3 failed attempts** (gate 4) — agents must not loop forever. Stop and report. Controlled by `halt_on_stuck_escalation`. Keep `true` unless an external timeout mechanism is in place.
+- **Severity-high findings from `risk-reviewer`** — any severity-high risk outcome is a hard stop by default. Do not auto-proceed on a severity-high finding; stop and present the finding for user review. Controlled by `halt_on_high_severity_risk`.
+
+### Mandatory audit log in autonomous mode
+
+Every gate that is auto-proceeded must be recorded. Append to `DECISIONS.md` using the standard format, adding one extra field:
+
+```markdown
+## YYYY-MM-DD: [Decision title]
+- **Context**: Why this decision was needed
+- **Decision**: What was decided
+- **Alternatives considered**: What was rejected and why
+- **Constraints introduced**: What future work must respect
+- **Execution mode**: Autonomous — auto-proceeded without user confirmation
+```
+
+This preserves the audit trail that a human checkpoint would otherwise provide. Without this log entry, autonomous decisions are invisible to future agents and reviewers.
+
+### Critic behavior in autonomous mode
+
+By default, the `critic` role still runs in autonomous mode. Adversarial challenge benefits implementation quality even without a human reviewing the critique before proceeding.
+
+When there is no human decision step, the critic's output is embedded in the plan handoff artifact. Implementation agents must address each critique point before starting work. Unaddressed critique points must be explicitly recorded as accepted risks in the handoff artifact.
+
+To skip the critic, set `skip_critic_role: true` under `autonomous_mode` in `prompt-budget.yml`. Only do this for tasks with very limited scope where over-engineering risk is negligible.
+
+### Risk-reviewer behavior in autonomous mode
+
+The `risk-reviewer` role always runs after implementation in autonomous mode. Its findings are recorded in the task completion summary. If the risk-reviewer identifies a severity-high finding, the agent must stop and report — even in autonomous mode. Severity-medium and lower findings are logged and accepted.
+
+### Autonomous mode is not "skip planning"
+
+Autonomous mode removes the **human wait states**, not the **work steps**. The agent still:
+
+- Discovers the codebase before coding
+- Classifies task scale with demand-triage
+- Produces a plan (feature-planner still runs)
+- Runs the critic
+- Validates with the test-and-fix loop
+- Records decisions in `DECISIONS.md`
+
+The only difference is that the agent proceeds through these steps automatically instead of pausing for user "PROCEED" signals.
+
 ## Codebase discovery (repo-aware)
 
 Before writing or modifying any code, perform these steps:
@@ -291,7 +371,7 @@ Use this format:
 
 If an agent discovers that a proposed change conflicts with an existing entry in `DECISIONS.md`:
 
-```
+```markdown
 ## Contradiction detected
 - **Existing decision**: [date and title from DECISIONS.md]
 - **Proposed change**: [what the current task wants to do]

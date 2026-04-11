@@ -70,7 +70,7 @@ The following characteristics **always** force Medium or Large, regardless of fi
 
 After classification, state:
 
-```
+```text
 [SCALE: SMALL | MEDIUM | LARGE]
 Reason: [1–2 sentences explaining why, based on evidence from codebase discovery]
 Files affected: [list]

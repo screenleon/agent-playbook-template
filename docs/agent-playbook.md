@@ -175,6 +175,25 @@ If it also changes logic or flow:
 
 `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` when technical correctness matters
 
+### Autonomous workflow variants
+
+When `execution_mode: autonomous` is set in `prompt-budget.yml`, replace **user decision** and **user approval** steps with auto-proceed. All other steps remain unchanged.
+
+**Important**: The loop structure (Discover → Triage → Plan → Critique → Implement → Test → Fix → Repeat → Record → Summarize) still executes in full. Only the human wait states are removed.
+
+| Supervised workflow | Autonomous equivalent |
+|--------------------|-----------------------|
+| `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → _(auto-proceed, logged)_ → implementers → `risk-reviewer` |
+| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → _(auto-proceed, logged)_ → `backend-architect` → `risk-reviewer` (final) |
+| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → _(auto-proceed, logged)_ → `documentation-architect` → `risk-reviewer` |
+
+**Retained hard stops in autonomous mode** (see `docs/operating-rules.md` → Autonomous execution mode):
+
+- Destructive or irreversible actions (gate 2) — always stop
+- Stuck escalation after 3 failed attempts (gate 4) — always stop
+- Contradiction detected in `DECISIONS.md` — always stop
+- Severity-high finding from `risk-reviewer` during plan assessment — always stop
+
 ## Feedback loop execution
 
 Use feedback loop outputs to improve process wording and reduce repeat misses.
@@ -213,7 +232,7 @@ Role switching within one context causes:
 
 ### Workflow with context boundaries
 
-```
+```text
 [Context 1] feature-planner → produces plan artifact
 [Context 2] critic → receives plan artifact → produces critique artifact
 [User]      reviews plan + critique → decides
