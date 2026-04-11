@@ -184,8 +184,8 @@ When `execution_mode: autonomous` is set in `prompt-budget.yml`, replace **user 
 | Supervised workflow | Autonomous equivalent |
 |--------------------|-----------------------|
 | `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → _(auto-proceed, logged)_ → implementers → `risk-reviewer` |
-| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → _(auto-proceed)_ → `backend-architect` → `risk-reviewer` (final) |
-| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → _(auto-proceed)_ → `documentation-architect` → `risk-reviewer` |
+| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → _(auto-proceed, logged)_ → `backend-architect` → `risk-reviewer` (final) |
+| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → _(auto-proceed, logged)_ → `documentation-architect` → `risk-reviewer` |
 
 **Retained hard stops in autonomous mode** (see `docs/operating-rules.md` → Autonomous execution mode):
 

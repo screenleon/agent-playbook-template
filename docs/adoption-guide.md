@@ -243,12 +243,12 @@ Autonomous mode removes the **human wait states**, not the **work steps**. The a
 
 ### What autonomous mode does NOT change
 
-These remain hard stops in every mode:
+These remain default/recommended stop conditions in autonomous mode unless you explicitly relax the corresponding `prompt-budget.yml` flags:
 
-- **Destructive or irreversible actions** — file deletion, table drops, force-push, branch reset. These always need your approval.
-- **Stuck escalation** — if an error persists after 3 fix attempts, the agent stops and reports. It never loops forever.
-- **DECISIONS.md contradictions** — if a proposed change conflicts with an existing decision, the agent stops and presents both sides. Auto-resolution is never allowed.
-- **Severity-high risk findings** — if the risk-reviewer finds a severity-high issue during plan assessment, the agent stops.
+- **Destructive or irreversible actions** — file deletion, table drops, force-push, branch reset. By default these require your approval when `halt_on_destructive_actions: true`. Only set `false` in fully isolated sandbox environments.
+- **Stuck escalation** — if an error persists after 3 fix attempts, the agent stops and reports when `halt_on_stuck_escalation: true`. Do not disable this unless you have an external timeout mechanism in place.
+- **DECISIONS.md contradictions** — if a proposed change conflicts with an existing decision, the agent stops and presents both sides. Auto-resolution is never allowed. This rule has no configuration override.
+- **Severity-high risk findings** — if the risk-reviewer finds a severity-high issue during plan assessment, the agent stops when `halt_on_high_severity_risk: true`. Only set `false` if the codebase is sandboxed and risk findings are pre-acknowledged.
 
 ### How to enable autonomous mode
 

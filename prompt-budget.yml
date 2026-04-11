@@ -49,12 +49,15 @@ autonomous_mode:
   # Agents will still stop if an unrelated module is added.
   auto_proceed_on_scope_expansion: true
 
-  # Gate 2: Destructive/irreversible actions — always recommended true.
-  # Set false ONLY in fully isolated test/sandbox environments.
+  # Gate 2: Destructive/irreversible actions.
+  # Default true — strongly recommended. Keep true unless the environment is fully isolated/sandboxed.
+  # Setting false means the agent will NOT stop for destructive operations; only do this in sandbox environments.
+  # Note: DECISIONS.md contradictions are always a hard stop regardless of this setting.
   halt_on_destructive_actions: true
 
-  # Gate 4: Stuck escalation (3 failed fix attempts) — always recommended true.
-  # Setting false risks infinite loops. Do not disable unless you have external timeouts.
+  # Gate 4: Stuck escalation (3 failed fix attempts).
+  # Default true — strongly recommended. Setting false risks infinite loops.
+  # Only set false if you have an external timeout or retry-cap mechanism.
   halt_on_stuck_escalation: true
 
   # Whether to skip the critic role entirely in autonomous workflows.
@@ -62,8 +65,9 @@ autonomous_mode:
   # The critic's output is embedded in the handoff artifact and addressed by implementers.
   skip_critic_role: false
 
-  # Whether to require risk-reviewer to stop on severity-high findings during plan assessment.
-  # Default true — severity-high risks require human review even in autonomous mode.
+  # Severity-high findings from risk-reviewer during plan assessment.
+  # Default true — strongly recommended. Setting false means the agent will auto-proceed even on high-risk findings.
+  # Only set false if the codebase is sandboxed and risk findings are pre-acknowledged.
   halt_on_high_severity_risk: true
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -89,9 +89,13 @@ Do not use autonomous mode for tasks involving schema migrations on production d
 
 Even with `execution_mode: autonomous`, the following remain hard stops:
 
-- **Destructive or irreversible actions** (gate 2) — deleting files, dropping tables, force-pushing, resetting branches, modifying shared infrastructure. These always require explicit user approval regardless of mode.
-- **Stuck escalation after 3 failed attempts** (gate 4) — agents must not loop forever. Stop and report.
-- **Contradiction with `DECISIONS.md`** — never auto-resolve a contradiction. Stop and present the conflict with options. Proceeding autonomously on a known contradiction violates the decision log contract.
+- **Contradiction with `DECISIONS.md`** — never auto-resolve a contradiction. Stop and present the conflict with options. Proceeding autonomously on a known contradiction violates the decision log contract. This rule has no configuration override.
+
+The rules below are enforced by default and **strongly recommended** to keep enabled. They can be relaxed in `prompt-budget.yml` under `autonomous_mode` only for fully isolated or sandboxed environments where the corresponding risk is explicitly accepted:
+
+- **Destructive or irreversible actions** (gate 2) — deleting files, dropping tables, force-pushing, resetting branches, modifying shared infrastructure. Controlled by `halt_on_destructive_actions`. Keep `true` unless the environment is fully sandboxed.
+- **Stuck escalation after 3 failed attempts** (gate 4) — agents must not loop forever. Stop and report. Controlled by `halt_on_stuck_escalation`. Keep `true` unless an external timeout mechanism is in place.
+- **Severity-high findings from `risk-reviewer`** — any severity-high risk outcome is a hard stop by default. Do not auto-proceed on a severity-high finding; stop and present the finding for user review. Controlled by `halt_on_high_severity_risk`.
 
 ### Mandatory audit log in autonomous mode
 
