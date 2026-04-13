@@ -1,6 +1,6 @@
 # Project Manifest
 
-Use this file to declare project-local boundaries that override generic guidance. Fill in each section when adopting the template. Leave blank fields as placeholders until confirmed during `on_project_start` initialization.
+Use this file to declare project-local boundaries that override generic guidance. Fill in each section when adopting the template. Leave blank fields as placeholders until confirmed during `on-project-start` initialization.
 
 ## Project identity
 

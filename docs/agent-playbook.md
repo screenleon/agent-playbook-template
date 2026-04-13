@@ -118,7 +118,7 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 Every workflow below implicitly includes these steps:
 
 1. **Discover** — run the `repo-exploration` skill before coding
-2. **Initialize (new repo entry)** — run `skills/on_project_start/SKILL.md` to scan stack signals and collect missing boundary constraints before implementation
+2. **Initialize (new repo entry)** — run `skills/on-project-start/SKILL.md` to scan stack signals and collect missing boundary constraints before implementation
 3. **Triage** — run the `demand-triage` skill to classify task scale (Small / Medium / Large) based on evidence from discovery. This determines which subsequent steps are mandatory vs. optional. See `skills/demand-triage/SKILL.md` for classification criteria and workflow adaptation rules
 4. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules). For Small tasks, this may be inline (1–2 sentences)
 5. **Test-first for new behavior** — follow TDAI in `docs/operating-rules.md` by defining test cases before implementing behavior-changing work

@@ -11,7 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **Layered configuration scaffolding** (`rules/global/README.md`, `rules/domain/README.md`, `project/project-manifest.md`) — introduced three-level constraint structure (Global Rules, Domain Rules, Project Context) with explicit repository templates.
-- **Initialization protocol skill** (`skills/on_project_start/SKILL.md`) — first-entry workflow for environment scanning and dynamic boundary-questioning before implementation.
+- **Initialization protocol skill** (`skills/on-project-start/SKILL.md`) — first-entry workflow for environment scanning and dynamic boundary-questioning before implementation.
 - **Example gallery profiles** (`examples/high-security-mode.md`, `examples/mvp-rapid-mode.md`, `examples/legacy-maintenance.md`) — ready-to-adapt constraint profiles for common operating modes.
 - **Rules quickstart** (`docs/rules-quickstart.md`) — compact, first-pass rule-loading document for agents to reduce cognitive and token overhead.
 - **Rule optimization roadmap** (`docs/rule-optimization-plan.md`) — phased plan for simplification, template expansion, and CI-based rule governance.

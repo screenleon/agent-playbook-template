@@ -103,7 +103,7 @@ Create an `ARCHITECTURE.md` or fill it into your README to help agents understan
 
 ### 5. Initialization protocol (recommended)
 
-Add the `skills/on_project_start/SKILL.md` workflow to your first-session process so agents dynamically discover missing boundaries.
+Add the `skills/on-project-start/SKILL.md` workflow to your first-session process so agents dynamically discover missing boundaries.
 
 Expected first-session questions include:
 

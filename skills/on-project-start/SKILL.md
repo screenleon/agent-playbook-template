@@ -1,5 +1,5 @@
 ---
-name: on_project_start
+name: on-project-start
 description: Use on first entry to a new repository to run environment scanning and ask targeted boundary questions before implementation.
 ---
 

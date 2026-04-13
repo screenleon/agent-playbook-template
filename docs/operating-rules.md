@@ -133,7 +133,7 @@ When multiple rules apply to the same topic, resolve deterministically:
 
 ## Initialization protocol
 
-At first entry into a new repository, run `skills/on_project_start/SKILL.md` before implementation.
+At first entry into a new repository, run `skills/on-project-start/SKILL.md` before implementation.
 
 Required outcomes:
 

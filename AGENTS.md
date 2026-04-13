@@ -17,7 +17,7 @@ Read `docs/rule-optimization-plan.md` for the staged simplification and automati
 See `docs/agent-playbook.md` → Three-layer architecture for the full definition. Summary:
 
 1. **Rules** — `docs/operating-rules.md` (safety, scope, validation, constraints)
-2. **Skills** — `skills/*/SKILL.md` (12 skills: demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state, feature-planning, backend-change-planning, application-implementation, design-to-code, documentation-architecture, prompt-cache-optimization, on_project_start)
+2. **Skills** — `skills/*/SKILL.md` (12 skills: demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state, feature-planning, backend-change-planning, application-implementation, design-to-code, documentation-architecture, prompt-cache-optimization, on-project-start)
 3. **Loop** — `Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`. Steps **Plan**, **Critique**, **Approve** are trust-level-gated; see `docs/operating-rules.md` → Trust level.
 
 ## Configuration layering

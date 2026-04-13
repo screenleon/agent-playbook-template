@@ -37,7 +37,7 @@ If same-layer conflicts remain:
 ## Mandatory workflow (compact)
 
 1. Discover (`skills/repo-exploration/SKILL.md`)
-2. Initialize on first repo entry (`skills/on_project_start/SKILL.md`)
+2. Initialize on first repo entry (`skills/on-project-start/SKILL.md`)
 3. Triage (`skills/demand-triage/SKILL.md`)
 4. Check contradictions in `DECISIONS.md` (and archive for legacy)
 5. For behavior changes: define tests before implementation (TDAI)

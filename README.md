@@ -28,7 +28,7 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 2. Edit the three source-of-truth files first: `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
 3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions.
 
-For first entry into a new repository, run `skills/on_project_start/SKILL.md` before implementation to confirm project-specific boundaries.
+For first entry into a new repository, run `skills/on-project-start/SKILL.md` before implementation to confirm project-specific boundaries.
 
 If you only do one thing on day one: keep `DECISIONS.md` updated so future agent runs can perform contradiction checks.
 
@@ -106,7 +106,7 @@ For staged simplification and automation steps, see `docs/rule-optimization-plan
 ## End-to-End Flow
 
 1. Discover context: read relevant code/docs and existing decisions.
-2. Initialize (first entry only): run `on_project_start` to confirm boundaries.
+2. Initialize (first entry only): run `on-project-start` to confirm boundaries.
 3. Triage task scale: classify as Small, Medium, or Large using evidence.
 4. Plan path: Small uses simplified path, Medium/Large uses full planning path.
 5. Implement safely: keep scope tight and follow repository patterns.
