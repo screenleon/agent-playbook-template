@@ -5,6 +5,7 @@
 This repository gives your team a reusable AI delivery workflow: clear agent roles, stable operating rules, reusable skills, and decision logging.
 
 Start here in order:
+0. `docs/rules-quickstart.md` (minimal rule load)
 1. `AGENTS.md` (entrypoint)
 2. `docs/operating-rules.md` (safety, scope, validation)
 3. `docs/agent-playbook.md` (role routing and workflow)
@@ -26,6 +27,8 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 1. Copy this template into your repository (or create a repo from this template).
 2. Edit the three source-of-truth files first: `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
 3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions.
+
+For first entry into a new repository, run `skills/on_project_start/SKILL.md` before implementation to confirm project-specific boundaries.
 
 If you only do one thing on day one: keep `DECISIONS.md` updated so future agent runs can perform contradiction checks.
 
@@ -78,6 +81,7 @@ flowchart LR
 	A[User Task Request] --> B[AGENTS.md]
 	B --> C[docs/operating-rules.md]
 	B --> D[docs/agent-playbook.md]
+	C --> L[Layered Config<br/>rules/ + project/]
 	D --> E[Role Selection]
 	E --> F[skills/*/SKILL.md]
 	F --> G[Implementation + Validation Loop]
@@ -85,14 +89,29 @@ flowchart LR
 	H --> I[Future Contradiction Checks]
 ```
 
+## Layered Configuration
+
+This template supports layered constraint files so teams can adapt behavior without rewriting one large rules file.
+
+- `rules/global/` — core communication, coding, and security rules
+- `rules/domain/` — domain-specific constraints (backend, cloud, frontend, etc.)
+- `project/project-manifest.md` — project-local context and boundaries
+
+When constraints conflict, follow precedence defined in `docs/operating-rules.md`: Project Context -> Domain Rules -> Global Rules.
+
+For rule placement, same-layer conflict handling, and governance checks, see `docs/layered-configuration.md`.
+
+For staged simplification and automation steps, see `docs/rule-optimization-plan.md`.
+
 ## End-to-End Flow
 
 1. Discover context: read relevant code/docs and existing decisions.
-2. Triage task scale: classify as Small, Medium, or Large using evidence.
-3. Plan path: Small uses simplified path, Medium/Large uses full planning path.
-4. Implement safely: keep scope tight and follow repository patterns.
-5. Validate: run targeted checks/tests, fix, and repeat until stable.
-6. Record durable state: update `DECISIONS.md` when behavior or architecture choices are made.
+2. Initialize (first entry only): run `on_project_start` to confirm boundaries.
+3. Triage task scale: classify as Small, Medium, or Large using evidence.
+4. Plan path: Small uses simplified path, Medium/Large uses full planning path.
+5. Implement safely: keep scope tight and follow repository patterns.
+6. Validate: run targeted checks/tests, fix, and repeat until stable.
+7. Record durable state: update `DECISIONS.md` when behavior or architecture choices are made.
 
 This flow is what makes the template useful in real teams: predictable output quality, lower drift, and faster onboarding.
 
@@ -120,8 +139,16 @@ If you maintain a fork, keep these phrases in your repository description and RE
 ## Current asset inventory
 
 - Claude subagents: 8 (`.claude/agents/*.md`)
-- Reusable skills: 11 (`skills/*/SKILL.md`)
+- Reusable skills: 12 (`skills/*/SKILL.md`)
 - Source-of-truth docs: `AGENTS.md`, `docs/operating-rules.md`, `docs/agent-playbook.md`
+
+## Example gallery
+
+Use `examples/` for ready-to-adapt constraint profiles:
+
+- `examples/high-security-mode.md`
+- `examples/mvp-rapid-mode.md`
+- `examples/legacy-maintenance.md`
 
 ## Required vs optional files
 

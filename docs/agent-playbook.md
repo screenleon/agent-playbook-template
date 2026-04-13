@@ -4,9 +4,19 @@
 
 All agent work follows three layers:
 
-1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
+1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, agent-deference, trust level, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**.
+3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**. Steps in **bold** are trust-level-gated; see `docs/operating-rules.md` → Trust level for activation rules.
+
+## Layered configuration model
+
+In addition to the execution architecture above, repository constraints should be organized into:
+
+1. **Global Rules** — `rules/global/`
+2. **Domain Rules** — `rules/domain/`
+3. **Project Context** — `project/project-manifest.md`
+
+Precedence follows `docs/operating-rules.md` → Layered configuration and Conflict resolution principle.
 
 ## Repository asset map
 
@@ -108,24 +118,27 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 Every workflow below implicitly includes these steps:
 
 1. **Discover** — run the `repo-exploration` skill before coding
-2. **Triage** — run the `demand-triage` skill to classify task scale (Small / Medium / Large) based on evidence from discovery. This determines which subsequent steps are mandatory vs. optional. See `skills/demand-triage/SKILL.md` for classification criteria and workflow adaptation rules
-3. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules). For Small tasks, this may be inline (1–2 sentences)
-4. **Validate** — run the `test-and-fix-loop` skill after every code change. For Small tasks, run only targeted tests for the changed file
-5. **Recover** — use the `error-recovery` skill when anything fails
-6. **Record** — use the `memory-and-state` skill to log decisions, update architecture docs, and check whether memory lifecycle maintenance is needed (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
-7. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
-8. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks typically need only one agent, so isolation is trivially satisfied
-9. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
-10. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
-11. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
+2. **Initialize (new repo entry)** — run `skills/on_project_start/SKILL.md` to scan stack signals and collect missing boundary constraints before implementation
+3. **Triage** — run the `demand-triage` skill to classify task scale (Small / Medium / Large) based on evidence from discovery. This determines which subsequent steps are mandatory vs. optional. See `skills/demand-triage/SKILL.md` for classification criteria and workflow adaptation rules
+4. **Structured preamble** — state assumptions, constraints, and proposed approach before producing output (see `docs/operating-rules.md` structured output rules). For Small tasks, this may be inline (1–2 sentences)
+5. **Test-first for new behavior** — follow TDAI in `docs/operating-rules.md` by defining test cases before implementing behavior-changing work
+6. **Validate** — run the `test-and-fix-loop` skill after every code change. For Small tasks, run only targeted tests for the changed file
+7. **Recover** — use the `error-recovery` skill when anything fails
+8. **Record** — use the `memory-and-state` skill to log decisions, update architecture docs, and check whether memory lifecycle maintenance is needed (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
+9. **ADR sync** — for architecture changes, update ADRs or decision records in the same task (`docs/operating-rules.md` → ADR automatic update)
+10. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
+11. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks need only one agent. Medium tasks at `semi-auto` or `autonomous` may relax isolation per `docs/operating-rules.md` → Task boundary rule
+12. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
+13. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+14. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
-### First-response compliance block (mandatory)
+### First-response compliance block
 
-Before starting implementation, publish the compliance block defined in `docs/operating-rules.md` → Mandatory first-response compliance block. Required fields: read set, scale classification, path decision, checkpoint expectations.
+Publish the compliance block defined in `docs/operating-rules.md` → Mandatory first-response compliance block. Required at `supervised` trust level for all tasks and at `semi-auto` for Medium/Large tasks. Optional at `autonomous` trust level.
 
-### Mandatory checkpoint gates
+### Checkpoint gates
 
-Agents must STOP and wait for user approval at the gates defined in `docs/operating-rules.md` → Human checkpoint gates. Key gates: after planning (before implementation), on scope expansion, on contradiction with `DECISIONS.md`, and after 3 failed fix attempts.
+Checkpoint activation depends on trust level. See `docs/operating-rules.md` → Checkpoint activation matrix for the full table. Key gates: destructive actions (always), scope expansion (`supervised` and `semi-auto`), plan approval (`supervised` always, `semi-auto` Large only).
 
 ### New feature
 
@@ -141,9 +154,11 @@ If the `demand-triage` skill classifies the task as Small:
 
 `application-implementer` (with inline 1–2 sentence plan) → targeted validation only
 
-No planning agent, critic, or risk-reviewer required. The implementer reads the file, states the change in 1–2 sentences, implements, and runs targeted tests. See `skills/demand-triage/SKILL.md` for the full list of what is mandatory vs. optional on the Small path.
+No planning agent, critic, or risk-reviewer required. The implementer reads the file, states the change in 1–2 sentences, implements, and runs targeted tests.
 
-Small means **simplified**, not **implicit**. Even on the Small path, the following remain explicit and mandatory:
+At `semi-auto` and `autonomous` trust levels, the agent proceeds directly without waiting for approval. The validation loop runs autonomously.
+
+At `supervised` trust level, the following remain explicit and mandatory:
 
 1. First-response compliance block
 2. Structured preamble (inline 1–2 sentences is acceptable)

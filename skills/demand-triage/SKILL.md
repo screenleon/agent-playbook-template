@@ -78,6 +78,8 @@ Files affected: [list]
 
 ## Workflow adaptation by scale
 
+Workflow adaptation depends on both task scale and the active trust level (see `docs/operating-rules.md` → Trust level). The rules below describe what can be simplified at each scale. Trust level further relaxes or tightens the ceremony.
+
 ### Small tasks — conditional simplifications
 
 When a task is classified as Small, the following workflow steps are **skippable** (may be skipped unless the task specifically requires them):
@@ -86,26 +88,24 @@ When a task is classified as Small, the following workflow steps are **skippable
 - **Critic review** — skip unless the change touches a pattern used across the codebase
 - **Risk-reviewer** — skip unless the change is in a sensitive area (even if file count is small)
 - **Context anchor** — skip (single-step tasks do not need drift prevention)
+- **Compliance block** — required at `supervised` trust level; optional at `semi-auto` and `autonomous`
+- **Deliverable structure** — required at `supervised`; at `semi-auto`/`autonomous`, a brief summary of what changed is sufficient
 
-For Small tasks, the following remain required but may be **simplified**:
+The following steps **remain mandatory at all trust levels** even for Small tasks:
 
-- **Mandatory deliverable structure** (5 sections: Proposal, Alternatives, Pros/Cons, Risks, Recommendation) — keep it concise; do not skip it
-- **Structured preamble** — may be inline (1–2 sentences) rather than a separate section
-
-The following steps **remain mandatory** even for Small tasks:
-
-- **First-response compliance block** — must declare read set, `[SCALE: ...]`, selected path, and checkpoint expectations
 - **Codebase discovery** — at minimum, read the file being changed and its direct dependents
 - **DECISIONS.md check** — verify no contradiction with existing decisions
-- **Validation loop** — run at least the targeted tests for the changed file
+- **Validation loop** — run at least the targeted tests for the changed file (runs autonomously; no human approval needed between iterations)
 - **Error recovery** — follow the standard protocol if tests fail
 - **Security check** — do not skip even for trivial-looking changes in sensitive areas
 
-Small path means explicit simplification, not implicit skipping. If required fields are omitted, the task is non-conformant even if the code change itself is correct.
+Small path means explicit simplification, not implicit skipping. At `supervised` trust level, if required fields are omitted the task is non-conformant even if the code change itself is correct.
 
 ### Medium tasks — full workflow
 
 Follow all mandatory steps and workflows as defined in `docs/agent-playbook.md`. Use the existing routing rules to determine which agents are needed.
+
+At `semi-auto` or `autonomous` trust level, Medium tasks that are low-risk (no auth, no schema, no breaking changes) may share planner + implementer context instead of strict role isolation.
 
 ### Large tasks — full workflow with enhanced rigor
 
@@ -115,7 +115,7 @@ Follow all mandatory steps. Additionally:
 - **Critic is mandatory** — invoke after planning, before user approval
 - **Risk-reviewer is mandatory** — at minimum for plan assessment; ideally also for final review
 - **Context anchor is mandatory** — update before each major step
-- **Mid-implementation checkpoint** — pause after each logical group of changes for user review
+- **Mid-implementation checkpoint** — pause after each logical group of changes for user review (at `autonomous` trust level, pause only for destructive or irreversible operations)
 
 ## Scale labeling
 

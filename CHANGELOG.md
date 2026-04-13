@@ -6,6 +6,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.9.0] - 2026-04-13
+
+### Added
+
+- **Layered configuration scaffolding** (`rules/global/README.md`, `rules/domain/README.md`, `project/project-manifest.md`) — introduced three-level constraint structure (Global Rules, Domain Rules, Project Context) with explicit repository templates.
+- **Initialization protocol skill** (`skills/on_project_start/SKILL.md`) — first-entry workflow for environment scanning and dynamic boundary-questioning before implementation.
+- **Example gallery profiles** (`examples/high-security-mode.md`, `examples/mvp-rapid-mode.md`, `examples/legacy-maintenance.md`) — ready-to-adapt constraint profiles for common operating modes.
+- **Rules quickstart** (`docs/rules-quickstart.md`) — compact, first-pass rule-loading document for agents to reduce cognitive and token overhead.
+- **Rule optimization roadmap** (`docs/rule-optimization-plan.md`) — phased plan for simplification, template expansion, and CI-based rule governance.
+- **Domain rule templates** (`rules/domain/backend-api.md`, `rules/domain/frontend-components.md`, `rules/domain/cloud-infra.md`) — reusable rule skeletons with consistent rule schema.
+- **Rule governance automation** (`scripts/lint-layered-rules.sh`, `.github/workflows/rule-governance.yml`) — lightweight layered-rule linting in CI for structure and override-format checks.
+- **PR checklist for rule changes** (`.github/pull_request_template.md`) — explicit review checklist when layered rules are modified.
+
+### Changed
+
+- **TDAI requirement** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — behavior-changing work now requires test case definition before implementation.
+- **ADR automatic update rule** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — architecture-changing work must update ADRs (or fallback decision record) in the same task.
+- **Conflict resolution principle** (`docs/operating-rules.md`) — added explicit precedence: user instruction -> existing repo practice -> project context -> domain rules -> global rules.
+- **Layered configuration documentation** (`README.md`, `AGENTS.md`, `docs/adoption-guide.md`, `docs/agent-playbook.md`) — synchronized guidance and adoption steps for split rule layers.
+- **Layered configuration governance hardening** (`docs/operating-rules.md`, `docs/layered-configuration.md`) — added placement rubric, deterministic conflict resolution algorithm, and layer hygiene guardrails to reduce rule drift and shadow conflicts.
+- **Project override tracking format** (`project/project-manifest.md`) — added standardized `Overrides: <base-rule-id> -> <project-rule-id>` annotation and override registry table.
+- **Domain layer guide** (`rules/domain/README.md`) — expanded with starter templates and recommended rule-entry schema.
+- **Layered-rule linter integrity checks** (`scripts/lint-layered-rules.sh`, `rules/domain/*.md`) — added Rule ID uniqueness validation and superseded-replacement integrity checks via `Superseded by` field.
+
+## [0.8.0] - 2026-04-11
+
+### Added
+
+- **Agent-deference principle** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — the template now explicitly defers to agent-native capabilities (built-in safety rails, tool routing, output formatting) and only adds rules the agent tool does not provide. Items handled natively are marked `[AGENT-NATIVE]` for adoption-time trimming.
+- **Trust level mechanism** (`docs/operating-rules.md`) — three tiers (`supervised`, `semi-auto` default, `autonomous`) plus an opt-in `dangerouslySkipAllCheckpoints: true` flag for fully unattended execution. Checkpoint activation matrix is 6 gates × 4 columns. Always-safe operations never require approval. Always-dangerous operations require approval by default even at `autonomous`; the bypass flag overrides this when the user explicitly accepts the risk.
+- **Always-safe / always-dangerous operation lists** (`docs/operating-rules.md`) — absolute categorization: always-safe operations (read, test, lint, branch, diff) need no approval; always-dangerous operations (delete, drop, force-push, publish) always require approval regardless of trust level.
+
+### Changed
+
+- **Human checkpoint gates** (`docs/operating-rules.md`) — rewritten with a 4-column activation matrix (plan approval, critic review, mid-implementation checkpoint, scope-expansion, destructive-action, final-review) across supervised / semi-auto / autonomous / bypass. Always-dangerous operations are now "require approval by default" instead of "always require approval" — overridable with `dangerouslySkipAllCheckpoints`.
+- **Validation loop** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — explicitly autonomous: test → lint → auto-fix → repeat runs without human approval. Escalation to human after 3 consecutive failures.
+- **Context isolation** (`docs/operating-rules.md`, `docs/agent-playbook.md`) — Medium tasks at `semi-auto`/`autonomous` may share planner + implementer context instead of requiring strict role isolation.
+- **Compliance block** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — now trust-level-aware: required at `supervised`; optional for Small tasks at `semi-auto`/`autonomous`.
+- **Small-task output contract** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — at `semi-auto`/`autonomous`, a brief summary suffices instead of the full structured output.
+- **Demand triage workflow adaptation** (`skills/demand-triage/SKILL.md`) — Small task simplifications are now trust-level-qualified (compliance block, deliverable structure). Medium tasks gain context isolation relaxation note. Large task mid-implementation checkpoint respects `autonomous` trust level.
+- **Critic review gate** (`docs/agent-playbook.md`, `.github/copilot-instructions.md`) — at `autonomous` trust level, critic review is only mandatory for Large tasks.
+
+---
+
 ## [0.7.0] - 2026-04-10
 
 ### Added
