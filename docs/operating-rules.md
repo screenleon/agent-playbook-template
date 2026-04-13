@@ -2,18 +2,146 @@
 
 This file is the source of truth for safety, scope control, validation, destructive-action rules, codebase discovery, error recovery, and project-specific constraints.
 
+## Agent-deference principle
+
+This template is designed to complement — not replace — the capabilities that agent tools already provide natively.
+
+**Rule: prefer the agent's built-in behavior first.** Only apply template-level rules when the agent tool does not already cover the capability.
+
+Examples of behaviors typically handled by the agent tool (do not re-specify):
+
+- Confirmation prompts before destructive terminal commands (most agent tools enforce this)
+- File-read and search tool selection (the agent's own toolchain handles this)
+- Basic code-style formatting (handled by linters and the agent's native conventions)
+- Token management and context-window limits (handled by the agent runtime)
+
+Examples of behaviors this template adds because agents lack them:
+
+- Project-specific decision log (`DECISIONS.md`) and contradiction checks
+- Role routing and multi-agent coordination workflows
+- Scale-based workflow adaptation (demand triage)
+- Repository-specific conventions and architectural constraints
+- Structured handoff artifacts between agent invocations
+
+When adopting this template, review each rule section and mark items already covered by your agent tool as `[AGENT-NATIVE]`. Those items can be trimmed from the project-level instructions to reduce token overhead. See `docs/adoption-guide.md` for the full trimming process.
+
+## Trust level
+
+This template supports three trust levels that control how much human approval is required. Set the trust level in project settings or at the start of a session.
+
+| Level | Description | When to use |
+|---|---|---|
+| `supervised` | All mandatory checkpoints require human approval. Full compliance output on every task. | High-risk projects, unfamiliar codebases, onboarding new agents |
+| `semi-auto` (default) | Small and low-risk Medium tasks run autonomously. Checkpoints activate only for Large, high-risk, or destructive work. | Most development work |
+| `autonomous` | Agent proceeds without human approval except for irreversible/destructive actions. | Trusted repos with good test coverage and branch protections |
+
+### How trust level interacts with checkpoints
+
+- **Destructive actions** (delete files, drop tables, force-push): always require human approval regardless of trust level — unless `dangerouslySkipAllCheckpoints: true` is explicitly set (see below).
+- **Plan approval**: required at `supervised`; required for Large scale at `semi-auto`; skipped at `autonomous`.
+- **Scope expansion**: required at `supervised` and `semi-auto`; advisory notice at `autonomous`.
+- **Stuck escalation** (3 failed attempts): requires human escalation unless `dangerouslySkipAllCheckpoints: true` is set.
+
+### Setting the trust level
+
+Set via project-specific constraints at the bottom of this file, or at session start:
+
+```yaml
+trust_level: semi-auto  # supervised | semi-auto | autonomous
+```
+
+If not specified, `semi-auto` is the default.
+
+### Full bypass mode (`dangerouslySkipAllCheckpoints`)
+
+Users who understand the risks and want fully unattended execution can opt in to bypass mode:
+
+```yaml
+trust_level: autonomous
+dangerouslySkipAllCheckpoints: true
+```
+
+When both flags are set, **all** checkpoint gates — including always-dangerous operations — are bypassed. The agent executes destructive, irreversible, and high-impact actions without pausing for confirmation.
+
+**Use only when you accept full responsibility for irreversible outcomes.** Recommended safeguards before enabling:
+
+- Working on a non-production branch
+- A recent checkpoint or backup exists
+- CI/CD or branch protections provide a downstream safety net
+- The scope of the task is well-defined and bounded
+
+This flag has no effect unless `trust_level` is also set to `autonomous`. It does not override security rules (no secrets in code, no credential exposure).
+
 ## Safety rails
 
 - Never expose secrets, tokens, private keys, or credentials in code, logs, screenshots, or documentation.
-- Never perform destructive actions without explicit user approval when the tool or environment does not already enforce approval.
+- Never perform destructive actions without explicit user approval when the tool or environment does not already enforce approval — unless `dangerouslySkipAllCheckpoints: true` is active, in which case the user has given blanket approval at configuration time.
 - Treat branch protections, review requirements, and deployment safeguards as hard constraints, not suggestions.
 - Prefer the minimum required permissions, scope, and file changes.
+
+## Layered configuration
+
+To keep this template adaptable across repositories, split constraints into three layers.
+
+1. **Global Rules (core layer)** — communication norms, coding style baseline, universal security constraints.
+2. **Domain Rules (domain layer)** — domain-specific constraints such as backend API, cloud infrastructure, or frontend component systems.
+3. **Project Context (project layer)** — repository-local boundaries and operational constraints.
+
+Reference structure:
+
+- `rules/global/` — core rules
+- `rules/domain/` — domain-specific rules
+- `project/project-manifest.md` — project-local context template
+
+When the same topic appears in multiple layers, use this precedence order:
+
+1. Project Context
+2. Domain Rules
+3. Global Rules
+
+### Layer placement rubric
+
+Place each rule in the lowest layer that can safely own it:
+
+1. Put a rule in **Global Rules** only if it should apply to nearly every repository.
+2. Put a rule in **Domain Rules** if it is specific to a technical domain but reusable across multiple repositories.
+3. Put a rule in **Project Context** if it depends on repository-local constraints, team operations, or legacy compatibility.
+
+If uncertain, default to Domain Rules (not Global Rules) to avoid accidental overreach.
+
+### Resolution algorithm
+
+When multiple rules apply to the same topic, resolve deterministically:
+
+1. Collect candidate rules from Project, Domain, and Global layers.
+2. Keep only active rules (ignore deprecated/superseded notes).
+3. Apply precedence: Project > Domain > Global.
+4. If conflicts remain inside the same layer, prefer the more specific scope (module-specific over repo-wide).
+5. If still tied, prefer the most recent dated rule and record the tie-break in `DECISIONS.md`.
+
+### Layer hygiene guardrails
+
+- Avoid duplicate rule text across layers; higher layers should override by reference, not copy-paste.
+- Mark superseded rules explicitly to prevent silent ambiguity.
+- When moving a rule between layers, update references in `AGENTS.md`, `docs/adoption-guide.md`, and tool-specific instruction files in the same task.
 
 ## Scope control
 
 - Do not expand the task beyond the requested outcome without stating why.
 - If a task is ambiguous, reduce ambiguity first through planning instead of guessing across multiple modules.
 - Keep fixes local unless the broader change is necessary for correctness.
+
+## Initialization protocol
+
+At first entry into a new repository, run `skills/on-project-start/SKILL.md` before implementation.
+
+Required outcomes:
+
+1. Detect dominant stack signals (for example Spring Boot, AWS, Terraform, CDK, React).
+2. Ask targeted boundary questions to the user before coding.
+3. Record confirmed constraints into the project layer (`project/project-manifest.md` and/or `Project-specific constraints`).
+
+This converts boundary discovery from hardcoded assumptions into dynamic confirmation.
 
 ## Context isolation
 
@@ -27,6 +155,8 @@ Each conceptual role (planner, architect, implementer, critic, reviewer) should 
 - If a tool supports named subagents or new sessions, use them.
 - If a tool only supports a single conversation, insert a **hard context break** between roles: summarize the previous role's output into a structured handoff artifact, then begin the next role with only that artifact as input.
 
+**Scale-based relaxation**: For Small tasks, a single agent context is sufficient. For Medium tasks at `semi-auto` or `autonomous` trust level, planner and implementer may share a context if the tool does not easily support subagents. Strict isolation remains mandatory for Large tasks and for any task at `supervised` trust level.
+
 ### Handoff artifact
 
 When one agent's work feeds into the next, pass a **structured handoff artifact** — not raw conversation history. Include: task, deliverable, key decisions (with DECISIONS.md refs), open risks, constraints for next step, and attached output. See `docs/agent-templates.md` → Handoff artifact template for the full format.
@@ -39,23 +169,44 @@ When one agent's work feeds into the next, pass a **structured handoff artifact*
 
 ## Human checkpoint gates
 
-Agents must **STOP and wait for explicit user approval** at these points. Do not proceed automatically.
+Checkpoint behavior is governed by the trust level (see Trust level section above). The table below shows when each gate activates.
 
-### Mandatory checkpoints
+### Checkpoint activation matrix
 
-1. **Plan approval** — after the planning agent produces a plan, present it to the user and wait for "PROCEED" or revision before any implementation starts.
-2. **Destructive or irreversible actions** — before deleting files, dropping tables, force-pushing, resetting branches, or modifying shared infrastructure.
-3. **Scope expansion** — if work reveals that more modules, contracts, or schemas need to change than originally planned, stop and present the expanded scope for approval.
-4. **Stuck escalation** — after 3 failed attempts at the same error, stop and report instead of continuing to guess.
+| Gate | `supervised` | `semi-auto` | `autonomous` | `autonomous` + `dangerouslySkipAllCheckpoints` |
+|---|---|---|---|---|
+| Plan approval | Always | Large or high-risk only | Skip | Skip |
+| Destructive/irreversible actions | Always | Always | Always | **Skip** |
+| Scope expansion | Always | Always | Advisory notice only | Skip |
+| Stuck escalation (3 failures) | Always | Always | Always | **Skip** (log and continue) |
+| Mid-implementation review (>5 files) | Always | Large only | Skip | Skip |
+| Before final merge | Always | Recommended | Skip | Skip |
 
-### Recommended checkpoints
+### Always-safe operations (never need human approval)
 
-5. **Mid-implementation review** — for tasks with more than 5 files changed, pause after completing the first logical group and present progress before continuing.
-6. **Before final merge** — present a summary of all changes for user review before marking work as complete.
+These operations are safe by nature and agents may execute them automatically at any trust level:
+
+- Reading files, searching code, listing directories
+- Running tests and linters
+- Running static analysis and type checkers
+- Creating or switching git branches
+- Writing to session memory or scratchpad
+- Generating diffs and previewing changes (dry-run)
+
+### Always-dangerous operations (require human approval by default)
+
+These operations are irreversible or high-impact and require explicit human approval unless `dangerouslySkipAllCheckpoints: true` is set:
+
+- Deleting files or directories
+- Dropping database tables or running destructive migrations
+- `git push --force`, `git reset --hard`, amending published commits
+- Modifying shared infrastructure, CI/CD pipelines, or deployment configs
+- Publishing packages, creating releases, or pushing to `main`/`production` branches
+- Modifying auth, permissions, or security configuration in production
 
 ### Checkpoint format
 
-When stopping for approval, present: gate name, current state, proposal, risks, and decision needed. See `docs/agent-templates.md` → Checkpoint template for the full format. Never silently skip a mandatory checkpoint.
+When stopping for approval, present: gate name, current state, proposal, risks, and decision needed. See `docs/agent-templates.md` → Checkpoint template for the full format. Never silently skip a checkpoint that is active for the current trust level.
 
 ## Autonomous execution mode
 
@@ -151,15 +302,30 @@ If you skip discovery, state what you skipped and why.
 
 ## Validation loop (write → test → fix → repeat)
 
-After every code change, follow this mandatory loop:
+After every code change, follow this mandatory loop. **This loop runs autonomously** — the agent does not need human approval between iterations. It is an always-safe operation.
 
 1. **Run tests** — execute the project's test suite (e.g., `go test ./...`, `npm test`, `pytest`, `mvn test`). Run the most targeted subset first, then broaden if needed.
 2. **Run static analysis** — execute linters and type checkers (e.g., `go vet`, `eslint`, `mypy`, `cargo clippy`).
-3. **Check for errors** — if tests or analysis fail, do not move on. Go to the error recovery section.
+3. **Auto-fix on failure** — if tests or analysis fail, identify the root cause, apply the minimal fix, and re-run. Do not wait for human approval to retry.
 4. **Repeat** — continue the loop until all tests pass and no new warnings are introduced.
-5. **Report** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user.
+5. **Escalate if stuck** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user. This escalation is mandatory at all trust levels except when `dangerouslySkipAllCheckpoints: true` is active — in that case, log the unresolved failures prominently and continue rather than waiting for user input.
 
 Never treat a change as complete until verification passes. If the project has no test suite, state that explicitly and describe what manual verification was done or is still needed.
+
+### TDAI (Test-Driven AI) requirement
+
+For new behavior (feature addition, contract extension, architecture-driven behavior change), agents must generate test cases before implementation.
+
+Minimum policy:
+
+1. Define expected behavior as test cases first.
+2. Run tests to confirm failing baseline where applicable.
+3. Implement minimal code to satisfy tests.
+4. Re-run tests and static analysis.
+
+Allowed exception:
+
+- Trivial non-behavioral edits (copy changes, comment/doc-only edits, formatting-only fixes) may skip test-first ordering, but validation still remains mandatory when code is touched.
 
 ## Structured output and anti-drift
 
@@ -177,16 +343,20 @@ This must appear in the output before any code or implementation. Do not require
 
 ### Mandatory first-response compliance block
 
-The first response of any implementation task must include a visible compliance block so users can verify process adherence.
+The first response of any implementation task must include a visible compliance block so users can verify process adherence. The depth of this block depends on the trust level.
 
-Required fields:
+**At `supervised` trust level** — full compliance block with all fields:
 
 1. **Read set** — list the files/rules read before implementation
 2. **Scale** — `[SCALE: SMALL|MEDIUM|LARGE]` and evidence-based reason
 3. **Workflow path** — Small simplification path or Medium/Large planning path, with justification
 4. **Checkpoint map** — mandatory checkpoints that will be used in this task (or `N/A` with reason)
 
-If this block is missing, the workflow is considered not started.
+**At `semi-auto` trust level** — required for Medium and Large tasks only. Small tasks may skip the compliance block and proceed directly (but must still run triage internally).
+
+**At `autonomous` trust level** — optional. The agent may omit the compliance block and proceed. Scale classification and DECISIONS.md checks still run internally but do not need to be reported unless issues are found.
+
+If this block is missing at `supervised` trust level, the workflow is considered not started.
 
 ### Context anchor
 
@@ -221,15 +391,24 @@ Every agent role must produce its final output using the Deliverable template in
 
 ### Small-task minimum output contract
 
-Small tasks may simplify depth, but must keep explicit structure. The minimum acceptable output for Small tasks is:
+Small tasks may simplify depth, but must keep explicit structure. The minimum output depends on the trust level:
 
-1. Compliance block (from above)
-2. Structured preamble (Assumptions, Constraints, Proposed approach; inline allowed)
+**At `supervised` trust level** (full explicit output):
+
+1. Compliance block
+2. Structured preamble (inline allowed)
 3. DECISIONS.md contradiction check result
 4. Validation plan and targeted verification outcome
-5. Mandatory deliverable structure with concise content and explicit `N/A` where applicable
+5. Mandatory deliverable structure (concise)
 
-Small tasks must not skip explicit workflow declaration or verification reporting.
+**At `semi-auto` or `autonomous` trust level** (streamlined):
+
+1. DECISIONS.md contradiction check result (silent pass is acceptable — only report if contradiction found)
+2. Implement the change directly
+3. Run targeted validation and report outcome
+4. Brief summary of what changed and why
+
+At all trust levels, Small tasks must not skip verification. The difference is output ceremony, not rigor.
 
 ## Feedback loop and quality signals
 
@@ -328,6 +507,16 @@ Maintain a `DECISIONS.md` file (or equivalent) at the repository root to record:
 
 Agents should read this file during codebase discovery and append to it when making architectural or behavioral decisions that future work depends on.
 
+### ADR automatic update
+
+When a task changes system architecture (for example service boundary split/merge, integration pattern replacement, event topology change, deployment model change), agents must update architecture decision records in the same task.
+
+Rules:
+
+1. If `docs/adr/` exists, append or supersede an ADR in that directory.
+2. If no ADR directory exists, append a full decision entry to `DECISIONS.md` and include architecture-change context.
+3. Do not finalize implementation with architecture changes unless ADR/decision log is updated in the same change set.
+
 ### Decision archive lifecycle
 
 When `DECISIONS.md` exceeds 50 entries or 30 KB, or when any memory health indicator reaches the "needs attention" threshold, archive inactive decisions to `DECISIONS_ARCHIVE.md`. See `skills/memory-and-state/SKILL.md` → Memory lifecycle management for the full procedure, safety checks, and health indicators.
@@ -381,4 +570,18 @@ If an agent discovers that a proposed change conflicts with an existing entry in
 Waiting for user decision before proceeding.
 ```
 
-This is a mandatory checkpoint — do not resolve contradictions autonomously.
+This is a mandatory checkpoint — do not resolve contradictions autonomously. Exception: when `dangerouslySkipAllCheckpoints: true` is active, log the contradiction prominently and continue rather than stopping. The user's explicit bypass choice is treated as acknowledgment of this risk.
+
+## Conflict resolution principle
+
+When generic agent guidance conflicts with repository-specific practice, resolve in this order:
+
+1. Explicit user instruction for the current task
+2. Existing codebase practice and enforced repository constraints
+3. Project Context (`project/project-manifest.md`, `Project-specific constraints`, active decisions)
+4. Domain Rules
+5. Global Rules and model default preferences
+
+Default rule:
+
+- If playbook guidance conflicts with existing repository style, follow existing repository practice unless the user explicitly requests a refactor.

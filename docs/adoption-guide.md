@@ -21,6 +21,18 @@ Then choose any of the following that match your toolchain:
 
 The template will produce vague, unusable agent behavior until you fill in these items:
 
+### 0. Layered configuration scaffolding (mandatory)
+
+Create and maintain these paths:
+
+- `rules/global/` for cross-project core rules
+- `rules/domain/` for domain-specific rules
+- `project/project-manifest.md` for project-local boundaries
+
+Precedence is: Project Context -> Domain Rules -> Global Rules.
+
+For placement criteria, conflict resolution details, and anti-patterns, follow `docs/layered-configuration.md`.
+
 ### 1. Project-specific constraints (mandatory)
 
 Open `docs/operating-rules.md` and fill the `Project-specific constraints` section with your actual rules. Be concrete and specific — agents cannot follow "best practices", they can only follow explicit instructions.
@@ -88,6 +100,16 @@ Create an `ARCHITECTURE.md` or fill it into your README to help agents understan
 - db/migrations/    → SQL migrations
 - db/queries/       → sqlc query files
 ```
+
+### 5. Initialization protocol (recommended)
+
+Add the `skills/on-project-start/SKILL.md` workflow to your first-session process so agents dynamically discover missing boundaries.
+
+Expected first-session questions include:
+
+- Framework-specific naming or package conventions
+- Infra tooling choices (for example Terraform vs CDK)
+- Deployment/runtime constraints that are not documented yet
 
 ## First customization pass
 

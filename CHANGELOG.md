@@ -6,10 +6,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [0.9.0] - 2026-04-11
+## [0.9.0] - 2026-04-13
 
 ### Added
 
+- **Layered configuration scaffolding** (`rules/global/README.md`, `rules/domain/README.md`, `project/project-manifest.md`) — introduced three-level constraint structure (Global Rules, Domain Rules, Project Context) with explicit repository templates.
+- **Initialization protocol skill** (`skills/on-project-start/SKILL.md`) — first-entry workflow for environment scanning and dynamic boundary-questioning before implementation.
+- **Example gallery profiles** (`examples/high-security-mode.md`, `examples/mvp-rapid-mode.md`, `examples/legacy-maintenance.md`) — ready-to-adapt constraint profiles for common operating modes.
+- **Rules quickstart** (`docs/rules-quickstart.md`) — compact, first-pass rule-loading document for agents to reduce cognitive and token overhead.
+- **Rule optimization roadmap** (`docs/rule-optimization-plan.md`) — phased plan for simplification, template expansion, and CI-based rule governance.
+- **Domain rule templates** (`rules/domain/backend-api.md`, `rules/domain/frontend-components.md`, `rules/domain/cloud-infra.md`) — reusable rule skeletons with consistent rule schema.
+- **Rule governance automation** (`scripts/lint-layered-rules.sh`, `.github/workflows/rule-governance.yml`) — lightweight layered-rule linting in CI for structure and override-format checks.
+- **PR checklist for rule changes** (`.github/pull_request_template.md`) — explicit review checklist when layered rules are modified.
 - **Autonomous execution mode** — opt-in mode (`execution_mode: autonomous` in `prompt-budget.yml`) that replaces human checkpoint wait states with auto-proceed + `DECISIONS.md` logging. Full specification in `docs/operating-rules.md` → Autonomous execution mode.
   - Checkpoint gate substitution table (gates 1–6 in supervised vs. autonomous)
   - Non-bypassable rules: destructive actions (gate 2), stuck escalation (gate 4), DECISIONS.md contradictions, and severity-high risk-reviewer findings always remain hard stops
@@ -23,27 +31,45 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **TDAI requirement** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — behavior-changing work now requires test case definition before implementation.
+- **ADR automatic update rule** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — architecture-changing work must update ADRs (or fallback decision record) in the same task.
+- **Conflict resolution principle** (`docs/operating-rules.md`) — added explicit precedence: user instruction -> existing repo practice -> project context -> domain rules -> global rules.
+- **Layered configuration documentation** (`README.md`, `AGENTS.md`, `docs/adoption-guide.md`, `docs/agent-playbook.md`) — synchronized guidance and adoption steps for split rule layers.
+- **Layered configuration governance hardening** (`docs/operating-rules.md`, `docs/layered-configuration.md`) — added placement rubric, deterministic conflict resolution algorithm, and layer hygiene guardrails to reduce rule drift and shadow conflicts.
+- **Project override tracking format** (`project/project-manifest.md`) — added standardized `Overrides: <base-rule-id> -> <project-rule-id>` annotation and override registry table.
+- **Domain layer guide** (`rules/domain/README.md`) — expanded with starter templates and recommended rule-entry schema.
+- **Layered-rule linter integrity checks** (`scripts/lint-layered-rules.sh`, `rules/domain/*.md`) — added Rule ID uniqueness validation and superseded-replacement integrity checks via `Superseded by` field.
 - `AGENTS.md` — added one-line reference to `prompt-budget.yml` execution mode and adoption guide link.
 - `.github/copilot-instructions.md` — added instruction to check `prompt-budget.yml` for `execution_mode` before acting on checkpoint gates.
 
----
-
 ## [0.8.0] - 2026-04-11
 
-- **`ARCHITECTURE.md` template skeleton** — adopter-ready blank template with sections for module map, data flow, key interfaces, external service dependencies, deployment units, and known technical debt. Agents read this file before working on unfamiliar modules (see `skills/memory-and-state/SKILL.md` → Architecture memory).
+### Added
+
+- **Agent-deference principle** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — the template now explicitly defers to agent-native capabilities (built-in safety rails, tool routing, output formatting) and only adds rules the agent tool does not provide. Items handled natively are marked `[AGENT-NATIVE]` for adoption-time trimming.
+- **Trust level mechanism** (`docs/operating-rules.md`) — three tiers (`supervised`, `semi-auto` default, `autonomous`) plus an opt-in `dangerouslySkipAllCheckpoints: true` flag for fully unattended execution. Checkpoint activation matrix is 6 gates × 4 columns. Always-safe operations never require approval. Always-dangerous operations require approval by default even at `autonomous`; the bypass flag overrides this when the user explicitly accepts the risk.
+- **Always-safe / always-dangerous operation lists** (`docs/operating-rules.md`) — absolute categorization: always-safe operations (read, test, lint, branch, diff) need no approval; always-dangerous operations (delete, drop, force-push, publish) require approval by default even at `autonomous`, overridable only with `dangerouslySkipAllCheckpoints: true`.
+- **`ARCHITECTURE.md` template skeleton** — adopter-ready blank template with sections for module map, data flow, key interfaces, external service dependencies, deployment units, and known technical debt.
 - **`DECISIONS_ARCHIVE.md`** — created with template development history (decisions from 0.1.0–0.7.0). Adopters now inherit a clean `DECISIONS.md` and can find template design rationale in the archive.
-- **`docs/example-task-walkthrough.md`** — end-to-end example showing a complete Medium task (add `last_login` field) from codebase discovery through mini retrospective. Demonstrates compliance block, demand triage, structured preamble, contradiction check, implementation, validation loop, deliverable, task completion summary, and mini retrospective — all in one document.
-- **`prompt-budget.yml`** — reference configuration file with full schema, inline comments, and commented examples for smaller project configurations. Covers `budget`, `roles`, `skills`, and `trimming` sections.
-- **`.github/workflows/markdown-lint.yml`** — CI workflow that runs `markdownlint-cli2` on all Markdown files on push and pull request. Catches missing code block languages, hard tabs, and other formatting issues automatically.
+- **`docs/example-task-walkthrough.md`** — end-to-end example showing a complete Medium task (add `last_login` field) from codebase discovery through mini retrospective.
+- **`prompt-budget.yml`** — reference configuration file with full schema, inline comments, and commented examples for smaller project configurations.
+- **`.github/workflows/markdown-lint.yml`** — CI workflow that runs `markdownlint-cli2` on all Markdown files on push and pull request.
 - **`.markdownlint.yml`** — markdownlint configuration with explicit rule documentation. Enables MD040 (fenced code block language) and disables rules with intentional exceptions (MD013, MD024, MD029, MD032, MD033, MD034, MD041, MD060).
-- **Tool adapter reference** (`docs/adoption-guide.md`) — new section covering Claude Code, GitHub Copilot, Cursor, Windsurf, custom OpenAI API, and Codex CLI setups. Includes step-by-step Cursor and Windsurf setup and OpenAI API layer-mapping instructions.
+- **Tool adapter reference** (`docs/adoption-guide.md`) — new section covering Claude Code, GitHub Copilot, Cursor, Windsurf, custom OpenAI API, and Codex CLI setups.
 
 ### Changed
 
-- **`DECISIONS.md` cleanup** — moved all template development decisions (2026-04-07 through 2026-04-10) to `DECISIONS_ARCHIVE.md`. Active file now contains only the header, adopter guidance, and the blank format example. Adopters fork with a clean decision log.
-- **`skills/design-to-code/SKILL.md` strengthened** — added pre-implementation checklist, scale adaptation table (Small/Medium/Large), expanded anti-patterns table with "why" and "what to do instead" columns, "Do not use this skill when" section, and conformance self-check with 10 items. Aligned with the quality level of other skill files.
-- **`README.md` updated** — added `ARCHITECTURE.md` and `prompt-budget.yml` to the asset inventory and file lists; added `docs/example-task-walkthrough.md` to optional files; updated adoption path to 11 steps; added tool adapter note to customization checklist.
-- **Fenced code block language fixes** — added language specifiers to all unlabeled fenced code blocks across 10 files (`.claude/agents/critic.md`, `docs/agent-playbook.md`, `docs/example-task-walkthrough.md`, `skills/demand-triage/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/memory-and-state/SKILL.md`, `skills/prompt-cache-optimization/SKILL.md`, `skills/repo-exploration/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`). Zero markdownlint errors.
+- **Human checkpoint gates** (`docs/operating-rules.md`) — rewritten with a 4-column activation matrix across supervised / semi-auto / autonomous / bypass. Always-dangerous operations are now "require approval by default" instead of "always require approval" — overridable with `dangerouslySkipAllCheckpoints`.
+- **Validation loop** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — explicitly autonomous: test → lint → auto-fix → repeat runs without human approval. Escalation to human after 3 consecutive failures.
+- **Context isolation** (`docs/operating-rules.md`, `docs/agent-playbook.md`) — Medium tasks at `semi-auto`/`autonomous` may share planner + implementer context instead of requiring strict role isolation.
+- **Compliance block** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`) — now trust-level-aware: required at `supervised`; optional for Small tasks at `semi-auto`/`autonomous`.
+- **Small-task output contract** (`docs/operating-rules.md`, `.github/copilot-instructions.md`) — at `semi-auto`/`autonomous`, a brief summary suffices instead of the full structured output.
+- **Demand triage workflow adaptation** (`skills/demand-triage/SKILL.md`) — Small task simplifications are now trust-level-qualified (compliance block, deliverable structure). Medium tasks gain context isolation relaxation note. Large task mid-implementation checkpoint respects `autonomous` trust level.
+- **Critic review gate** (`docs/agent-playbook.md`, `.github/copilot-instructions.md`) — at `autonomous` trust level, critic review is only mandatory for Large tasks.
+- **`DECISIONS.md` cleanup** — moved all template development decisions (2026-04-07 through 2026-04-10) to `DECISIONS_ARCHIVE.md`. Adopters fork with a clean decision log.
+- **`skills/design-to-code/SKILL.md` strengthened** — added pre-implementation checklist, scale adaptation table, expanded anti-patterns, and conformance self-check with 10 items.
+- **`README.md` updated** — added `ARCHITECTURE.md` and `prompt-budget.yml` to the asset inventory; added `docs/example-task-walkthrough.md` to optional files; updated adoption path to 11 steps.
+- **Fenced code block language fixes** — added language specifiers to all unlabeled fenced code blocks across 10 files. Zero markdownlint errors.
 - **Hard tabs replaced** (`README.md`) — replaced tab-indented mermaid diagram with spaces.
 
 ---
