@@ -113,8 +113,8 @@ for rule_id in "${!RULE_FILE[@]}"; do
   fi
 
   if [[ "$status" == "superseded" ]]; then
-    if [[ -z "$superseded_by" || "$superseded_by" == "N/A" ]]; then
-      echo "[rule-lint][error] superseded rule '$rule_id' must define '- Superseded by: <RULE_ID>' (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+    if [[ -z "$superseded_by" || "$superseded_by" == "N/A" || "$superseded_by" == *"<"* ]]; then
+      echo "[rule-lint][error] superseded rule '$rule_id' must define '- Superseded by:' with a real rule ID (placeholders such as '<RULE_ID>' are not allowed) (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
       EXIT_CODE=1
     fi
   fi
