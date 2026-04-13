@@ -614,7 +614,7 @@ Do not leave stale stage names (for example `Read` as a standalone stage after s
 <!-- - Authentication uses JWT with RS256; do not switch algorithms -->
 <!-- - Frontend state management uses Zustand; do not introduce Redux -->
 
-_This section is intentionally blank in the template. Fill it with your repository's actual technical constraints, architectural decisions, and non-negotiable patterns._
+*This section is intentionally blank in the template. Fill it with your repository's actual technical constraints, architectural decisions, and non-negotiable patterns.*
 
 ## Decision log
 

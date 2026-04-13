@@ -23,7 +23,7 @@ Run self-reflection **after** producing a draft deliverable and **before** emitt
 
 ## Rubric
 
-Evaluate your draft output against these four dimensions. For each, state **pass** or **fail + specific issue**.
+Evaluate your draft output against these five dimensions. For each, state **pass** or **fail + specific issue**.
 
 ### 1. Correctness
 
@@ -76,14 +76,14 @@ After evaluating, produce a brief reflection block (do not omit even if all pass
 ## Revision protocol
 
 1. If any dimension is **fail**, revise the draft to fix the specific issue before emitting.
-2. After revision, re-evaluate only the failed dimensions (not all four).
+2. After revision, re-evaluate only the failed dimensions (not all dimensions).
 3. If a dimension still fails after the maximum revision rounds, **emit the output anyway** but include the unresolved issue in the reflection block and flag it as an open risk in the deliverable.
 
 Do not enter an infinite revision loop. The maximum rounds are defined by task scale (see table above).
 
 ## Integration with handoff
 
-When this skill produces a reflection result, include it in the handoff artifact under the `reflection_result` field (if using the structured handoff schema) or as an appendix to the text-based handoff artifact.
+When this skill produces a reflection result, include it in the handoff artifact under `state.reflection_result` (if using the structured handoff schema) or as an appendix to the text-based handoff artifact.
 
 ## Anti-patterns
 

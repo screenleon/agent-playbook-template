@@ -133,6 +133,10 @@ properties:
           completeness:
             type: string
             enum: [pass, fail]
+          isolation:
+            type: string
+            enum: [pass, fail, skipped]
+            description: Isolation check result from the self-reflection rubric (typically pass/fail for Medium/Large, skipped for Small).
           revisions_made:
             type: array
             items:

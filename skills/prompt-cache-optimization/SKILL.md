@@ -177,7 +177,7 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 | `standard` | ≤ 8,000 tokens | 5 (all Always-tier) | Conditional skills activate by trigger. On-demand domain skills require explicit opt-in. |
 | `full` | ≤ 15,000 tokens | 5 + all applicable Conditional + On-demand | No restrictions. Full observability, self-reflection, and planning. |
 
-When `profile: minimal`, agents should:
+When `budget.profile: minimal`, agents should:
 - Run tests directly using tool-native test execution instead of loading `test-and-fix-loop`.
 - Use built-in retry logic instead of loading `error-recovery`.
 - Read `DECISIONS.md` directly instead of loading `memory-and-state`.
@@ -192,6 +192,7 @@ If `prompt-budget.yml` does not exist, use the `standard` profile defaults with 
 ```yaml
 # prompt-budget.yml
 budget:
+  profile: standard
   layer1_target_tokens: 3000    # Static rules target
   layer2_max_tokens: 6000       # Skills per request
   layer3_max_tokens: 3000       # DECISIONS.md + ARCHITECTURE.md
@@ -201,8 +202,8 @@ roles:
   disabled: [backend-architect, ui-image-implementer, documentation-architect]
 
 skills:
-  always_load: [demand-triage, repo-exploration]
-  on_demand: [test-and-fix-loop, error-recovery, memory-and-state]
+  always_load: [demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state]
+  on_demand: [prompt-cache-optimization]
   disabled: [design-to-code, documentation-architecture]
 
 trimming:

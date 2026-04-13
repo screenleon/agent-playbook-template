@@ -101,7 +101,7 @@ For knowledge that persists beyond a single session, use the existing persistent
 
 For teams with vector database or embedding infrastructure, long-term memory can be augmented with semantic retrieval (RAG). This replaces full-file reads with targeted retrieval, reducing token consumption for large codebases where `DECISIONS.md` or `ARCHITECTURE.md` alone exceed the 3,000-token Tier 3 budget.
 
-**This section is entirely optional.** If no vector store is available, use the file-based selective retrieval from the Triage-driven selective retrieval section above. The playbook functions identically without RAG.
+**This section is entirely optional.** If no vector store is available, use the file-based selective retrieval from the Triage-driven selective retrieval section below. The playbook functions identically without RAG.
 
 #### Indexing targets
 
@@ -124,7 +124,7 @@ Index the following sources as embeddings:
 #### Query strategy
 
 1. **Compose query** — embed the current task description + file paths being modified.
-2. **Retrieve top-K** — return the K most relevant entries (default K=5, configurable per project in `prompt-budget.yml`).
+2. **Retrieve top-K** — return the K most relevant entries (default K=5).
 3. **Verify relevance** — skim the retrieved entries for genuine relevance; discard false positives.
 4. **Merge into context** — inject the relevant entries into the agent's context window as Tier 3 content.
 
@@ -141,7 +141,7 @@ RAG results **replace** the 3,000-token Tier 3 budget — they do not add to it.
 
 If the vector store is unavailable at runtime:
 
-1. Fall back to the **Triage-driven selective retrieval** procedure (see above).
+1. Fall back to the **Triage-driven selective retrieval** procedure (see below).
 2. If selective retrieval is also not applicable (fewer than 30 entries), fall back to standard full-file reads.
 3. Log the fallback in the task summary: `**Memory fallback**: RAG unavailable, used file-based retrieval`.
 

@@ -21,7 +21,7 @@ Produce a trace record at the end of every completed task, after the deliverable
 
 ### Storage location
 
-By default, trace files go in `.agent-trace/` at the repository root. Teams can override this in `project/project-manifest.md` under a `trace_output_dir` field. If the directory does not exist, create it on first use.
+By default, trace files go in `.agent-trace/` at the repository root. If the directory does not exist, create it on first use.
 
 Filename convention: `YYYY-MM-DD-<short-task-slug>.yaml`
 
@@ -128,7 +128,7 @@ Trace files in `.agent-trace/` can be consumed by CI pipelines for automated qua
 
 For CI consumption, use a two-part filename:
 
-```
+```text
 <taskId>-<role>.trace.yaml
 ```
 

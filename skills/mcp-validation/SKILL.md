@@ -48,11 +48,13 @@ If all tools are available, proceed normally. If any tool is unavailable or degr
 
 When a declared MCP tool is unavailable:
 
-1. **Check fallback mapping** — look up the `fallback_builtin` column in the MCP tool declarations table.
+1. **Check fallback mapping** — look up the **Fallback builtin** column in the MCP tool declarations table (this maps to the `fallback_builtin` field).
 2. **Use the fallback** — if a built-in equivalent exists, use it and log the substitution in the handoff artifact or task summary:
+
    ```text
    **Tool substitution**: tool-b unavailable → using built-in-equivalent-b
    ```
+
 3. **No fallback available** — if no built-in equivalent is declared, report the gap to the user and ask whether to proceed without that capability or wait for the tool to become available.
 4. **Never silently skip** — do not proceed as if the tool call succeeded when it failed. Always log the substitution or the gap.
 
