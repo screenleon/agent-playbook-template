@@ -48,7 +48,7 @@ When identifying impacted modules (checklist item 3), follow this process:
 
 Output format:
 
-```
+```markdown
 ### Impacted modules
 | Module / path          | Role in change          | Depends on       | Depended on by     |
 |------------------------|-------------------------|------------------|--------------------|
@@ -70,7 +70,7 @@ When producing the test plan (checklist item 10), go beyond "write tests". Defin
 
 Output format:
 
-```
+```markdown
 ### Test plan
 | Scenario               | Type        | Input / precondition          | Expected outcome          |
 |------------------------|-------------|-------------------------------|---------------------------|
@@ -99,7 +99,7 @@ Common risk categories to check:
 
 Output format:
 
-```
+```markdown
 ### Risks
 | Risk                           | Likelihood | Impact | Mitigation                        | Owner    |
 |--------------------------------|------------|--------|-----------------------------------|----------|

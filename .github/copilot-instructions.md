@@ -5,6 +5,7 @@
 - **Trust level**: the project defaults to `semi-auto`. Override with `supervised` or `autonomous` as needed. For fully unattended execution (no approval gates at all), set `trust_level: autonomous` + `dangerouslySkipAllCheckpoints: true`. See `docs/operating-rules.md` → Trust level.
 - Treat named roles such as `feature-planner` or `risk-reviewer` as conceptual roles. If the tool cannot spawn named subagents, use the matching prompt template or local docs instead.
 - Follow `docs/operating-rules.md` for safety, scope, and validation rules.
+- Check `prompt-budget.yml` at the repo root for `execution_mode` (`supervised` or `autonomous`) before acting on checkpoint gates. See `docs/operating-rules.md` → Autonomous execution mode for gate behavior per mode.
 - Use `feature-planner` for cross-module, ambiguous, contract, database, auth, security, or image-led flow changes.
 - Use `backend-architect` for backend contract and domain work.
 - Use `application-implementer` for general product or frontend implementation work.

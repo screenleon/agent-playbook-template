@@ -34,7 +34,7 @@ If you only do one thing on day one: keep `DECISIONS.md` updated so future agent
 
 ## Example: Complete Use Case
 
-Use case: add a new repository rule that all API handlers must enforce request id logging.
+Use case: add a new repository rule that all API handlers must enforce request ID logging.
 
 1. Update rule source: add the non-negotiable rule in `docs/operating-rules.md` under Project-specific constraints.
 2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
@@ -78,15 +78,15 @@ Checkpoint map: [plan approval, destructive actions, scope expansion]
 
 ```mermaid
 flowchart LR
-	A[User Task Request] --> B[AGENTS.md]
-	B --> C[docs/operating-rules.md]
-	B --> D[docs/agent-playbook.md]
-	C --> L[Layered Config<br/>rules/ + project/]
-	D --> E[Role Selection]
-	E --> F[skills/*/SKILL.md]
-	F --> G[Implementation + Validation Loop]
-	G --> H[DECISIONS.md Update]
-	H --> I[Future Contradiction Checks]
+    A[User Task Request] --> B[AGENTS.md]
+    B --> C[docs/operating-rules.md]
+    B --> D[docs/agent-playbook.md]
+    C --> L[Layered Config<br/>rules/ + project/]
+    D --> E[Role Selection]
+    E --> F[skills/*/SKILL.md]
+    F --> G[Implementation + Validation Loop]
+    G --> H[DECISIONS.md Update]
+    H --> I[Future Contradiction Checks]
 ```
 
 ## Layered Configuration
@@ -161,6 +161,7 @@ Use `examples/` for ready-to-adapt constraint profiles:
 ### Strongly recommended
 
 - `DECISIONS.md`
+- `ARCHITECTURE.md`
 - `.github/copilot-instructions.md`
 - `.claude/agents/`
 - `skills/`
@@ -168,6 +169,8 @@ Use `examples/` for ready-to-adapt constraint profiles:
 
 ### Optional
 
+- `prompt-budget.yml` — declare token budget and enabled/disabled roles per project
+- `docs/example-task-walkthrough.md` — reference for expected output formats
 - `docs/external-practices-notes.md`
 - `docs/adoption-guide.md`
 
@@ -177,11 +180,13 @@ Use `examples/` for ready-to-adapt constraint profiles:
 2. Edit `AGENTS.md` to point at your repository-specific docs.
 3. Edit `docs/operating-rules.md` with your real safety, testing, and review expectations.
 4. Edit `docs/agent-playbook.md` so the role routing matches your stack.
-5. Keep, rename, or remove subagents in `.claude/agents/` based on the tools your team actually uses.
-6. Keep, rename, or remove skills in `skills/` based on the workflows you repeat often.
-7. Update `.github/copilot-instructions.md` so it reflects the same role model.
-8. Keep `DECISIONS.md` active from day one so agents can run contradiction checks before planning/implementation.
-9. Apply memory lifecycle rules from `skills/memory-and-state/SKILL.md` (archive stale decisions when thresholds are hit and use selective reads for active vs. archived decisions).
+5. Fill in `ARCHITECTURE.md` with your module map and data flow.
+6. Keep, rename, or remove subagents in `.claude/agents/` based on the tools your team actually uses.
+7. Keep, rename, or remove skills in `skills/` based on the workflows you repeat often.
+8. Update `.github/copilot-instructions.md` so it reflects the same role model.
+9. Keep `DECISIONS.md` active from day one so agents can run contradiction checks before planning/implementation.
+10. Apply memory lifecycle rules from `skills/memory-and-state/SKILL.md` (archive stale decisions when thresholds are hit and use selective reads for active vs. archived decisions).
+11. Optionally create `prompt-budget.yml` to declare which roles and skills are enabled for your project.
 
 ## Customization checklist
 
@@ -190,6 +195,7 @@ Use `examples/` for ready-to-adapt constraint profiles:
 - Add or remove role definitions to match your delivery workflow.
 - If your team does not use Claude-style subagents, keep the role names but remove `.claude/agents/`.
 - If your team does not use Copilot instructions, remove `.github/copilot-instructions.md`.
+- See `docs/adoption-guide.md` → Tool adapter reference for Cursor, Windsurf, and OpenAI API setup.
 
 ## Portability note
 

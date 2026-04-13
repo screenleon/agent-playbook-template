@@ -43,7 +43,7 @@ Before cross-file changes:
 
 After discovery, produce a brief summary:
 
-```
+```text
 Modules involved: [list]
 Existing patterns: [key observations]
 Constraints: [project-specific rules that apply]

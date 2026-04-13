@@ -71,7 +71,7 @@ Keep the most recent **3–5 turns** of conversation as raw, unmodified content.
 
 When turns age out of the short-term window, compress them into structured summaries:
 
-```
+```markdown
 ## Conversation summary (turns 1–N)
 - **Decisions made**: [list]
 - **Files changed**: [list]

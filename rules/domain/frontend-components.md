@@ -22,6 +22,7 @@ Repeat this block for each rule.
 ## Starter examples
 
 ### Rule: UI-001
+
 - Owner layer: Domain
 - Domain: frontend-components
 - Status: active
@@ -33,6 +34,7 @@ Repeat this block for each rule.
 - Superseded by: N/A
 
 ### Rule: UI-002
+
 - Owner layer: Domain
 - Domain: frontend-components
 - Status: active

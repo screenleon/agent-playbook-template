@@ -247,3 +247,106 @@ For a project running 50 agent requests/day, aggressive trimming can save 250K�
    - If `DECISIONS.md` exceeds 50 entries or 30 KB, archive inactive decisions to `DECISIONS_ARCHIVE.md` (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
    - Purge session memory files that were not promoted to repo memory
    - Verify no archived constraint is still referenced by current code
+
+## Autonomous execution mode
+
+By default, agents pause at checkpoint gates and wait for human approval ("PROCEED"). For teams that want agents to operate without human confirmation — for example in CI/CD pipelines or prototyping environments — the template supports an autonomous mode that replaces human wait states with automatic logging and proceeding.
+
+### What autonomous mode changes
+
+Autonomous mode removes the **human wait states**, not the **work steps**. The agent still discovers the codebase, classifies scale, plans, critiques, implements, validates, and records decisions. The only change is that the agent proceeds automatically instead of pausing for your "PROCEED" signal.
+
+| Step | Supervised mode | Autonomous mode |
+|------|----------------|-----------------|
+| Plan approval | Agent stops and waits | Agent logs plan to `DECISIONS.md`, proceeds |
+| Scope expansion | Agent stops and presents | Agent logs expansion, proceeds if within original intent |
+| Mid-implementation review | Agent pauses (recommended) | Agent skips |
+| Before-merge review | Agent pauses (recommended) | Agent skips |
+
+### What autonomous mode does NOT change
+
+These remain default/recommended stop conditions in autonomous mode unless you explicitly relax the corresponding `prompt-budget.yml` flags:
+
+- **Destructive or irreversible actions** — file deletion, table drops, force-push, branch reset. By default these require your approval when `halt_on_destructive_actions: true`. Only set `false` in fully isolated sandbox environments.
+- **Stuck escalation** — if an error persists after 3 fix attempts, the agent stops and reports when `halt_on_stuck_escalation: true`. Do not disable this unless you have an external timeout mechanism in place.
+- **DECISIONS.md contradictions** — if a proposed change conflicts with an existing decision, the agent stops and presents both sides. Auto-resolution is never allowed. This rule has no configuration override.
+- **Severity-high risk findings** — if the risk-reviewer finds a severity-high issue during plan assessment, the agent stops when `halt_on_high_severity_risk: true`. Only set `false` if the codebase is sandboxed and risk findings are pre-acknowledged.
+
+### How to enable autonomous mode
+
+**Step 1**: In `prompt-budget.yml`, change `execution_mode` from `supervised` to `autonomous`:
+
+```yaml
+execution_mode: autonomous
+
+autonomous_mode:
+  auto_proceed_on_plan: true
+  auto_proceed_on_scope_expansion: true
+  halt_on_destructive_actions: true      # Keep true unless fully sandboxed
+  halt_on_stuck_escalation: true         # Always keep true
+  skip_critic_role: false                # Keep false for better quality
+  halt_on_high_severity_risk: true       # Keep true for safety
+```
+
+**Step 2**: Ensure `DECISIONS.md` is in a good state before enabling autonomous mode. The agent will auto-log decisions here — a messy decision log will produce noisy entries.
+
+**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document those in `Project-specific constraints` in `docs/operating-rules.md` so the agent knows which destructive operations are pre-approved.
+
+**Step 4**: Review `DECISIONS.md` after the first few autonomous runs to verify the auto-logged entries are sensible.
+
+### Risk tradeoffs
+
+| Risk | Mitigation |
+|------|-----------|
+| Agent makes a wrong architectural decision without human review | Plan is logged to `DECISIONS.md`; review logs post-hoc and add a correcting entry if needed |
+| Scope creeps silently | Gate 3 (scope expansion within original intent) is still logged; unrelated module additions always stop |
+| Destructive action executed automatically | Gate 2 is non-bypassable by default (`halt_on_destructive_actions: true`) |
+| Critic findings ignored | Critique is embedded in the handoff artifact; implementers must address each point |
+| Agent loops on errors | Gate 4 is non-bypassable by default (`halt_on_stuck_escalation: true`) |
+
+### When not to use autonomous mode
+
+- Schema migrations on production data
+- Permission or security model changes
+- Payment, billing, or financial logic
+- Any task that will be run unreviewed in a production environment
+- First run on a new codebase (discover patterns in supervised mode first)
+
+## Tool adapter reference
+
+The role model in this template is conceptual. Use the table below to find the right integration surface for each tool.
+
+| Tool | System-level instructions | Per-task instructions | Subagent / role support |
+|------|--------------------------|----------------------|------------------------|
+| **Claude Code** | `.claude/agents/*.md` auto-loaded per role | `skills/*/SKILL.md` referenced on demand | Named subagents via `.claude/agents/` |
+| **GitHub Copilot** | `.github/copilot-instructions.md` auto-injected | `.github/prompts/*.prompt.md` invoked via `#` | No native subagents; use prompt files as role templates |
+| **Cursor** | `.cursor/rules/*.mdc` or `.cursorrules` | Inline `@`-mentioned files | No native subagents; use rules files as role templates |
+| **Windsurf** | `.windsurfrules` | Referenced files | No native subagents; use rules file per role |
+| **Custom OpenAI API** | `system` message (Layer 1+2) | `user` message prefix (Layer 3+4) | No native subagents; spawn separate API calls per role |
+| **Codex CLI** | `AGENTS.md` + `docs/operating-rules.md` via repo context | Role templates from `docs/agent-templates.md` | No native subagents; use prompt templates |
+
+### Cursor setup
+
+1. Create `.cursor/rules/` directory (or use `.cursorrules` at the repo root for older versions).
+2. Create one `.mdc` file per always-loaded instruction, e.g.:
+   - `.cursor/rules/operating-rules.mdc` — paste or reference `docs/operating-rules.md`
+   - `.cursor/rules/agent-playbook.mdc` — paste or reference `docs/agent-playbook.md`
+3. For role-specific behavior, create a rule file per role and use it in the relevant context.
+4. Reference skills by asking the agent to read the relevant `skills/*/SKILL.md` file at the start of a task.
+
+### Windsurf setup
+
+1. Create `.windsurfrules` at the repo root.
+2. Include the core instructions from `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+3. For token efficiency, summarize only the most critical rules and link to full files for on-demand reading.
+4. Skills and role templates work as referenced files — ask the agent to read them as needed.
+
+### Custom OpenAI API setup
+
+1. Place Layer 1 (`docs/operating-rules.md` + `docs/agent-playbook.md`) in the `system` message.
+2. Place Layer 2 (selected skills) at the start of the `user` message, before the task description.
+3. Place Layer 3 (`DECISIONS.md`, `ARCHITECTURE.md`) after Layer 2 in the `user` message.
+4. Place the actual task query and current file content last (Layer 4).
+5. For multi-role workflows, spawn separate API calls for each role using the same Layer 1 `system` message to maximize cache hits.
+
+See `skills/prompt-cache-optimization/SKILL.md` → Tool-specific adaptation for more detail on cache-aware loading per tool.

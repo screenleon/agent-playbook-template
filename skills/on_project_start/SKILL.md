@@ -39,7 +39,7 @@ Convert unknown project boundaries into explicit, confirmed constraints before i
 
 ## Output format
 
-```
+```text
 Initialization summary:
 - Detected stack:
 - Boundary questions asked:

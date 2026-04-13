@@ -22,6 +22,7 @@ Repeat this block for each rule.
 ## Starter examples
 
 ### Rule: INFRA-001
+
 - Owner layer: Domain
 - Domain: cloud-infra
 - Status: active
@@ -33,6 +34,7 @@ Repeat this block for each rule.
 - Superseded by: N/A
 
 ### Rule: INFRA-002
+
 - Owner layer: Domain
 - Domain: cloud-infra
 - Status: active

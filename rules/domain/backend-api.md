@@ -22,6 +22,7 @@ Repeat this block for each rule.
 ## Starter examples
 
 ### Rule: API-001
+
 - Owner layer: Domain
 - Domain: backend-api
 - Status: active
@@ -33,6 +34,7 @@ Repeat this block for each rule.
 - Superseded by: N/A
 
 ### Rule: API-002
+
 - Owner layer: Domain
 - Domain: backend-api
 - Status: active
