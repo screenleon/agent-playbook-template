@@ -10,6 +10,7 @@ Repeat this block for each rule.
 ### Rule: <RULE_ID>
 - Owner layer: Domain
 - Domain: frontend-components
+- Stability: <core | behavior | experimental>
 - Status: active
 - Scope: <module or surface>
 - Statement: <clear non-negotiable rule>
@@ -25,6 +26,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: frontend-components
+- Stability: behavior
 - Status: active
 - Scope: shared UI components
 - Statement: Shared components must be stateless unless local UI state is required.
@@ -37,6 +39,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: frontend-components
+- Stability: behavior
 - Status: active
 - Scope: form interactions
 - Statement: All form components must expose loading, error, and disabled states.

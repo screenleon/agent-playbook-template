@@ -111,6 +111,17 @@ Expected first-session questions include:
 - Infra tooling choices (for example Terraform vs CDK)
 - Deployment/runtime constraints that are not documented yet
 
+### 6. Enabling CI agentic review (optional)
+
+If your repository uses `.agent-trace/` trace files (see `skills/observability/SKILL.md`), you can enable automated risk review in CI:
+
+1. **Copy the workflow** — `.github/workflows/agent-review.yml` provides a skeleton GitHub Actions job.
+2. **Configure trigger** — by default, the workflow runs on `pull_request` when `.agent-trace/` files change. Adjust paths or add `workflow_dispatch` as needed.
+3. **Provide a review script** — the workflow calls `scripts/agent-review.sh` (project-specific). This script should parse trace YAML files, apply your quality rubric, and exit with the code contract: 0 = pass, 1 = severity-high, 2 = parse error.
+4. **Set severity threshold** — by default, any severity-high finding fails the job. To also fail on medium findings, modify the script's exit logic.
+
+See `docs/operating-rules.md` → CI-driven risk review for the operational rules that apply during CI reviews.
+
 ## First customization pass
 
 Edit these items immediately:
@@ -157,6 +168,7 @@ Each skill adds ~1,500–3,500 tokens when loaded. Delete skill folders that do 
 - `skills/documentation-architecture/` — only needed for docs-as-deliverable workflows
 - `skills/feature-planning/` — can be removed if all work is Small/Medium scale
 - `skills/backend-change-planning/` — can be removed in frontend-only projects
+- `skills/mcp-validation/` — can be removed if the project does not use MCP tools
 
 ### Step 3: Simplify format templates
 
@@ -168,13 +180,30 @@ If you change or remove any template structure here, also update the correspondi
 - **Checkpoint format** — if your tool enforces approval natively, the checkpoint template can be shortened
 - **Handoff artifact** — if you rarely chain agents, this can be removed entirely
 
-### Step 4: Configure Layer 2 loading strategy
+### Step 4: Choose a budget profile
 
-Use the prompt cache optimization skill (`skills/prompt-cache-optimization/SKILL.md`) to choose which skills load per task type. For small projects:
+Set `budget.profile` in `prompt-budget.yml` based on your token constraints:
 
-- **Minimal set**: `demand-triage` + `repo-exploration` only (all task types)
-- **Standard set**: add `test-and-fix-loop` for implementation tasks
-- **Full set**: use the canonical skill sets from the prompt cache skill (recommended for teams > 3)
+| Your situation | Recommended profile | Estimated Layer 2 cost |
+|----------------|---------------------|------------------------|
+| Tight token limit (< 16K context), solo dev, pay-per-token | `minimal` | ~3,000–4,000 tokens |
+| Typical team, moderate budget (16K–32K context) | `standard` (default) | ~7,000–10,000 tokens |
+| Large team, generous budget (32K+ context), high-risk project | `full` | ~12,000–18,000 tokens |
+
+For `minimal` profile:
+- Only `demand-triage` and `repo-exploration` are loaded as skills
+- The agent uses its native capabilities for testing, error handling, and memory
+- Best suited for Small tasks; Medium/Large tasks may lack planning and validation depth
+
+For `standard` profile:
+- All 5 Always-tier skills load; Conditional skills activate by trigger
+- Good balance of safety and token cost for most projects
+
+For `full` profile:
+- All applicable skills and roles are available
+- Recommended when compliance, risk, or project complexity justifies the token cost
+
+See `docs/agent-playbook.md` → Budget profiles for the full specification and `prompt-budget.yml` for example configurations per profile.
 
 ### Step 5: Set a token budget with `prompt-budget.yml`
 

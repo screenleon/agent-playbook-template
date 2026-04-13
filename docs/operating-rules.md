@@ -72,9 +72,22 @@ When both flags are set, **all** checkpoint gates — including always-dangerous
 
 This flag has no effect unless `trust_level` is also set to `autonomous`. It does not override security rules (no secrets in code, no credential exposure).
 
+## Constitutional principles
+
+These principles are **non-bypassable**. No trust level, `dangerouslySkipAllCheckpoints` flag, project-specific constraint, or override annotation can weaken or skip them. They represent the absolute floor of agent behavior.
+
+1. **Never expose credentials** — never output secrets, tokens, private keys, API keys, or credentials in code, logs, screenshots, documentation, trace files, or any other artifact.
+2. **Never execute unvalidated input as code** — never run user-supplied or externally-sourced input as executable code without sandboxing or explicit validation. This includes `eval()`, dynamic SQL, shell injection vectors, and template injection.
+3. **Never modify production data without backup verification** — before any write operation against production data stores, verify that a backup or rollback path exists. If verification is not possible, stop and report.
+4. **Never disable authentication or authorization** — never remove, bypass, or weaken auth checks, permission gates, or security middleware, even temporarily, even in test environments that mirror production.
+5. **Never suppress security test failures** — never delete, skip, or mark as expected-failure any test that validates security behavior (auth, permissions, input validation, encryption) to make a test suite pass.
+
+Violation of any constitutional principle is a **hard stop** regardless of execution mode. The agent must halt, report the violation, and wait for human resolution.
+
 ## Safety rails
 
-- Never expose secrets, tokens, private keys, or credentials in code, logs, screenshots, or documentation.
+In addition to the constitutional principles above, follow these safety rails. Unlike constitutional principles, these rails can be relaxed by `dangerouslySkipAllCheckpoints: true` where noted.
+
 - Never perform destructive actions without explicit user approval when the tool or environment does not already enforce approval — unless `dangerouslySkipAllCheckpoints: true` is active, in which case the user has given blanket approval at configuration time.
 - Treat branch protections, review requirements, and deployment safeguards as hard constraints, not suggestions.
 - Prefer the minimum required permissions, scope, and file changes.
@@ -124,6 +137,88 @@ When multiple rules apply to the same topic, resolve deterministically:
 - Avoid duplicate rule text across layers; higher layers should override by reference, not copy-paste.
 - Mark superseded rules explicitly to prevent silent ambiguity.
 - When moving a rule between layers, update references in `AGENTS.md`, `docs/adoption-guide.md`, and tool-specific instruction files in the same task.
+
+### Workspace boundary masking
+
+When a repository contains multiple modules, workspaces, or service roots, domain rules can be selectively masked so that only the rules relevant to the current working context are active.
+
+#### Defining boundaries
+
+Declare boundaries in `project/project-manifest.md` under the `## Workspace boundaries` section. Each boundary entry maps a glob pattern to the domain rule files that should be **active** within that path:
+
+```markdown
+| Path glob | Active domain rules | Masked domain rules |
+|---|---|---|
+| `services/api/**` | backend-api | frontend-components |
+| `packages/ui/**` | frontend-components | backend-api |
+| `infra/**` | cloud-infra | backend-api, frontend-components |
+```
+
+#### Masking rules
+
+1. **Global rules are never masked.** Boundaries apply only to domain-level rules.
+2. When working inside a path that matches a boundary glob, load only the **active** domain rules for that path.
+3. If a file does not match any boundary glob, load all domain rules (no masking).
+4. When a change spans multiple boundary paths, load the **union** of all active domain rules for the affected paths.
+5. Boundaries are advisory — an agent may explicitly load a masked rule when justified, and must record the reason in the handoff artifact or `DECISIONS.md`.
+
+#### Backward compatibility
+
+If `project/project-manifest.md` does not contain a `## Workspace boundaries` section, all domain rules are loaded unconditionally. Existing repositories are unaffected until boundaries are explicitly defined.
+
+### Dynamic spawning guardrails
+
+When a coordinator dynamically spawns sub-roles at runtime (see `docs/agent-playbook.md` → Dynamic orchestration), the following guardrails apply:
+
+1. **Max depth = 3** — the spawn chain (coordinator → sub-role → sub-sub-role) must not exceed 3 levels. Any spawn attempt beyond depth 3 is a **hard stop** — the coordinator must escalate to the user.
+2. **No self-delegation** — role A must not spawn role A. Circular spawning is prohibited.
+3. **Handoff schema required** — every dynamic spawn must include a handoff artifact conforming to `docs/schemas/handoff-artifact.schema.yaml` with the `orchestration` block populated (`parent_role`, `spawn_depth`, `plan_of_record_ref`).
+4. **Idle reclaim** — if a spawned sub-role produces no output after 2 exchange rounds, the coordinator reclaims the task. This prevents stalled delegation chains.
+5. **Plan-of-record logging** — the coordinator must update a plan-of-record table before each spawn and after each completion. See `docs/agent-templates.md` → Plan of record.
+6. **Trust-level interaction** — dynamic spawning does not bypass trust-level gates. If the spawned work requires a checkpoint (e.g., destructive action), the checkpoint still fires.
+
+## Rule stability classification
+
+Scope layering (Global / Domain / Project) controls **where** a rule applies. Stability classification controls **how carefully** a rule may be changed. These two dimensions are orthogonal — every rule has both a scope layer and a stability level.
+
+### Stability levels
+
+| Level | Meaning | Change process | Rollback |
+|---|---|---|---|
+| `core` | Defines identity and safety — rarely changes | Requires `risk-reviewer` audit + user approval + `DECISIONS.md` entry | Treated as breaking change |
+| `behavior` | Defines how work is done — adjustable with care | Requires validation loop pass + `DECISIONS.md` entry | Normal revert |
+| `experimental` | Defines new patterns being tested — freely changeable | Record in `DECISIONS.md` only; no approval gate | Revert at any time |
+
+### How to assign stability
+
+| Question | If yes | If no |
+|---|---|---|
+| Would changing this rule risk safety, security, or fundamental agent identity? | `core` | next question |
+| Would changing this rule alter agent workflow behavior or output quality? | `behavior` | next question |
+| Is this rule testing a new pattern, tool usage, or prompt technique? | `experimental` | `behavior` (default) |
+
+If uncertain, default to `behavior`.
+
+### Marking stability in rule entries
+
+Add `- Stability: core | behavior | experimental` to the rule schema alongside existing fields:
+
+```markdown
+### Rule: <RULE_ID>
+- Owner layer: Domain
+- Domain: <domain>
+- Stability: behavior
+- Status: active
+- ...
+```
+
+The `scripts/lint-layered-rules.sh` linter validates that every rule entry includes a `Stability` field with a valid value.
+
+### Stability-aware change protocol
+
+- **Changing a `core` rule**: invoke `risk-reviewer` to assess blast radius. Record the change rationale, alternatives considered, and rollback plan in `DECISIONS.md`. At `supervised` and `semi-auto` trust levels, wait for user approval. At `autonomous` trust level, log an advisory notice and proceed.
+- **Changing a `behavior` rule**: run the validation loop to confirm no regression. Record in `DECISIONS.md`.
+- **Changing an `experimental` rule**: record in `DECISIONS.md` for traceability. No approval gate required.
 
 ## Scope control
 
@@ -297,6 +392,8 @@ Before writing or modifying any code, perform these steps:
 3. **Follow repository conventions** — match the existing code style, framework idioms, and architectural patterns. Do not introduce a new pattern when an established one exists.
 4. **Check dependency graph** — understand imports, module boundaries, and shared types before making cross-file changes.
 5. **Read project-specific constraints** — check the `Project-specific constraints` section below and any `CONVENTIONS.md`, `ARCHITECTURE.md`, or similar files at the repo root.
+6. **Apply workspace boundaries** — if `project/project-manifest.md` defines a `Workspace boundaries` section, determine the active boundary before loading domain rules. See *Workspace boundary masking* above.
+7. **Use RAG when configured** — if RAG-augmented retrieval is set up (see `skills/memory-and-state/SKILL.md` → RAG-augmented retrieval), use semantic search at task start for `DECISIONS.md` and `ARCHITECTURE.md` instead of full-file reads.
 
 If you skip discovery, state what you skipped and why.
 
@@ -311,6 +408,17 @@ After every code change, follow this mandatory loop. **This loop runs autonomous
 5. **Escalate if stuck** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user. This escalation is mandatory at all trust levels except when `dangerouslySkipAllCheckpoints: true` is active — in that case, log the unresolved failures prominently and continue rather than waiting for user input.
 
 Never treat a change as complete until verification passes. If the project has no test suite, state that explicitly and describe what manual verification was done or is still needed.
+
+### CI-driven risk review
+
+When a CI pipeline triggers a risk review (rather than an interactive agent session), the following rules apply:
+
+1. **Read-only mode** — the risk-reviewer does not modify code. It consumes trace files from `.agent-trace/` and produces review findings only.
+2. **Input** — trace YAML files following the naming and format defined in `skills/observability/SKILL.md` → CI integration protocol.
+3. **Output** — a review summary artifact (YAML or PR comment) listing findings with severity levels.
+4. **Exit-code contract** — the CI step exits with code 0 (pass), 1 (severity-high finding), or 2 (parse error). See `skills/observability/SKILL.md` for the full contract.
+5. **Blocking behavior** — severity-high findings fail the CI job. This is equivalent to the "severity-high finding from risk-reviewer" hard stop in interactive mode.
+6. **No trust-level bypass** — CI-driven reviews always enforce severity-high blocking, regardless of trust level settings. `dangerouslySkipAllCheckpoints` does not apply to CI pipelines.
 
 ### TDAI (Test-Driven AI) requirement
 
@@ -443,7 +551,19 @@ If the same process failure appears 3 times in the rolling window:
 2. Synchronize tool-specific files (`.github/copilot-instructions.md`, relevant skills)
 3. Add a `CHANGELOG.md` entry describing the process correction
 
+This escalation rule also applies to **context isolation violations** — if isolation violations appear 3+ times in the rolling window (as recorded by `isolation_status` in trace files), treat it as recurring friction and follow the same escalation procedure.
+
 Do not rely on ad-hoc reminders once recurrence is detected.
+
+### Self-evolution guardrails
+
+When the self-evolution protocol (`docs/agent-playbook.md` → Self-evolution protocol) produces rule or skill improvement proposals:
+
+1. **Human approval required** — evolution proposals always require explicit human approval before implementation, regardless of trust level. `dangerouslySkipAllCheckpoints` does not apply to evolution proposals.
+2. **Constitutional principles are immutable via evolution** — proposals that would weaken, remove, or reinterpret a constitutional principle must be rejected. Constitutional changes require a dedicated manual review process outside the evolution protocol.
+3. **Core stability rules require risk review** — proposals targeting `core` stability rules must pass through `risk-reviewer` before being presented for human approval.
+4. **Maximum 3 proposals per cycle** — to prevent churn, each evolution cycle produces at most 3 proposals. If more patterns are identified, prioritize by frequency and impact.
+5. **Evidence requirement** — every proposal must cite at least one specific trace file, feedback entry, or quality signal metric. Proposals without concrete evidence are invalid.
 
 ## Error recovery
 

@@ -5,8 +5,10 @@
 All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, agent-deference, trust level, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
-2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, plus domain skills (planning, backend, frontend, design, docs).
+2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, self-reflection, observability, MCP validation, plus domain skills (planning, backend, frontend, design, docs).
 3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**. Steps in **bold** are trust-level-gated; see `docs/operating-rules.md` → Trust level for activation rules.
+
+> **Note:** The 11-stage loop above is a conceptual overview. The detailed expansion into 16 mandatory steps (below) adds initialization, structured preamble, test-first, cache-aware loading, isolation, self-reflection, delivery formatting, observability traces, and the feedback loop. Both views describe the same workflow at different levels of granularity.
 
 ## Layered configuration model
 
@@ -17,6 +19,103 @@ In addition to the execution architecture above, repository constraints should b
 3. **Project Context** — `project/project-manifest.md`
 
 Precedence follows `docs/operating-rules.md` → Layered configuration and Conflict resolution principle.
+
+## Skill activation tiers
+
+Not all 15 skills must execute on every task. Skills are classified into three activation tiers:
+
+### Always (minimum required)
+
+These skills run on **every task regardless of scale or trust level**. They form the minimum viable agent workflow.
+
+| Skill | Why mandatory |
+|-------|---------------|
+| `demand-triage` | Determines scale, which controls all downstream behavior |
+| `repo-exploration` | Prevents blind coding; required by codebase discovery rules |
+| `test-and-fix-loop` | Validation is never optional — every code change must be verified |
+| `error-recovery` | Agents must handle failures, not ignore them |
+| `memory-and-state` | DECISIONS.md reads and contradiction checks are mandatory |
+
+### Conditional (activate by trigger)
+
+These skills activate only when their trigger condition is met. If the condition is not met, skip entirely.
+
+| Skill | Trigger condition |
+|-------|-------------------|
+| `on-project-start` | First entry into an unfamiliar repository only |
+| `self-reflection` | Before emitting any deliverable or handoff (all scales, but Small uses 2/5 dimensions) |
+| `observability` | After task completion (Small: inline trace; Medium/Large: structured file) |
+| `prompt-cache-optimization` | When loading instructions — controls Layer 1-4 ordering |
+| `feature-planning` | Medium/Large tasks that need a plan-first approach |
+| `backend-change-planning` | Backend contract, schema, or permission changes |
+| `mcp-validation` | Only when `project/project-manifest.md` declares MCP tools |
+
+### On-demand (opt-in)
+
+These skills are loaded only when the task type matches. Projects that do not use these domains can remove them entirely (see `docs/adoption-guide.md` → Prompt budget trimming).
+
+| Skill | When to load |
+|-------|-------------|
+| `application-implementation` | General product or frontend implementation tasks |
+| `design-to-code` | Screenshot-driven or mockup-driven UI work |
+| `documentation-architecture` | Documentation-as-deliverable tasks |
+
+### Applying the tiers
+
+1. At task start, **always load the 5 mandatory skills**.
+2. Check trigger conditions and load applicable **conditional skills**.
+3. Load **on-demand skills** only when the task domain matches.
+4. Record which skills were loaded in the trace (for observability and future optimization).
+
+This classification aligns with `prompt-budget.yml` — the `always_load`, `on_demand`, and `disabled` lists should mirror these tiers.
+
+### Budget profiles
+
+Users with limited agent token budgets can select a **named budget profile** in `prompt-budget.yml` to control how many skills and roles are loaded. Each profile is a pre-configured combination of skills, roles, and layer targets.
+
+| Profile | Skills loaded per request | Roles available | Layer 2 target | Recommended when |
+|---------|--------------------------|-----------------|----------------|------------------|
+| **minimal** | 2 (demand-triage, repo-exploration) | 2–3 | ≤ 4,000 tokens | Token budget < 16K or pay-per-token with tight limits |
+| **standard** | 5 (all Always-tier skills) | 4–5 | ≤ 8,000 tokens | Typical team usage with moderate token budget |
+| **full** | 5 + all applicable Conditional + On-demand | All enabled | ≤ 15,000 tokens | Generous token budget; large or high-risk projects |
+
+#### Minimal profile
+
+Loads only the two skills required for triage and codebase navigation. Other skills are inlined or skipped:
+
+- **Skills**: `demand-triage`, `repo-exploration`
+- **Roles**: `application-implementer`, `critic` (all others disabled)
+- **Validation**: agent runs tests directly without loading `test-and-fix-loop` skill (uses tool-native test execution)
+- **Error recovery**: agent uses built-in retry logic; `error-recovery` skill is not loaded
+- **Memory**: agent reads `DECISIONS.md` directly; `memory-and-state` skill is not loaded
+- **Trade-offs**: no structured planning phase, no observability traces, no self-reflection rubric, no handoff artifacts. Suitable for Small tasks only.
+
+#### Standard profile
+
+Loads all 5 Always-tier skills. Conditional skills activate normally by trigger.
+
+- **Skills always loaded**: `demand-triage`, `repo-exploration`, `test-and-fix-loop`, `error-recovery`, `memory-and-state`
+- **Conditional skills**: activate by trigger (self-reflection uses 2/5 dimensions for Small tasks)
+- **Roles**: `feature-planner`, `application-implementer`, `risk-reviewer`, `critic`
+- **Trade-offs**: on-demand domain skills (design-to-code, documentation-architecture) require explicit opt-in; full observability traces may be abbreviated.
+
+#### Full profile
+
+Loads all applicable skills per the tier classification. No restrictions.
+
+- **Skills**: all Always + all triggered Conditional + matching On-demand
+- **Roles**: all enabled roles
+- **Self-reflection**: full 5/5 dimensions for Medium/Large tasks
+- **Observability**: full structured traces
+
+#### Applying a budget profile
+
+1. Set `budget.profile` in `prompt-budget.yml` to `minimal`, `standard`, or `full`.
+2. The profile pre-populates `skills.always_load`, `skills.on_demand`, and `roles.enabled` defaults.
+3. Explicit `skills.*` and `roles.*` entries in `prompt-budget.yml` **override** profile defaults (allowing fine-tuning).
+4. If `budget.profile` is not set, behavior defaults to `standard`.
+
+See `prompt-budget.yml` for example configurations per profile.
 
 ## Repository asset map
 
@@ -128,9 +227,11 @@ Every workflow below implicitly includes these steps:
 9. **ADR sync** — for architecture changes, update ADRs or decision records in the same task (`docs/operating-rules.md` → ADR automatic update)
 10. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
 11. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks need only one agent. Medium tasks at `semi-auto` or `autonomous` may relax isolation per `docs/operating-rules.md` → Task boundary rule
-12. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
-13. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
-14. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
+12. **Self-reflect** — before emitting a deliverable or handoff, run the `self-reflection` skill rubric (correctness, consistency, adherence, completeness, isolation). For Small tasks, only correctness + adherence are required; isolation is skipped. See `skills/self-reflection/SKILL.md`
+13. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
+14. **Trace** — emit a trace record using the `observability` skill. For Small tasks, embed minimal trace in the task summary. For Medium/Large tasks, produce a structured trace file. See `skills/observability/SKILL.md`
+15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
 ### First-response compliance block
 
@@ -209,6 +310,86 @@ When `execution_mode: autonomous` is set in `prompt-budget.yml`, replace **user 
 - Contradiction detected in `DECISIONS.md` — always stop
 - Severity-high finding from `risk-reviewer` during plan assessment — always stop
 
+## Graph workflow reference
+
+The linear loop and routing tables above are the source of truth. This graph visualizes the conditional branches that are implicit in those definitions. Use it as a **visual reference**, not as a replacement for the textual rules.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Discover
+    Discover --> Triage
+
+    state Triage {
+        direction LR
+        classify --> SmallPath : scale=Small
+        classify --> PlanPath : scale=Medium/Large
+    }
+
+    SmallPath --> Implement : inline plan (1-2 sentences)
+    PlanPath --> Plan
+
+    Plan --> Critique
+    Critique --> RiskAssess : high-risk task?
+    Critique --> Approve : normal risk
+    RiskAssess --> Approve
+
+    state "trust-level gated" as ApproveGate {
+        Approve --> WaitUser : supervised / semi-auto Large
+        Approve --> AutoProceed : autonomous / semi-auto non-Large
+    }
+
+    WaitUser --> Implement
+    AutoProceed --> Implement
+
+    Implement --> SelfReflect
+    SelfReflect --> Validate
+
+    Validate --> Fix : fail
+    Fix --> Validate
+    Validate --> Escalate : 3 consecutive failures
+    Validate --> Record : pass
+
+    Implement --> ScopeCheck : scope expanded?
+    ScopeCheck --> Triage : re-triage needed
+    ScopeCheck --> SelfReflect : within scope
+
+    Record --> Trace
+    Trace --> Summarize
+    Summarize --> [*]
+```
+
+### Reading the graph
+
+- **Solid edges** are unconditional steps that always execute.
+- **Labeled edges** show the condition that activates that path.
+- The **SmallPath** shortcut skips Plan, Critique, and Approve — the implementer uses a 1–2 sentence inline plan and proceeds directly to Implement.
+- **ScopeCheck** is triggered when the agent detects scope expansion during implementation. If expansion exceeds the original intent, the task re-enters Triage for reclassification.
+- **Escalate** is a hard stop at all trust levels (except `dangerouslySkipAllCheckpoints`).
+- **SelfReflect** runs the `self-reflection` skill rubric before validation. For Small tasks, only correctness + adherence are checked.
+
+### Dynamic orchestration
+
+The static routing tables above cover known workflow patterns. When a task's shape is not known upfront — for example, implementation reveals the need for a documentation pass that was not in the original plan — a **coordinator** role may dynamically spawn additional sub-roles at runtime.
+
+#### Rules
+
+1. **Handoff required** — every dynamic spawn produces a handoff artifact matching `docs/schemas/handoff-artifact.schema.yaml`, with the `orchestration` block populated.
+2. **Plan of record** — the coordinator maintains a plan-of-record table (see `docs/agent-templates.md` → Plan of record) showing expected vs. actual sub-agent sequence. Update the table before each spawn.
+3. **Maximum spawn depth = 3** — a coordinator may not spawn a sub-role that itself spawns beyond depth 3. This is a hard limit to prevent infinite delegation.
+4. **No self-delegation** — a role may not spawn itself. If re-entry is needed, the coordinator must reclaim and re-route.
+5. **Idle reclaim** — if a spawned sub-role produces no deliverable after 2 exchange rounds (or the equivalent in a single-turn tool), the coordinator must reclaim the task and either retry with a different role or escalate.
+
+#### When to use
+
+- The plan called for 2 roles but implementation discovered work for a 3rd
+- A risk-reviewer finding requires a targeted fix by a specialist before the review can complete
+- Documentation updates are discovered as a side effect of implementation
+
+#### When NOT to use
+
+- The workflow is fully predictable — use the static routing table instead
+- The task is Small — dynamic orchestration adds overhead that is not justified
+
 ## Feedback loop execution
 
 Use feedback loop outputs to improve process wording and reduce repeat misses.
@@ -227,6 +408,30 @@ After the task completion summary, include:
 - Review quality signals every 10 tasks (or weekly)
 - `documentation-architect` owns wording updates and synchronization when recurring friction is detected
 - `risk-reviewer` should flag repeated process misses even when code-level outcomes are correct
+
+### Self-evolution protocol
+
+When sufficient feedback data accumulates, the system can propose improvements to its own rules and skills.
+
+#### Trigger conditions
+
+- Every **10 completed tasks** (aligned with the quality signal review cadence), OR
+- When the **same friction point** appears **3 times** in the rolling feedback window (aligned with the escalation rule)
+
+#### Analysis procedure
+
+1. **Collect evidence** — gather recent trace files (`.agent-trace/`), feedback loop outputs (friction, miss risk, improvement candidates), and quality signal metrics.
+2. **Identify patterns** — look for recurring friction, repeated reflection failures, frequently-hit checkpoint gates, or consistently-skipped optional steps.
+3. **Draft proposals** — produce up to 3 evolution proposals per cycle using the Evolution proposal template in `docs/agent-templates.md`.
+4. **Route for review** — proposals that modify `behavior` or `experimental` stability rules go to `documentation-architect` for implementation. Proposals that touch `core` stability rules or constitutional principles must additionally pass through `risk-reviewer`.
+5. **Await approval** — evolution proposals always require human approval, even at `autonomous` trust level. This is non-negotiable.
+
+#### Constraints
+
+- Maximum **3 proposals per cycle** to prevent over-engineering.
+- Proposals must cite specific trace files or feedback entries as evidence.
+- Proposals must not expand scope beyond the identified friction pattern.
+- See `docs/operating-rules.md` → Self-evolution guardrails for safety rules.
 
 ## Context isolation
 
@@ -256,6 +461,19 @@ Role switching within one context causes:
 ```
 
 Each `[Context N]` is an isolated invocation. No context carries forward except through explicit handoff artifacts.
+
+### Isolation verification
+
+Context isolation is not just a guideline — it should be verified. Use the following mechanisms:
+
+1. **Self-reflection check** — the `isolation` dimension in the self-reflection rubric (`skills/self-reflection/SKILL.md`) detects role-switching within a single context. This check is required for Medium and Large tasks; Small tasks (typically single-role) may skip it.
+2. **Trace recording** — every standard and full trace includes an `isolation_status` field (see `skills/observability/SKILL.md`). Values:
+   - `clean` — no role-switching detected; each role ran in its own context
+   - `violation` — role-switching detected within the same context
+   - `relaxed` — isolation was intentionally relaxed (e.g., Medium task at `semi-auto` per the Task boundary rule)
+3. **Recurring violation escalation** — if isolation violations appear 3+ times in the quality signal rolling window, the escalation rule for recurring friction applies (see `docs/operating-rules.md`).
+
+Isolation verification is a **quality signal**, not a hard stop. Some tool platforms cannot enforce strict context separation. The goal is visibility, not blocking.
 
 ## Ownership principles
 

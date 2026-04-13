@@ -25,20 +25,38 @@
 # The defaults below represent a full-featured team project with all roles active
 # and supervised (human-in-the-loop) execution. See commented sections below
 # for autonomous and smaller project configurations.
+#
+# BUDGET PROFILES
+# ─────────────────
+# Set budget.profile to control how many skills/roles load per request.
+# Profiles provide sensible defaults; explicit skills.*/roles.* entries override them.
+#
+#   minimal  — 2 skills, 2-3 roles. For tight token budgets (< 16K total context).
+#   standard — 5 skills, 4-5 roles. Balanced for typical team usage. (default)
+#   full     — all applicable skills and roles. For generous budgets / large projects.
+#
+# See docs/agent-playbook.md → Budget profiles for the full specification.
 
 # ── Execution mode ─────────────────────────────────────────────────────────────
 #
-# supervised (default) — agents STOP at checkpoint gates and wait for user approval.
-# autonomous           — agents auto-proceed at most gates and log decisions instead.
+# Maps to the trust levels defined in docs/operating-rules.md → Trust level.
+#
+# supervised (default) — all mandatory checkpoints require human approval.
+#                        Full compliance output on every task.
+# semi-auto            — Small and low-risk Medium tasks run autonomously.
+#                        Checkpoints activate only for Large, high-risk,
+#                        or destructive work.
+# autonomous           — agent proceeds without human approval except for
+#                        irreversible/destructive actions and stuck escalation.
 #
 # IMPORTANT: autonomous mode is opt-in and must be declared explicitly here.
 # Agents must never infer autonomous mode from context.
 # See docs/operating-rules.md → Autonomous execution mode for the full behavior spec.
 #
-execution_mode: supervised  # supervised | autonomous
+execution_mode: semi-auto  # supervised | semi-auto | autonomous
 
 # ── Autonomous mode options ─────────────────────────────────────────────────────
-# Only read when execution_mode is autonomous. Ignored in supervised mode.
+# Only read when execution_mode is autonomous. Ignored in supervised/semi-auto mode.
 #
 autonomous_mode:
   # Gate 1: Plan approval — auto-proceed and log to DECISIONS.md?
@@ -73,6 +91,12 @@ autonomous_mode:
 # ─────────────────────────────────────────────────────────────────────────────
 
 budget:
+  # Budget profile: minimal | standard | full
+  # Controls how many skills and roles load by default.
+  # Explicit skills.*/roles.* entries below override the profile defaults.
+  # If omitted, defaults to "standard".
+  profile: standard
+
   # Target for Layer 1 (docs/operating-rules.md + docs/agent-playbook.md)
   # These files are loaded on every request. Keep them lean.
   layer1_target_tokens: 4000
@@ -118,16 +142,18 @@ roles:
 
 skills:
   # Skills loaded on every request (regardless of task type).
-  # Keep this list minimal — these tokens are consumed unconditionally.
+  # For the standard profile, this includes all 5 Always-tier skills.
+  # See docs/agent-playbook.md → Skill activation tiers.
   always_load:
     - demand-triage
     - repo-exploration
+    - test-and-fix-loop
+    - error-recovery
+    - memory-and-state
 
   # Skills loaded on-demand, appended after the canonical set for the task type.
   # See skills/prompt-cache-optimization/SKILL.md → Canonical skill sets.
   on_demand:
-    - error-recovery
-    - memory-and-state
     - prompt-cache-optimization
 
   # Skills that should never be loaded for this project.
@@ -157,3 +183,133 @@ trimming:
 
   # Purge session memory files when count exceeds this number.
   session_memory_max_files: 10
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BUDGET PROFILE EXAMPLES
+# ══════════════════════════════════════════════════════════════════════════════
+# Below are complete example configurations for each budget profile.
+# Copy the relevant section above, uncommenting as needed.
+
+# ── Minimal profile (< 16K total context) ──────────────────────────────────
+# Best for: solo devs with tight token limits, Small tasks only,
+#           pay-per-token APIs, or constrained model context windows.
+# Estimated Layer 2 cost: ~3,000-4,000 tokens
+#
+# budget:
+#   profile: minimal
+#   layer1_target_tokens: 3000
+#   layer2_max_tokens: 4000
+#   layer3_max_tokens: 2000
+#
+# roles:
+#   enabled:
+#     - application-implementer
+#     - critic
+#   disabled:
+#     - feature-planner
+#     - backend-architect
+#     - ui-image-implementer
+#     - integration-engineer
+#     - documentation-architect
+#     - risk-reviewer
+#
+# skills:
+#   always_load:
+#     - demand-triage
+#     - repo-exploration
+#   on_demand: []
+#   disabled:
+#     - test-and-fix-loop          # agent runs tests natively
+#     - error-recovery             # agent uses built-in retry
+#     - memory-and-state           # agent reads DECISIONS.md directly
+#     - self-reflection            # skipped
+#     - observability              # skipped
+#     - feature-planning           # no planning phase
+#     - backend-change-planning    # no planning phase
+#     - design-to-code             # not needed
+#     - documentation-architecture # not needed
+#     - prompt-cache-optimization  # not needed at minimal scale
+#     - on-project-start           # run once manually, then disable
+#     - mcp-validation             # not needed
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Standard profile (default) ──────────────────────────────────────────────
+# Best for: typical team usage, Small/Medium tasks,
+#           moderate token budgets (16K-32K context).
+# Estimated Layer 2 cost: ~7,000-10,000 tokens
+#
+# budget:
+#   profile: standard
+#   layer1_target_tokens: 4000
+#   layer2_max_tokens: 8000
+#   layer3_max_tokens: 3000
+#
+# roles:
+#   enabled:
+#     - feature-planner
+#     - application-implementer
+#     - risk-reviewer
+#     - critic
+#   disabled:
+#     - backend-architect
+#     - ui-image-implementer
+#     - integration-engineer
+#     - documentation-architect
+#
+# skills:
+#   always_load:
+#     - demand-triage
+#     - repo-exploration
+#     - test-and-fix-loop
+#     - error-recovery
+#     - memory-and-state
+#   on_demand:
+#     - prompt-cache-optimization
+#   disabled:
+#     - design-to-code
+#     - documentation-architecture
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Full profile ────────────────────────────────────────────────────────────
+# Best for: large teams, Large tasks, high-risk projects,
+#           generous budgets (32K+ context).
+# Estimated Layer 2 cost: ~12,000-18,000 tokens
+#
+# budget:
+#   profile: full
+#   layer1_target_tokens: 4000
+#   layer2_max_tokens: 15000
+#   layer3_max_tokens: 3000
+#
+# roles:
+#   enabled:
+#     - feature-planner
+#     - backend-architect
+#     - application-implementer
+#     - ui-image-implementer
+#     - integration-engineer
+#     - documentation-architect
+#     - risk-reviewer
+#     - critic
+#   disabled: []
+#
+# skills:
+#   always_load:
+#     - demand-triage
+#     - repo-exploration
+#     - test-and-fix-loop
+#     - error-recovery
+#     - memory-and-state
+#   on_demand:
+#     - self-reflection
+#     - observability
+#     - prompt-cache-optimization
+#     - feature-planning
+#     - backend-change-planning
+#     - application-implementation
+#     - design-to-code
+#     - documentation-architecture
+#     - on-project-start
+#     - mcp-validation
+#   disabled: []
+# ─────────────────────────────────────────────────────────────────────────────

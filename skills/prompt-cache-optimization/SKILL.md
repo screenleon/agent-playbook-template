@@ -162,12 +162,30 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 
 ### How agents use prompt-budget.yml
 
-1. **During skill loading** — check `skills.disabled`; skip those skills entirely.
-2. **During role selection** — check `roles.disabled`; do not route to those roles.
-3. **During demand-triage** — if the loaded skill set would exceed `budget.layer2_max_tokens`, load only `skills.always_load` and defer on-demand skills.
-4. **During memory maintenance** — use `trimming.*` thresholds instead of defaults from `memory-and-state` skill.
+1. **Read `budget.profile`** — if set, use the named profile (`minimal`, `standard`, `full`) as the default configuration. If not set, default to `standard`.
+2. **Apply explicit overrides** — any `skills.*` or `roles.*` entries in the file override the profile defaults.
+3. **During skill loading** — check `skills.disabled`; skip those skills entirely.
+4. **During role selection** — check `roles.disabled`; do not route to those roles.
+5. **During demand-triage** — if the loaded skill set would exceed `budget.layer2_max_tokens`, load only `skills.always_load` and defer on-demand skills.
+6. **During memory maintenance** — use `trimming.*` thresholds instead of defaults from `memory-and-state` skill.
 
-If `prompt-budget.yml` does not exist, use the full default skill sets defined in the Canonical skill sets table above.
+### Budget profile loading behavior
+
+| Profile | Layer 2 ceiling | Skills loaded | Behavior differences |
+|---------|-----------------|---------------|---------------------|
+| `minimal` | ≤ 4,000 tokens | 2 (demand-triage, repo-exploration) | Agent uses native tool capabilities for testing, error handling, and memory. No structured traces. Small tasks only. |
+| `standard` | ≤ 8,000 tokens | 5 (all Always-tier) | Conditional skills activate by trigger. On-demand domain skills require explicit opt-in. |
+| `full` | ≤ 15,000 tokens | 5 + all applicable Conditional + On-demand | No restrictions. Full observability, self-reflection, and planning. |
+
+When `profile: minimal`, agents should:
+- Run tests directly using tool-native test execution instead of loading `test-and-fix-loop`.
+- Use built-in retry logic instead of loading `error-recovery`.
+- Read `DECISIONS.md` directly instead of loading `memory-and-state`.
+- Skip self-reflection, observability, and planning skills entirely.
+
+See `docs/agent-playbook.md` → Budget profiles for the complete specification.
+
+If `prompt-budget.yml` does not exist, use the `standard` profile defaults with the full skill sets defined in the Canonical skill sets table above.
 
 ### Reference schema
 

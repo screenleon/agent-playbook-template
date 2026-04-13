@@ -97,11 +97,53 @@ For knowledge that persists beyond a single session, use the existing persistent
 | Repo memory files | Reusable patterns, component-level notes | Search by module name or task type keywords |
 | `DECISIONS_ARCHIVE.md` | Inactive past decisions | Search only for legacy module work |
 
-**Advanced (optional):** For teams with vector database or embedding infrastructure, long-term memory can be augmented with semantic retrieval (RAG):
+### RAG-augmented retrieval [OPTIONAL]
 
-- Index `DECISIONS.md`, `ARCHITECTURE.md`, session summaries, and past task completion summaries as embeddings.
-- At task start, retrieve the top-K most relevant entries by query similarity instead of reading full files.
-- This is an optimization for large codebases where file-based reads exceed practical token budgets. It is not required for the playbook to function.
+For teams with vector database or embedding infrastructure, long-term memory can be augmented with semantic retrieval (RAG). This replaces full-file reads with targeted retrieval, reducing token consumption for large codebases where `DECISIONS.md` or `ARCHITECTURE.md` alone exceed the 3,000-token Tier 3 budget.
+
+**This section is entirely optional.** If no vector store is available, use the file-based selective retrieval from the Triage-driven selective retrieval section above. The playbook functions identically without RAG.
+
+#### Indexing targets
+
+Index the following sources as embeddings:
+
+| Source | Refresh trigger | Priority |
+|--------|----------------|----------|
+| `DECISIONS.md` | After every Record step | High |
+| `ARCHITECTURE.md` | After structural changes | High |
+| Session summaries (Tier 2) | After each summary generation | Medium |
+| Task completion summaries | After every Summarize step | Medium |
+| Trace files (`.agent-trace/`) | After every Trace step | Low |
+
+#### Index refresh triggers
+
+- **After every Record step** — re-index `DECISIONS.md` when new entries are appended.
+- **On session start** — if the index age exceeds a configurable threshold (default: 24 hours or 5 new entries since last index), perform a full re-index.
+- **On demand** — when a query returns zero relevant results, trigger a re-index and retry once.
+
+#### Query strategy
+
+1. **Compose query** — embed the current task description + file paths being modified.
+2. **Retrieve top-K** — return the K most relevant entries (default K=5, configurable per project in `prompt-budget.yml`).
+3. **Verify relevance** — skim the retrieved entries for genuine relevance; discard false positives.
+4. **Merge into context** — inject the relevant entries into the agent's context window as Tier 3 content.
+
+#### Token budget impact
+
+RAG results **replace** the 3,000-token Tier 3 budget — they do not add to it. The total conversation memory target (8,500 tokens) remains unchanged:
+
+| Tier | Without RAG | With RAG |
+|------|------------|----------|
+| Tier 3 (long-term) | Full-file reads, ≤ 3,000 tokens | Top-K retrieval, ≤ 3,000 tokens |
+| Total budget | ≤ 8,500 tokens | ≤ 8,500 tokens (unchanged) |
+
+#### Fallback
+
+If the vector store is unavailable at runtime:
+
+1. Fall back to the **Triage-driven selective retrieval** procedure (see above).
+2. If selective retrieval is also not applicable (fewer than 30 entries), fall back to standard full-file reads.
+3. Log the fallback in the task summary: `**Memory fallback**: RAG unavailable, used file-based retrieval`.
 
 ### Token budget guideline
 
@@ -212,6 +254,29 @@ Agents should not read the full archive on every task. Use a tiered approach. If
 | Task involves legacy module or old migration | `DECISIONS.md` + search `DECISIONS_ARCHIVE.md` for module name, if the archive file exists |
 | Contradiction detection finds no match in active | Search `DECISIONS_ARCHIVE.md` before concluding "no prior decision", if the archive file exists; otherwise treat as no archived match |
 | Periodic maintenance review | Read both files in full if `DECISIONS_ARCHIVE.md` exists; otherwise read `DECISIONS.md` only |
+
+### Triage-driven selective retrieval [OPTIONAL]
+
+When `DECISIONS.md` grows large (over **30 entries** or **20 KB**), reading it in full on every task wastes token budget. Use triage results to load only relevant decisions.
+
+#### Activation threshold
+
+- Below 30 entries / 20 KB: read `DECISIONS.md` in full (current behavior, no change needed).
+- At or above threshold: switch to selective retrieval using the procedure below.
+
+#### Selective retrieval procedure
+
+1. **Extract affected modules** — from the triage output, collect the file paths classified as affected. Derive module/directory names (e.g., `src/api/`, `src/services/user`).
+2. **Keyword search** — scan `DECISIONS.md` for entries whose title or constraint text contains any of the module keywords.
+3. **Recency window** — always load the **most recent 5 entries** regardless of keyword match, to catch recent cross-cutting decisions.
+4. **Title scan for contradiction detection** — for entries that did not match keywords or recency, read only the `## YYYY-MM-DD: [title]` header lines. If any title suggests relevance to the current task, load that full entry.
+5. **Fallback** — if keyword search returns zero matches (excluding recency window), fall back to reading `DECISIONS.md` in full. Zero matches likely means the keywords were too narrow.
+
+#### Limitations
+
+- Cross-cutting decisions (e.g., "all APIs use REST") may not contain module-specific keywords. The recency window and title scan partially mitigate this, but cannot guarantee full coverage.
+- Agent tools vary in search capability. If the tool cannot search within a file by keyword, fall back to full read.
+- This procedure is an optimization, not a hard requirement. Agents may always choose to read `DECISIONS.md` in full if token budget allows.
 
 ### Session memory hygiene
 

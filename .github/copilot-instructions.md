@@ -23,7 +23,7 @@
 
 Before any implementation:
 1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
-2. For first entry in a new repository, run `skills/on_project_start/SKILL.md` to perform environment scan and ask boundary questions.
+2. For first entry in a new repository, run `skills/on-project-start/SKILL.md` to perform environment scan and ask boundary questions.
 3. Classify the task scale (`skills/demand-triage/SKILL.md`): Small, Medium, or Large.
 4. Publish a compliance block (see `docs/operating-rules.md` → Mandatory first-response compliance block). At `semi-auto`/`autonomous` trust level, Small tasks may skip the compliance block.
 5. Read `DECISIONS.md` and check for contradictions. For legacy modules, also search `DECISIONS_ARCHIVE.md` if it exists.

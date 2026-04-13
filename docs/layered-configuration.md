@@ -60,3 +60,23 @@ Run this checklist when updating layered rules:
 - Per task: update layered files when constraints change.
 - Weekly or every 10 tasks: run a quick conflict and duplication pass.
 - Quarterly: prune obsolete domain profiles and superseded project exceptions.
+
+## Stability dimension
+
+Scope layers (Global / Domain / Project) and stability levels (`core` / `behavior` / `experimental`) are orthogonal. A rule in any scope layer can have any stability level.
+
+### Scope × Stability matrix
+
+| | `core` | `behavior` | `experimental` |
+|---|---|---|---|
+| **Global** | Safety rails, security baseline | Communication norms, output format | New prompt patterns |
+| **Domain** | API compatibility contracts | Coding style, framework idioms | New tool integrations |
+| **Project** | Auth model, data classification | Build commands, test conventions | Prototype workflows |
+
+### Governance by stability
+
+- `core` rules should change rarely. Propose changes through `risk-reviewer` and record in `DECISIONS.md`.
+- `behavior` rules may change per sprint/cycle. Validate through the test-and-fix loop.
+- `experimental` rules may change freely. Track in `DECISIONS.md` for auditability but do not require approval gates.
+
+See `docs/operating-rules.md` → Rule stability classification for the full change protocol.

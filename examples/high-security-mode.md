@@ -26,4 +26,4 @@ block_destructive_actions_without_manual_approval: true
 
 ## Recommended workflow
 
-`feature-planner -> critic -> risk-reviewer -> user approval -> implementer -> risk-reviewer`
+`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user approval** → `application-implementer` → `risk-reviewer` (final review)

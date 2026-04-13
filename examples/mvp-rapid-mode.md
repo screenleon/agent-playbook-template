@@ -26,4 +26,6 @@ critic_required_only_for_large_changes: true
 
 ## Recommended workflow
 
-`application-implementer -> targeted validation -> brief summary`
+`application-implementer` → targeted validation (test-and-fix-loop) → brief summary
+
+For Small tasks, skip planner and critic. Use concise summaries per `docs/agent-templates.md` → Task completion summary.
