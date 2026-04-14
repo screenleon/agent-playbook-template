@@ -22,7 +22,7 @@ Precedence follows `docs/operating-rules.md` → Layered configuration and Confl
 
 ## Skill activation tiers
 
-Not all 15 skills must execute on every task. Skills are classified into three activation tiers:
+Not all 16 skills must execute on every task. Skills are classified into three activation tiers:
 
 ### Always (minimum required)
 
@@ -59,6 +59,7 @@ These skills are loaded only when the task type matches. Projects that do not us
 | `application-implementation` | General product or frontend implementation tasks |
 | `design-to-code` | Screenshot-driven or mockup-driven UI work |
 | `documentation-architecture` | Documentation-as-deliverable tasks |
+| `skill-creator` | Self-evolution identifies a new skill need, or user requests a new reusable skill |
 
 ### Applying the tiers
 
@@ -232,6 +233,24 @@ Every workflow below implicitly includes these steps:
 14. **Trace** — emit a trace record using the `observability` skill. For Small tasks, embed minimal trace in the task summary. For Medium/Large tasks, produce a structured trace file. See `skills/observability/SKILL.md`
 15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
+
+### Step phase classification
+
+The 16 mandatory steps fall into three execution phases, inspired by the PRE/POST\_PROCESS pattern in pipeline-based agent frameworks:
+
+| Phase | Steps | Behavior |
+|-------|-------|----------|
+| **PRE** (context injection) | 1-Discover, 2-Initialize, 3-Triage, 4-Preamble, 5-Test-first, 10-Cache-aware | Run automatically before the agent produces any deliverable. An agent must not skip PRE steps even when the task appears trivial. |
+| **CORE** (agent work) | 6-Validate, 7-Recover, 8-Record, 9-ADR sync, 11-Isolate | Run during the agent's main work loop. Execution order depends on task flow. |
+| **POST** (auto-finalize) | 12-Self-reflect, 13-Deliver, 14-Trace, 15-Summarize, 16-Feedback | Run automatically after the agent considers its work complete. An agent must not mark a task done until all applicable POST steps have executed. |
+
+#### Auto-execution rule
+
+- **PRE steps** execute unconditionally at task start. If a PRE step is not applicable (e.g., Initialize on a returning session), the agent records "skipped — [reason]" and continues.
+- **POST steps** execute unconditionally at task end. The agent does not wait for user instruction to run POST steps — they are self-triggered when the CORE phase produces a result.
+- **CORE steps** execute as needed during implementation. They are not auto-triggered.
+
+This classification makes the existing implicit phasing explicit. No new steps are added.
 
 ### First-response compliance block
 
@@ -422,7 +441,7 @@ When sufficient feedback data accumulates, the system can propose improvements t
 
 1. **Collect evidence** — gather recent trace files (`.agent-trace/`), feedback loop outputs (friction, miss risk, improvement candidates), and quality signal metrics.
 2. **Identify patterns** — look for recurring friction, repeated reflection failures, frequently-hit checkpoint gates, or consistently-skipped optional steps.
-3. **Draft proposals** — produce up to 3 evolution proposals per cycle using the Evolution proposal template in `docs/agent-templates.md`.
+3. **Draft proposals** — produce up to 3 evolution proposals per cycle using the Evolution proposal template in `docs/agent-templates.md`. If a proposal identifies a new skill need (not just a rule change), invoke `skills/skill-creator/SKILL.md` to generate the skill.
 4. **Route for review** — proposals that modify `behavior` or `experimental` stability rules go to `documentation-architect` for implementation. Proposals that touch `core` stability rules or constitutional principles must additionally pass through `risk-reviewer`.
 5. **Await approval** — evolution proposals always require human approval, even at `autonomous` trust level. This is non-negotiable.
 
