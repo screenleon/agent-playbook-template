@@ -8,6 +8,7 @@ This is the minimal rule set for agents. Read this first, then expand into sourc
 
 Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
 
+- **`nano`**: load only `docs/rules-nano.md`. Do NOT load this file or any other docs. No skills are loaded.
 - **`minimal`**: this file is your complete Layer 1. Do NOT load `docs/operating-rules.md` or `docs/agent-playbook.md` unless you need details listed in "When to open full docs" below.
 - **`standard`** (default): read this file first, then expand into `docs/operating-rules.md` and `docs/agent-playbook.md` for full rules.
 - **`full`**: load complete `docs/operating-rules.md` + `docs/agent-playbook.md` immediately.

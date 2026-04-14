@@ -156,7 +156,7 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 
 ### How agents use prompt-budget.yml
 
-1. **Read `budget.profile`** — if set, use the named profile (`minimal`, `standard`, `full`) as the default configuration. If not set, default to `standard`.
+1. **Read `budget.profile`** — if set, use the named profile (`nano`, `minimal`, `standard`, `full`) as the default configuration. If not set, default to `standard`.
 2. **Apply explicit overrides** — any `skills.*` or `roles.*` entries in the file override the profile defaults.
 3. **During skill loading** — check `skills.disabled`; skip those skills entirely.
 4. **During role selection** — check `roles.disabled`; do not route to those roles.
@@ -167,6 +167,7 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 
 | Profile | Layer 2 ceiling | Skills loaded | Behavior differences |
 |---------|-----------------|---------------|---------------------|
+| `nano` | 0 tokens | 0 (all behaviors native) | Single-file Small tasks only. Layer 1 = `docs/rules-nano.md` (~630 tokens). No skill files loaded. Agent escalates immediately for multi-file or complex tasks. |
 | `minimal` | ≤ 4,000 tokens | 2 (demand-triage, repo-exploration) | Agent uses native tool capabilities for testing, error handling, and memory. No structured traces. Small tasks only. |
 | `standard` | ≤ 8,000 tokens | 5 (all Always-tier) | Conditional skills activate by trigger. On-demand domain skills require explicit opt-in. |
 | `full` | ≤ 15,000 tokens | 5 + all applicable Conditional + On-demand | No restrictions. Full observability, self-reflection, and planning. |
@@ -185,6 +186,7 @@ The Layer 1 content varies by budget profile to respect token targets:
 
 | Profile | Layer 1 content | Est. tokens |
 |---------|----------------|------------|
+| `nano` | `docs/rules-nano.md` only | ~630 |
 | `minimal` | `docs/rules-quickstart.md` only | ~1,200 |
 | `standard` | `docs/rules-quickstart.md` → expand to full docs as needed | ~4,000–5,000 |
 | `full` | Full `docs/operating-rules.md` + `docs/agent-playbook.md` | ~18,350 |
@@ -216,8 +218,8 @@ budget:
   layer3_max_tokens: 3000       # DECISIONS.md + ARCHITECTURE.md
 
 roles:
-  enabled: [feature-planner, application-implementer, critic]
-  disabled: [backend-architect, ui-image-implementer, documentation-architect]
+  enabled: [feature-planner, application-implementer, risk-reviewer, critic]
+  disabled: [backend-architect, ui-image-implementer, integration-engineer, documentation-architect]
 
 skills:
   always_load: [demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state]

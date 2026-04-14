@@ -63,12 +63,14 @@ These skills are loaded only when the task type matches. Projects that do not us
 
 ### Applying the tiers
 
-1. At task start, **always load the 5 mandatory skills**.
+1. At task start, **always perform the 5 mandatory skill behaviors** — either by loading the skill file, or (at `minimal`/`nano` profile) by executing the behavior natively using tool capabilities.
 2. Check trigger conditions and load applicable **conditional skills**.
 3. Load **on-demand skills** only when the task domain matches.
 4. Record which skills were loaded in the trace (for observability and future optimization).
 
 This classification aligns with `prompt-budget.yml` — the `always_load`, `on_demand`, and `disabled` lists should mirror these tiers.
+
+> **Note**: At `minimal` and `nano` profiles, Always-tier *behaviors* remain mandatory, but the skill files themselves may not be loaded. Agents execute demand-triage, repo-exploration, test-and-fix-loop, error-recovery, and memory-and-state using native tool capabilities instead of loading the SKILL.md files.
 
 ### Budget profiles
 
@@ -76,9 +78,20 @@ Users with limited agent token budgets can select a **named budget profile** in 
 
 | Profile | Skills loaded per request | Roles available | Layer 2 target | Recommended when |
 |---------|--------------------------|-----------------|----------------|------------------|
+| **nano** | 0 (native tool capabilities only) | 1 (application-implementer) | ≤ 0 tokens | < 3,000 total token budget; single-file Small tasks only |
 | **minimal** | 2 (demand-triage, repo-exploration) | 2–3 | ≤ 4,000 tokens | Token budget < 16K or pay-per-token with tight limits |
 | **standard** | 5 (all Always-tier skills) | 4–5 | ≤ 8,000 tokens | Typical team usage with moderate token budget |
 | **full** | 5 + all applicable Conditional + On-demand | All enabled | ≤ 15,000 tokens | Generous token budget; large or high-risk projects |
+
+#### Nano profile
+
+Loads zero skills. Agents rely entirely on native tool capabilities. Layer 1 is a single self-contained file (`docs/rules-nano.md`, ~630 tokens) covering constitutional principles, always-dangerous operations, a 5-step workflow, and escalation triggers.
+
+- **Skills**: none (all skill behaviors executed natively)
+- **Roles**: `application-implementer` only
+- **Layer 1**: `docs/rules-nano.md` only — do not load AGENTS.md, operating-rules.md, or agent-playbook.md
+- **Suitable for**: single-file Small tasks only. Agent escalates immediately if the task is multi-file, requires design decisions, or touches auth/schema/CI.
+- **Total estimated execution**: ~2,000–2,500 tokens
 
 #### Minimal profile
 
@@ -111,7 +124,7 @@ Loads all applicable skills per the tier classification. No restrictions.
 
 #### Applying a budget profile
 
-1. Set `budget.profile` in `prompt-budget.yml` to `minimal`, `standard`, or `full`.
+1. Set `budget.profile` in `prompt-budget.yml` to `nano`, `minimal`, `standard`, or `full`.
 2. The profile pre-populates `skills.always_load`, `skills.on_demand`, and `roles.enabled` defaults.
 3. Explicit `skills.*` and `roles.*` entries in `prompt-budget.yml` **override** profile defaults (allowing fine-tuning).
 4. If `budget.profile` is not set, behavior defaults to `standard`.
@@ -318,9 +331,9 @@ When `execution_mode: autonomous` is set in `prompt-budget.yml`, replace **user 
 
 | Supervised workflow | Autonomous equivalent |
 |--------------------|-----------------------|
-| `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → _(auto-proceed, logged)_ → implementers → `risk-reviewer` |
-| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → _(auto-proceed, logged)_ → `backend-architect` → `risk-reviewer` (final) |
-| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → _(auto-proceed, logged)_ → `documentation-architect` → `risk-reviewer` |
+| `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → *(auto-proceed, logged)* → implementers → `risk-reviewer` |
+| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → *(auto-proceed, logged)* → `backend-architect` → `risk-reviewer` (final) |
+| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → *(auto-proceed, logged)* → `documentation-architect` → `risk-reviewer` |
 
 **Retained hard stops in autonomous mode** (see `docs/operating-rules.md` → Autonomous execution mode):
 

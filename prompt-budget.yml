@@ -88,7 +88,7 @@ autonomous_mode:
 # ─────────────────────────────────────────────────────────────────────────────
 
 budget:
-  # Budget profile: minimal | standard | full
+  # Budget profile: nano | minimal | standard | full
   # Controls how many skills and roles load by default.
   # Explicit skills.*/roles.* entries below override the profile defaults.
   # If omitted, defaults to "standard".
