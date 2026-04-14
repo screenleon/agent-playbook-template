@@ -10,6 +10,7 @@ Repeat this block for each rule.
 ### Rule: <RULE_ID>
 - Owner layer: Domain
 - Domain: backend-api
+- Stability: <core | behavior | experimental>
 - Status: active
 - Scope: <module or surface>
 - Statement: <clear non-negotiable rule>
@@ -25,6 +26,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: backend-api
+- Stability: core
 - Status: active
 - Scope: public HTTP handlers
 - Statement: All API responses must follow a single envelope contract.
@@ -37,6 +39,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: backend-api
+- Stability: core
 - Status: active
 - Scope: backward-compatible endpoint evolution
 - Statement: Additive changes are allowed; breaking schema changes require versioning.

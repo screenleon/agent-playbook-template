@@ -6,6 +6,162 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.13.0] - 2026-04-14
+
+### Changed
+
+- **prompt-cache-optimization preamble** (`skills/prompt-cache-optimization/SKILL.md`) — inlined the "Why this matters" section into the opening paragraph (~110 tokens saved, no information lost).
+- **demand-triage conformance self-check** (`skills/demand-triage/SKILL.md`) — compressed 5-item checkbox list to 3 compact bullets (~60 tokens saved).
+- **repo-exploration "Use this skill when"** (`skills/repo-exploration/SKILL.md`) — merged 4 bullets to 2 inline conditions (~30 tokens saved).
+- **on-project-start Goal section** (`skills/on-project-start/SKILL.md`) — merged standalone "## Goal" section into opening paragraph (-3 lines, ~40 tokens saved).
+- **memory-and-state cache interaction note** (`skills/memory-and-state/SKILL.md`) — removed "Interaction with prompt cache optimization" subsection; content is self-evident from the four-layer loading order in prompt-cache-optimization/SKILL.md (~70 tokens saved).
+- **AGENTS.md configuration layering** (`AGENTS.md`) — collapsed numbered list to inline chain; shortened compliance block description (-6 lines, ~60 tokens saved).
+- **prompt-budget.yml header comments** (`prompt-budget.yml`) — compressed 16-line HOW TO USE + TEMPLATE DEFAULT comment block to 4 lines (-12 lines, ~60 tokens saved).
+
+### Token impact summary
+
+| File | Lines removed | Est. tokens saved |
+|------|--------------|------------------|
+| `skills/prompt-cache-optimization/SKILL.md` | −5 | ~110 |
+| `skills/demand-triage/SKILL.md` | −4 | ~60 |
+| `skills/repo-exploration/SKILL.md` | −2 | ~30 |
+| `skills/on-project-start/SKILL.md` | −3 | ~40 |
+| `skills/memory-and-state/SKILL.md` | −6 | ~70 |
+| `AGENTS.md` | −6 | ~60 |
+| `prompt-budget.yml` | −12 | ~60 |
+| **Total** | **−38** | **~430** |
+
+---
+
+## [0.12.0] - 2026-04-14
+
+### Added
+
+- **Nano budget profile** (`docs/rules-nano.md`, `docs/prompt-budget-examples.md`) — new `nano` profile targeting < 3,000 total execution tokens. Loads zero skills; agents use native tool capabilities only. Layer 1 is a single self-contained ~630-token file (`docs/rules-nano.md`) covering constitutional principles, always-dangerous ops, 5-step workflow, error recovery, and escalation triggers. Suitable for single-file Small tasks only — agent escalates immediately if task is multi-file or higher risk. Estimated total execution: ~2,000–2,500 tokens (AGENTS.md + rules-nano.md + DECISIONS.md + task files).
+- **Budget profile examples extracted** (`docs/prompt-budget-examples.md`) — moved the three profile example blocks (minimal/standard/full) out of `prompt-budget.yml` into a standalone reference file. `prompt-budget.yml` now references the doc with a 3-line comment. Saves ~1,500 tokens from every bootstrap read (prompt-budget.yml shrinks from ~3,825 to ~2,325 tokens).
+- **Output style at minimal profile** (`docs/rules-quickstart.md`) — explicit brevity contract: no compliance block for Small tasks at `semi-auto`, no context anchor, summary ≤ 3 sentences, errors include file+line only. Reduces completion tokens per task.
+
+### Changed
+
+- **demand-triage Medium/Large workflow sections** (`skills/demand-triage/SKILL.md`) — replaced two verbose workflow sections (~350 tokens) with a single compact block (~60 tokens). At `minimal` profile: output scale label and escalate. At `standard`/`full`: follow `docs/agent-playbook.md` → Workflow chains. Net saving: ~290 tokens per request across all profiles.
+- **AGENTS.md skill enumeration** (`AGENTS.md`) — replaced the 16-skill inline list (~150 tokens) with a reference link. Net saving: ~150 tokens per request.
+- **repo-exploration ARCHITECTURE.md skip** (`skills/repo-exploration/SKILL.md`) — at `minimal` profile for single-file Small tasks, skip `ARCHITECTURE.md` unless it has substantive non-template content. Mirrors the same rule added to `docs/rules-quickstart.md`. Saves ~875 tokens per qualifying task.
+
+### Token impact summary (minimal Small task)
+
+| Component | Before | After | Delta |
+|-----------|--------|-------|-------|
+| `prompt-budget.yml` (bootstrap) | ~3,825 | ~2,325 | **−1,500** |
+| `demand-triage` (L2) | ~1,964 | ~1,674 | −290 |
+| `AGENTS.md` (L1) | ~980 | ~830 | −150 |
+| `ARCHITECTURE.md` (L3, skipped) | ~875 | 0 | −875 |
+| **Total** | **~10,011** | **~6,480** | **−3,531 (−35%)** |
+
+---
+
+## [0.11.0] - 2026-04-14
+
+### Added
+
+#### Workflow & Orchestration
+
+- **Step phase classification** (`docs/agent-playbook.md`) — classifies 16 mandatory steps into PRE (auto-inject context), CORE (agent work), and POST (auto-finalize) execution phases. Inspired by CowAgent PRE/POST\_PROCESS pattern. Informational only — no new steps added. Optional `post_steps_skip` configuration hook in `prompt-budget.yml`.
+- **Checkpoint gate three-outcome model** (`docs/operating-rules.md`) — formalizes checkpoint results as STOP / ADVISORY / PASS. ADVISORY replaces the informal "advisory notice only" wording; gates that do not activate produce PASS (no output). Existing checkpoint activation matrix updated with new terminology. Advisory template added to `docs/agent-templates.md`.
+
+#### Skills (new)
+
+- **Skill creator meta-skill** (`skills/skill-creator/SKILL.md`) — on-demand skill for generating new SKILL.md files from user-described capabilities. Includes boundary definition, skeleton generation, integration checklist, and validation. Respects self-evolution guardrails (human approval required). Skill count: 15 → 16.
+
+#### Skills (enhanced)
+
+- **Relevance scoring formula** (`skills/memory-and-state/SKILL.md`) — optional time-decay scoring (`2^(-age/half_life)`) for ranking memory entries during selective retrieval. Supports `evergreen` entries that bypass decay. Does not affect archive rules. Configurable `relevance_half_life_days` in `prompt-budget.yml`.
+- **Retrieval degradation chain** (`skills/memory-and-state/SKILL.md`) — explicit four-level fallback path: RAG → keyword+recency → title scan → full read. Consolidates existing scattered fallback logic into a deterministic chain with mandatory logging.
+
+#### Configuration
+
+- **Configuration file layering** (`docs/layered-configuration.md`) — optional override chain for `prompt-budget.yml`: base file ← `prompt-budget.local.yml` ← `AGENT_BUDGET_PROFILE` env var. Includes sensitive value masking convention (keys containing `key`, `secret`, `token`, `password`, `credential` are masked as `***MASKED***` in all agent output).
+- **Profile-aware Layer 1 loading** (`docs/rules-quickstart.md`, `skills/prompt-cache-optimization/SKILL.md`) — agents now select Layer 1 content based on `budget.profile`: `minimal` loads only `docs/rules-quickstart.md` (~1,200 tokens), `standard` defers to full docs as needed, `full` loads everything immediately. Reduces minimal-profile Layer 1 from ~18,350 tokens to ~1,200 tokens (93% reduction). Enhanced `rules-quickstart.md` with constitutional principles, checkpoint outcomes, and minimal-profile role definitions so it is self-sufficient as a standalone Layer 1.
+
+### Changed
+
+- **Checkpoint activation matrix** (`docs/operating-rules.md`) — terminology updated from informal "Always/Skip/Advisory notice/Recommended" to formal STOP/ADVISORY/PASS outcomes.
+- **Skill count** (`AGENTS.md`, `docs/agent-playbook.md`, `README.md`) — updated from 15 to 16 skills.
+- **Self-evolution protocol** (`docs/agent-playbook.md`) — added link to `skill-creator` for proposals that identify new skill needs.
+- **`.gitignore`** — added `prompt-budget.local.yml` to support local override chain.
+- **Loading instructions** (`AGENTS.md`, `.github/copilot-instructions.md`) — profile-aware branching: at `minimal`, agents use `docs/rules-quickstart.md` as complete Layer 1 without loading full source-of-truth docs. Execution mode references updated to include all three values (`supervised`, `semi-auto`, `autonomous`).
+
+---
+
+## [0.10.0] - 2026-04-13
+
+### Added
+
+#### Rules & Safety
+
+- **Rule stability classification** (`docs/operating-rules.md`, `docs/layered-configuration.md`) — orthogonal stability dimension (`core` / `behavior` / `experimental`) layered on top of existing scope layers (Global / Domain / Project). Includes change protocol per stability level and governance matrix.
+- **Stability field in rule schema** (`rules/domain/README.md`, `rules/domain/backend-api.md`, `rules/domain/frontend-components.md`, `rules/domain/cloud-infra.md`) — every rule entry now requires `- Stability:` field. All starter examples updated.
+- **Stability lint validation** (`scripts/lint-layered-rules.sh`) — linter now parses and validates the `Stability` field; rejects rules with missing or invalid values.
+- **Constitutional principles** (`docs/operating-rules.md`) — five non-bypassable safety invariants (secret protection, unvalidated input execution, production data backup, auth bypass, security test suppression) that hold regardless of trust level or `dangerouslySkipAllCheckpoints` setting.
+- **Workspace boundary masking** (`docs/operating-rules.md`, `project/project-manifest.md`) — path-based domain rule activation/masking using glob patterns. Global rules are never masked. Backward-compatible.
+- **Dynamic spawning guardrails** (`docs/operating-rules.md`) — safety guardrails for runtime sub-agent spawning: max depth = 3, no self-delegation, mandatory handoff schema, idle-timeout reclaim, trust-level interaction.
+- **CI-driven risk review rules** (`docs/operating-rules.md`) — read-only risk-reviewer mode for CI pipelines with severity-high blocking and no trust-level bypass.
+- **Self-evolution guardrails** (`docs/operating-rules.md`) — evolution proposals always require human approval; constitutional principles are immutable via evolution; core stability rules require risk-reviewer; max 3 proposals per cycle.
+
+#### Skills (new)
+
+- **Self-reflection skill** (`skills/self-reflection/SKILL.md`) — intra-role critique-and-revise cycle using a 5-dimension rubric (correctness, consistency, adherence, completeness, isolation). Scale-adaptive: Small uses 2/5 dimensions; Medium/Large use all 5.
+- **Observability skill** (`skills/observability/SKILL.md`) — trace record emission at task end. Three depth levels: minimal (Small, inline), standard (Medium), full (Large, per-role). Includes `isolation_status` field and CI integration protocol with exit-code contract and review summary format.
+- **MCP dynamic validation skill** (`skills/mcp-validation/SKILL.md`) — pre-flight MCP tool availability checks, fallback strategy, periodic revalidation, and agent-deference notice. Short-circuits when no MCP tools are declared.
+
+#### Skills (enhanced)
+
+- **Triage-driven selective memory retrieval** (`skills/memory-and-state/SKILL.md`) — optional procedure activated when memory entries exceed 30 items or 20 KB.
+- **RAG-augmented retrieval** (`skills/memory-and-state/SKILL.md`) — expanded Tier 3 long-term memory with full RAG guidance: indexing targets, refresh triggers, query strategy (top-K), token budget impact, and fallback to file-based retrieval. Entirely optional.
+
+#### Workflow & Orchestration
+
+- **Graph workflow reference** (`docs/agent-playbook.md`) — Mermaid stateDiagram-v2 showing the full agent workflow as a state graph with conditional transitions.
+- **Skill activation tiers** (`docs/agent-playbook.md`) — classifies all 15 skills into Always (5 mandatory), Conditional (7 trigger-based), and On-demand (3 opt-in) tiers. Defines the minimum required skill set.
+- **Budget profiles** (`docs/agent-playbook.md`, `prompt-budget.yml`, `skills/prompt-cache-optimization/SKILL.md`) — three named budget profiles (`minimal`, `standard`, `full`) for token-budget-aware skill/role loading. `minimal` loads only 2 skills (~3K-4K tokens) for users with tight token limits; `standard` loads all 5 Always-tier skills; `full` enables all applicable skills and roles. Profile selection via `budget.profile` in `prompt-budget.yml` with explicit override support.
+- **Dynamic orchestration** (`docs/agent-playbook.md`) — coordinator roles can dynamically spawn sub-roles at runtime with plan-of-record tracking, max depth = 3, idle reclaim.
+- **Self-evolution protocol** (`docs/agent-playbook.md`) — feedback-driven rule/skill improvement proposals with evidence requirements, risk-routing, and mandatory human approval.
+- **Context isolation verification** (`docs/agent-playbook.md`) — detection and recording of context isolation violations via self-reflection rubric and trace `isolation_status` field.
+
+#### Schemas & Templates
+
+- **Structured handoff schema** (`docs/schemas/handoff-artifact.schema.yaml`) — machine-readable YAML schema with `state` fields and optional `orchestration` block (`parent_role`, `spawn_depth`, `plan_of_record_ref`).
+- **Plan of record template** (`docs/agent-templates.md`) — table for coordinators to track expected vs. actual sub-agent routing.
+- **Evolution proposal template** (`docs/agent-templates.md`) — standard format for self-evolution proposals with target, evidence, impact, and risk fields.
+- **MCP tool declarations** (`project/project-manifest.md`) — standard location for declaring MCP tools with server endpoints and fallback builtins.
+
+#### CI/CD
+
+- **CI agent review workflow** (`.github/workflows/agent-review.yml`) — GitHub Actions skeleton that collects `.agent-trace/` files and runs a project-specific review script.
+- **CI agentic review adoption guide** (`docs/adoption-guide.md`) — step-by-step setup for enabling automated trace-based risk review in CI.
+
+### Changed
+
+- **Safety rails** (`docs/operating-rules.md`) — intro text updated to reference constitutional principles; the "secrets" rule promoted to constitutional principle.
+- **Skill count** (`AGENTS.md`, `docs/agent-playbook.md`, `README.md`) — updated from 12 to 15 skills across all references.
+- **Mandatory workflow steps** (`docs/agent-playbook.md`) — added steps 12 (Self-reflect) and 14 (Trace); renumbered subsequent steps. Added clarifying note that the 11-stage loop is a conceptual overview expanding into 16 detailed steps.
+- **Codebase discovery** (`docs/operating-rules.md`) — added steps 6 (workspace boundaries) and 7 (RAG when configured).
+- **Escalation rule** (`docs/operating-rules.md`) — now also applies to context isolation violations (3+ in rolling window).
+- **Adoption guide** (`docs/adoption-guide.md`) — added `mcp-validation` to removable skills list; added CI agentic review setup guide; replaced Step 4 with budget-profile-aware guidance.
+- **Prompt cache optimization** (`skills/prompt-cache-optimization/SKILL.md`) — added budget profile loading behavior table and `minimal` profile agent instructions; updated how-agents-use-prompt-budget.yml procedure.
+- **Project manifest** (`project/project-manifest.md`) — added `Workspace boundaries` and `MCP tool declarations` sections.
+- **Handoff artifact template** (`docs/agent-templates.md`) — added reference to structured YAML schema variant.
+
+### Fixed
+
+- **README.md skill count** — corrected stale count from 12 to 15 matching actual `skills/` directory.
+- **Broken skill path** (`.github/copilot-instructions.md`) — fixed `on_project_start` → `on-project-start` (underscore → hyphen) matching actual directory name.
+- **Execution mode / trust level alignment** (`prompt-budget.yml`) — added `semi-auto` as a valid `execution_mode` option, matching the three trust levels defined in `docs/operating-rules.md`. Default changed from `supervised` to `semi-auto` to match operating-rules.md default.
+- **Always-load skill list** (`prompt-budget.yml`) — default `always_load` now includes all 5 Always-tier skills (added `test-and-fix-loop`, `error-recovery`, `memory-and-state`) to match `docs/agent-playbook.md` → Skill activation tiers.
+- **Terminology inconsistency** (`docs/agent-templates.md`) — changed "Risk level" to "Severity" in evolution proposal template for consistency with all other docs.
+- **Example workflow clarity** (`examples/high-security-mode.md`, `examples/mvp-rapid-mode.md`, `examples/legacy-maintenance.md`) — replaced informal/abbreviated role names with canonical role names; separated skill references from role chains for clarity.
+
+---
+
 ## [0.9.0] - 2026-04-13
 
 ### Added

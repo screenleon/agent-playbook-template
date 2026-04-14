@@ -101,21 +101,11 @@ The following steps **remain mandatory at all trust levels** even for Small task
 
 Small path means explicit simplification, not implicit skipping. At `supervised` trust level, if required fields are omitted the task is non-conformant even if the code change itself is correct.
 
-### Medium tasks — full workflow
+### Medium and Large tasks
 
-Follow all mandatory steps and workflows as defined in `docs/agent-playbook.md`. Use the existing routing rules to determine which agents are needed.
+At **`minimal` profile**: output `[SCALE: MEDIUM]` or `[SCALE: LARGE]` and escalate to the user. Recommend switching to `standard` or `full` profile. Do not attempt the workflow at minimal.
 
-At `semi-auto` or `autonomous` trust level, Medium tasks that are low-risk (no auth, no schema, no breaking changes) may share planner + implementer context instead of strict role isolation.
-
-### Large tasks — full workflow with enhanced rigor
-
-Follow all mandatory steps. Additionally:
-
-- **Planning is mandatory** — use the `feature-planner` agent
-- **Critic is mandatory** — invoke after planning, before user approval
-- **Risk-reviewer is mandatory** — at minimum for plan assessment; ideally also for final review
-- **Context anchor is mandatory** — update before each major step
-- **Mid-implementation checkpoint** — pause after each logical group of changes for user review (at `autonomous` trust level, pause only for destructive or irreversible operations)
+For **`standard` and `full` profiles**: follow `docs/agent-playbook.md` → Workflow chains for the full procedure. Large tasks additionally require `feature-planner` (mandatory), `critic` (mandatory), `risk-reviewer` (mandatory), and context anchor at each major step.
 
 ## Scale labeling
 
@@ -146,10 +136,6 @@ If during implementation you discover the task is larger than initially classifi
 
 ## Conformance self-check
 
-Before proceeding with the classified scale, verify:
-
-- [ ] Classification is based on evidence from codebase discovery (files read), not request text alone
-- [ ] Hard blockers were checked: auth, security, schema migration, breaking changes force non-Small
-- [ ] If classification was uncertain, Medium was used as default (not Small)
-- [ ] The output includes `[SCALE: ...]`, reason, and files affected
-- [ ] If reclassifying mid-task (scope grew), the scale was updated and scope expansion approval was requested if moving from Small to Medium/Large
+- [ ] Classification is based on codebase evidence (files read), not request text alone; uncertain → Medium
+- [ ] Hard blockers checked: auth/security/schema/breaking changes force non-Small
+- [ ] Output includes `[SCALE: ...]`, reason, files affected; scope growth triggers reclassification

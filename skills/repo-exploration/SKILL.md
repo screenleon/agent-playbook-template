@@ -13,7 +13,8 @@ Use this skill to build a mental model of the codebase before making changes.
 
 - List the top-level directory structure.
 - Identify the module map: where handlers, services, repositories, models, and tests live.
-- Read `ARCHITECTURE.md`, `CONTRIBUTING.md`, or equivalent docs if they exist.
+- Read `ARCHITECTURE.md` if it exists. **At `minimal` profile for single-file Small tasks: skip `ARCHITECTURE.md` unless it is referenced by the task description or appears to contain non-template content (>50 lines of substantive text).**
+- Read `CONTRIBUTING.md` or equivalent docs if they exist.
 
 ### 2. Pattern identification
 
@@ -52,7 +53,5 @@ Files to read before coding: [list]
 
 ## Use this skill when
 
-- Starting work on an unfamiliar module
-- The task touches more than 2 files
-- You are unsure about the project's conventions
-- A previous attempt produced code that did not match the project style
+- Starting work on an unfamiliar module or when the task touches more than 2 files
+- You are unsure about conventions or a previous attempt didn't match the project style

@@ -5,13 +5,7 @@ description: Use to maximize prompt cache hit rates across LLM providers by enfo
 
 # Prompt Cache Optimization
 
-Use this skill to reduce API costs and latency by maximizing prompt cache hits. The techniques here are **provider-agnostic** — they work with any LLM that uses prefix-based prompt caching (Anthropic, OpenAI, Google, local inference engines like vLLM/SGLang).
-
-## Why this matters
-
-All major LLM providers cache prompt prefixes. When consecutive requests share the same prefix, the provider skips recomputing those tokens — reducing cost (typically 50–90% for cached tokens) and latency. The key requirement across all providers is the same: **the beginning of the prompt must be identical byte-for-byte across requests**.
-
-This skill ensures that the project's instruction files are loaded in a consistent order so the stable prefix is as long as possible.
+Use this skill to reduce API costs and latency by maximizing prompt cache hits. The techniques here are **provider-agnostic** — they work with any LLM that uses prefix-based prompt caching (Anthropic, OpenAI, Google, local inference engines like vLLM/SGLang). The key requirement: **the beginning of the prompt must be identical byte-for-byte across requests** — instruction files must load in a consistent, deterministic order.
 
 ## Four-layer loading order
 
@@ -162,29 +156,74 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 
 ### How agents use prompt-budget.yml
 
-1. **During skill loading** — check `skills.disabled`; skip those skills entirely.
-2. **During role selection** — check `roles.disabled`; do not route to those roles.
-3. **During demand-triage** — if the loaded skill set would exceed `budget.layer2_max_tokens`, load only `skills.always_load` and defer on-demand skills.
-4. **During memory maintenance** — use `trimming.*` thresholds instead of defaults from `memory-and-state` skill.
+1. **Read `budget.profile`** — if set, use the named profile (`nano`, `minimal`, `standard`, `full`) as the default configuration. If not set, default to `standard`.
+2. **Apply explicit overrides** — any `skills.*` or `roles.*` entries in the file override the profile defaults.
+3. **During skill loading** — check `skills.disabled`; skip those skills entirely.
+4. **During role selection** — check `roles.disabled`; do not route to those roles.
+5. **During demand-triage** — if the loaded skill set would exceed `budget.layer2_max_tokens`, load only `skills.always_load` and defer on-demand skills.
+6. **During memory maintenance** — use `trimming.*` thresholds instead of defaults from `memory-and-state` skill.
 
-If `prompt-budget.yml` does not exist, use the full default skill sets defined in the Canonical skill sets table above.
+### Budget profile loading behavior
+
+| Profile | Layer 2 ceiling | Skills loaded | Behavior differences |
+|---------|-----------------|---------------|---------------------|
+| `nano` | 0 tokens | 0 (all behaviors native) | Single-file Small tasks only. Layer 1 = `docs/rules-nano.md` (~630 tokens). No skill files loaded. Agent escalates immediately for multi-file or complex tasks. |
+| `minimal` | ≤ 4,000 tokens | 2 (demand-triage, repo-exploration) | Agent uses native tool capabilities for testing, error handling, and memory. No structured traces. Small tasks only. |
+| `standard` | ≤ 8,000 tokens | 5 (all Always-tier) | Conditional skills activate by trigger. On-demand domain skills require explicit opt-in. |
+| `full` | ≤ 15,000 tokens | 5 + all applicable Conditional + On-demand | No restrictions. Full observability, self-reflection, and planning. |
+
+When `budget.profile: minimal`, agents should:
+- Run tests directly using tool-native test execution instead of loading `test-and-fix-loop`.
+- Use built-in retry logic instead of loading `error-recovery`.
+- Read `DECISIONS.md` directly instead of loading `memory-and-state`.
+- Skip self-reflection, observability, and planning skills entirely.
+
+See `docs/agent-playbook.md` → Budget profiles for the complete specification.
+
+### Profile-aware Layer 1 loading
+
+The Layer 1 content varies by budget profile to respect token targets:
+
+| Profile | Layer 1 content | Est. tokens |
+|---------|----------------|------------|
+| `nano` | `docs/rules-nano.md` only | ~630 |
+| `minimal` | `docs/rules-quickstart.md` only | ~1,200 |
+| `standard` | `docs/rules-quickstart.md` → expand to full docs as needed | ~4,000–5,000 |
+| `full` | Full `docs/operating-rules.md` + `docs/agent-playbook.md` | ~18,350 |
+
+When `budget.profile: minimal`:
+
+- Layer 1 consists solely of `docs/rules-quickstart.md` (enhanced with constitutional principles, checkpoint outcomes, and minimal-profile role definitions).
+- Do NOT load `docs/operating-rules.md` or `docs/agent-playbook.md` unless a specific section is needed (deferred loading via "When to open full docs" in rules-quickstart.md).
+- This brings Layer 1 from ~18,350 tokens to ~1,200 tokens — a 15x reduction.
+
+When `budget.profile: standard` or unset:
+
+- Load `docs/rules-quickstart.md` first, then expand into the full source docs for task-specific detail.
+
+When `budget.profile: full`:
+
+- Load the complete `docs/operating-rules.md` and `docs/agent-playbook.md` immediately.
+
+If `prompt-budget.yml` does not exist, use the `standard` profile defaults with the full skill sets defined in the Canonical skill sets table above.
 
 ### Reference schema
 
 ```yaml
 # prompt-budget.yml
 budget:
+  profile: standard
   layer1_target_tokens: 3000    # Static rules target
   layer2_max_tokens: 6000       # Skills per request
   layer3_max_tokens: 3000       # DECISIONS.md + ARCHITECTURE.md
 
 roles:
-  enabled: [feature-planner, application-implementer, critic]
-  disabled: [backend-architect, ui-image-implementer, documentation-architect]
+  enabled: [feature-planner, application-implementer, risk-reviewer, critic]
+  disabled: [backend-architect, ui-image-implementer, integration-engineer, documentation-architect]
 
 skills:
-  always_load: [demand-triage, repo-exploration]
-  on_demand: [test-and-fix-loop, error-recovery, memory-and-state]
+  always_load: [demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state]
+  on_demand: [prompt-cache-optimization]
   disabled: [design-to-code, documentation-architecture]
 
 trimming:

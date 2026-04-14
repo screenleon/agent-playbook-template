@@ -26,4 +26,6 @@ legacy_modules_require_archive_decision_search: true
 
 ## Recommended workflow
 
-`repo-exploration -> demand-triage -> implement minimally -> targeted validation -> decision update`
+`application-implementer` (with repo-exploration discovery + demand-triage) → minimal-scope implementation → targeted validation (test-and-fix-loop) → `DECISIONS.md` update
+
+All changes follow existing codebase conventions. Use `memory-and-state` skill to search both `DECISIONS.md` and `DECISIONS_ARCHIVE.md`.

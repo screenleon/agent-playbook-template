@@ -39,11 +39,12 @@ mapfile -t layered_files < <(find "$ROOT_DIR/rules" "$ROOT_DIR/project" -type f 
 declare -A RULE_FILE
 declare -A RULE_LINE
 declare -A RULE_STATUS
+declare -A RULE_STABILITY
 declare -A RULE_SUPERSEDES
 declare -A RULE_SUPERSEDED_BY
 
 for f in "${layered_files[@]}"; do
-  while IFS=$'\t' read -r line_no rule_id status supersedes superseded_by; do
+  while IFS=$'\t' read -r line_no rule_id status stability supersedes superseded_by; do
     [[ -z "$rule_id" ]] && continue
     [[ "$rule_id" == *"<"* ]] && continue
 
@@ -56,6 +57,7 @@ for f in "${layered_files[@]}"; do
     RULE_FILE[$rule_id]="${f#$ROOT_DIR/}"
     RULE_LINE[$rule_id]="$line_no"
     RULE_STATUS[$rule_id]="$status"
+    RULE_STABILITY[$rule_id]="$stability"
     RULE_SUPERSEDES[$rule_id]="$supersedes"
     RULE_SUPERSEDED_BY[$rule_id]="$superseded_by"
   done < <(
@@ -63,7 +65,8 @@ for f in "${layered_files[@]}"; do
       function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
       function emit() {
         if (id != "") {
-          print line_no "\t" trim(id) "\t" trim(status) "\t" trim(supersedes) "\t" trim(superseded_by)
+          st = (stability == "") ? "__MISSING__" : trim(stability)
+          print line_no "\t" trim(id) "\t" trim(status) "\t" st "\t" trim(supersedes) "\t" trim(superseded_by)
         }
       }
       /^### Rule:[[:space:]]*/ {
@@ -72,6 +75,7 @@ for f in "${layered_files[@]}"; do
         sub(/^### Rule:[[:space:]]*/, "", id)
         line_no = NR
         status = ""
+        stability = ""
         supersedes = ""
         superseded_by = ""
         next
@@ -79,6 +83,10 @@ for f in "${layered_files[@]}"; do
       /^-[[:space:]]*Status:[[:space:]]*/ {
         status = $0
         sub(/^-+[[:space:]]*Status:[[:space:]]*/, "", status)
+      }
+      /^-[[:space:]]*Stability:[[:space:]]*/ {
+        stability = $0
+        sub(/^-+[[:space:]]*Stability:[[:space:]]*/, "", stability)
       }
       /^-[[:space:]]*Supersedes:[[:space:]]*/ {
         supersedes = $0
@@ -117,6 +125,16 @@ for rule_id in "${!RULE_FILE[@]}"; do
       echo "[rule-lint][error] superseded rule '$rule_id' must define '- Superseded by:' with a real rule ID (placeholders such as '<RULE_ID>' are not allowed) (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
       EXIT_CODE=1
     fi
+  fi
+
+  # Validate Stability field
+  stability="${RULE_STABILITY[$rule_id],,}"
+  if [[ -z "$stability" || "$stability" == "__missing__" || "$stability" == *"<"* ]]; then
+    echo "[rule-lint][error] rule '$rule_id' is missing '- Stability:' field (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+    EXIT_CODE=1
+  elif [[ "$stability" != "core" && "$stability" != "behavior" && "$stability" != "experimental" ]]; then
+    echo "[rule-lint][error] rule '$rule_id' has invalid stability '$stability' — must be core, behavior, or experimental (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+    EXIT_CODE=1
   fi
 done
 

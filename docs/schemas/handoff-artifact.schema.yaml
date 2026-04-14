@@ -1,0 +1,165 @@
+# Handoff Artifact Schema
+#
+# Structured variant of the text-based handoff template in docs/agent-templates.md.
+# Use this schema when machine-readable handoffs are needed (e.g., graph-based
+# workflows, CI integration, or automated routing).
+#
+# The text-based template remains the default. This schema is an optional
+# structured alternative that adds state tracking fields not present in the
+# text template.
+
+type: object
+required:
+  - task
+  - source_role
+  - target_role
+  - deliverable_summary
+  - decisions
+  - state
+
+properties:
+  task:
+    type: string
+    description: One-sentence objective of the task being handed off.
+
+  source_role:
+    type: string
+    description: The role producing this handoff.
+    enum:
+      - feature-planner
+      - backend-architect
+      - application-implementer
+      - ui-image-implementer
+      - integration-engineer
+      - documentation-architect
+      - risk-reviewer
+      - critic
+
+  target_role:
+    type: string
+    description: The role that will consume this handoff.
+    enum:
+      - feature-planner
+      - backend-architect
+      - application-implementer
+      - ui-image-implementer
+      - integration-engineer
+      - documentation-architect
+      - risk-reviewer
+      - critic
+
+  deliverable_summary:
+    type: string
+    description: Brief summary of what the source role produced.
+
+  decisions:
+    type: array
+    description: Decisions made during this role's work.
+    items:
+      type: object
+      required:
+        - ref
+        - summary
+      properties:
+        ref:
+          type: string
+          description: "Reference to DECISIONS.md entry (e.g., '2026-04-13: API envelope contract')."
+        summary:
+          type: string
+          description: One-line summary of the decision.
+
+  open_risks:
+    type: array
+    description: Unresolved risks or questions for the next role.
+    items:
+      type: object
+      required:
+        - description
+        - severity
+      properties:
+        description:
+          type: string
+        severity:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+
+  constraints:
+    type: array
+    description: Constraints the target role must respect.
+    items:
+      type: string
+
+  state:
+    type: object
+    description: Machine-readable state for workflow tracking. This is the primary value-add over the text template.
+    required:
+      - scale
+      - validation_status
+    properties:
+      scale:
+        type: string
+        enum:
+          - Small
+          - Medium
+          - Large
+      files_changed:
+        type: array
+        items:
+          type: string
+        description: List of file paths changed during this role's work.
+      validation_status:
+        type: string
+        enum:
+          - pass
+          - fail
+          - not-run
+        description: Status of the validation loop at handoff time.
+      reflection_result:
+        type: object
+        description: Output from the self-reflection skill.
+        properties:
+          correctness:
+            type: string
+            enum: [pass, fail]
+          consistency:
+            type: string
+            enum: [pass, fail]
+          adherence:
+            type: string
+            enum: [pass, fail]
+          completeness:
+            type: string
+            enum: [pass, fail]
+          isolation:
+            type: string
+            enum: [pass, fail, skipped]
+            description: Isolation check result from the self-reflection rubric (typically pass/fail for Medium/Large, skipped for Small).
+          revisions_made:
+            type: array
+            items:
+              type: string
+      decision_delta:
+        type: array
+        description: New DECISIONS.md entries added during this role's work.
+        items:
+          type: string
+      orchestration:
+        type: object
+        description: >
+          Present only when this handoff is part of a dynamic orchestration chain.
+          Omit for static routing workflows.
+        properties:
+          parent_role:
+            type: string
+            description: The coordinator role that spawned this sub-role.
+          spawn_depth:
+            type: integer
+            minimum: 1
+            maximum: 3
+            description: Current depth in the spawn chain (1 = direct child of coordinator).
+          plan_of_record_ref:
+            type: string
+            description: Reference to the plan-of-record table entry (e.g., step number or label).

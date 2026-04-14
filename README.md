@@ -139,7 +139,7 @@ If you maintain a fork, keep these phrases in your repository description and RE
 ## Current asset inventory
 
 - Claude subagents: 8 (`.claude/agents/*.md`)
-- Reusable skills: 12 (`skills/*/SKILL.md`)
+- Reusable skills: 16 (`skills/*/SKILL.md`)
 - Source-of-truth docs: `AGENTS.md`, `docs/operating-rules.md`, `docs/agent-playbook.md`
 
 ## Example gallery

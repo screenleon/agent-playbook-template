@@ -3,8 +3,12 @@
 Read these files before starting work:
 
 0. `docs/rules-quickstart.md` — minimal rules for first-pass loading (read this first)
-1. `docs/operating-rules.md` — mandatory safety, scope, validation, error recovery, and project-specific constraint rules
-2. `docs/agent-playbook.md` — routing rules and role definitions
+1. Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
+   - `nano`: load only `docs/rules-nano.md`. **Stop here — do not read any other files unless the task requires a specific lookup. No skills are loaded.**
+   - `minimal`: rules-quickstart.md is your complete Layer 1. Skip to step 3.
+   - `standard` / `full`: continue to step 2.
+2. `docs/operating-rules.md` — mandatory safety, scope, validation, error recovery, and project-specific constraint rules
+   `docs/agent-playbook.md` — routing rules and role definitions
 3. `docs/agent-templates.md` — reusable task and prompt templates as optional helpers
 
 Read `docs/adoption-guide.md` when adapting this template to a new repository.
@@ -17,20 +21,14 @@ Read `docs/rule-optimization-plan.md` for the staged simplification and automati
 See `docs/agent-playbook.md` → Three-layer architecture for the full definition. Summary:
 
 1. **Rules** — `docs/operating-rules.md` (safety, scope, validation, constraints)
-2. **Skills** — `skills/*/SKILL.md` (12 skills: demand-triage, repo-exploration, test-and-fix-loop, error-recovery, memory-and-state, feature-planning, backend-change-planning, application-implementation, design-to-code, documentation-architecture, prompt-cache-optimization, on-project-start)
+2. **Skills** — `skills/*/SKILL.md` (16 skills — see `docs/agent-playbook.md` → Skill activation tiers)
 3. **Loop** — `Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`. Steps **Plan**, **Critique**, **Approve** are trust-level-gated; see `docs/operating-rules.md` → Trust level.
 
 ## Configuration layering
 
-Keep constraints in layered configuration form:
+Keep constraints layered: `rules/global/` (cross-project) → `rules/domain/` (domain-specific) → `project/project-manifest.md` (project-local). See `docs/operating-rules.md` for precedence.
 
-1. `rules/global/` — cross-project core rules
-2. `rules/domain/` — domain-specific rules
-3. `project/project-manifest.md` — project-local boundaries
-
-See `docs/operating-rules.md` for precedence and conflict resolution.
-
-Before implementation begins, the first response must include a compliance block: files/docs read, triage scale, selected path, and checkpoint expectations — except when trust level is `semi-auto`/`autonomous` and the task is Small. See `docs/operating-rules.md` → Mandatory first-response compliance block for the trust-level-specific requirements.
+Before implementation begins, include a compliance block (files read, triage scale, path, checkpoint expectations) — except `semi-auto`/`autonomous` + Small tasks. See `docs/operating-rules.md` → Mandatory first-response compliance block.
 
 Core rules:
 
@@ -48,4 +46,4 @@ Source of truth:
 - `docs/operating-rules.md` is the source of truth for safety, scope, validation, and review rules.
 - `docs/agent-playbook.md` is the source of truth for role routing and role ownership.
 - `docs/agent-templates.md`, `.claude/agents/`, `skills/`, and `.github/copilot-instructions.md` must stay aligned with those two files.
-- `prompt-budget.yml` (at repo root) declares execution mode (`supervised` or `autonomous`), enabled roles, and token budget. See `docs/adoption-guide.md` → Autonomous execution mode for when and how to use autonomous mode.
+- `prompt-budget.yml` (at repo root) declares execution mode (`supervised`, `semi-auto`, or `autonomous`), enabled roles, and token budget. See `docs/adoption-guide.md` → Autonomous execution mode for when and how to use autonomous mode.

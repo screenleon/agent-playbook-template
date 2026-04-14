@@ -3,9 +3,10 @@
 - Read `AGENTS.md` first.
 - **Agent-deference principle**: this template only adds rules the agent tool does not already provide natively. Capabilities the agent handles out of the box (e.g., built-in safety rails, tool routing, output formatting) should not be re-specified here. See `docs/operating-rules.md` → Agent-deference principle.
 - **Trust level**: the project defaults to `semi-auto`. Override with `supervised` or `autonomous` as needed. For fully unattended execution (no approval gates at all), set `trust_level: autonomous` + `dangerouslySkipAllCheckpoints: true`. See `docs/operating-rules.md` → Trust level.
+- **Profile-aware loading**: read `prompt-budget.yml` → `budget.profile` first. At `minimal`, use `docs/rules-quickstart.md` as your complete Layer 1 — do not load the full operating-rules.md or agent-playbook.md unless a specific lookup is needed.
 - Treat named roles such as `feature-planner` or `risk-reviewer` as conceptual roles. If the tool cannot spawn named subagents, use the matching prompt template or local docs instead.
 - Follow `docs/operating-rules.md` for safety, scope, and validation rules.
-- Check `prompt-budget.yml` at the repo root for `execution_mode` (`supervised` or `autonomous`) before acting on checkpoint gates. See `docs/operating-rules.md` → Autonomous execution mode for gate behavior per mode.
+- Check `prompt-budget.yml` at the repo root for `execution_mode` (`supervised`, `semi-auto`, or `autonomous`) before acting on checkpoint gates. See `docs/operating-rules.md` → Autonomous execution mode for gate behavior per mode.
 - Use `feature-planner` for cross-module, ambiguous, contract, database, auth, security, or image-led flow changes.
 - Use `backend-architect` for backend contract and domain work.
 - Use `application-implementer` for general product or frontend implementation work.
@@ -23,7 +24,7 @@
 
 Before any implementation:
 1. Discover the codebase (`skills/repo-exploration/SKILL.md`).
-2. For first entry in a new repository, run `skills/on_project_start/SKILL.md` to perform environment scan and ask boundary questions.
+2. For first entry in a new repository, run `skills/on-project-start/SKILL.md` to perform environment scan and ask boundary questions.
 3. Classify the task scale (`skills/demand-triage/SKILL.md`): Small, Medium, or Large.
 4. Publish a compliance block (see `docs/operating-rules.md` → Mandatory first-response compliance block). At `semi-auto`/`autonomous` trust level, Small tasks may skip the compliance block.
 5. Read `DECISIONS.md` and check for contradictions. For legacy modules, also search `DECISIONS_ARCHIVE.md` if it exists.
@@ -38,5 +39,5 @@ After any code change:
 10. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails. Escalate to human after 3 consecutive failures.
 11. Record decisions in `DECISIONS.md` when applicable.
 12. If architecture changed, update ADRs (or decision log when ADR directory does not exist) in the same task.
-13. If scope expands beyond the plan: at `supervised`/`semi-auto` trust level, STOP and present the expanded scope for approval. At `autonomous` trust level, log an advisory notice and continue.
+13. If scope expands beyond the plan: at `supervised`/`semi-auto` trust level, STOP and present the expanded scope for approval. At `autonomous` trust level, log an ADVISORY and continue.
 14. Produce a task completion summary (`docs/agent-templates.md` → Task completion summary). At `semi-auto`/`autonomous` trust level for Small tasks, a brief summary suffices.

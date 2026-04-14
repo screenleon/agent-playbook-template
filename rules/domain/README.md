@@ -24,6 +24,7 @@ For consistency and machine-readability, each rule entry should include:
 - Rule ID
 - Owner layer
 - Domain
+- Stability (`core`, `behavior`, or `experimental`)
 - Status (`active` or `superseded`)
 - Scope
 - Statement

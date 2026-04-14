@@ -59,3 +59,19 @@ Example:
 | Base Rule ID | Project Rule ID | Reason | Status |
 |---|---|---|---|
 |  |  |  | active |
+
+## Workspace boundaries
+
+Define path-based domain rule masking. Leave empty or remove this section to load all domain rules unconditionally.
+
+| Path glob | Active domain rules | Masked domain rules |
+|---|---|---|
+|  |  |  |
+
+## MCP tool declarations
+
+Declare MCP (Model Context Protocol) tools used by this project. Leave empty or remove this section if MCP is not used. See `skills/mcp-validation/SKILL.md` for the validation workflow.
+
+| Tool name | Server / endpoint | Fallback builtin | Notes |
+|---|---|---|---|
+|  |  |  |  |

@@ -19,6 +19,16 @@ Waiting for approval before proceeding.
 
 If a tool does not support interactive approval, write the checkpoint to the output and stop.
 
+### Advisory template
+
+When a checkpoint gate outcome is **ADVISORY** (see `docs/operating-rules.md` → Checkpoint gate outcomes), emit this single-line format in the task output and continue without waiting:
+
+```text
+**Advisory [gate name]**: [finding summary]
+```
+
+Example: `**Advisory scope-expansion**: Adding utils/logger.ts — within original intent, proceeding.`
+
 ### Handoff artifact template
 
 ```text
@@ -29,6 +39,23 @@ If a tool does not support interactive approval, write the checkpoint to the out
 - **Open risks**: [unresolved risks or questions]
 - **Constraints for next step**: [what the target role must respect]
 - **Attached output**: [the actual plan, review, or implementation summary]
+```
+
+**Structured variant**: For machine-readable handoffs (graph-based workflows, CI integration, or automated routing), use the YAML schema in `docs/schemas/handoff-artifact.schema.yaml`. The structured variant adds `state` fields (files_changed, validation_status, reflection_result, decision_delta) not present in the text template.
+
+### Plan of record template
+
+Used by a coordinator during dynamic orchestration to track expected vs. actual sub-agent routing. Update before each spawn and after each completion.
+
+```text
+## Plan of record: [task objective]
+
+| Step | Planned role | Actual role | Status | Handoff ref | Notes |
+|------|-------------|-------------|--------|-------------|-------|
+| 1 | feature-planner | feature-planner | completed | handoff-001 | — |
+| 2 | application-implementer | application-implementer | in-progress | handoff-002 | — |
+| 3 | — | documentation-architect | spawned | handoff-003 | Discovered during step 2 |
+| 4 | risk-reviewer | — | pending | — | — |
 ```
 
 ### Context anchor template
@@ -115,6 +142,25 @@ Miss risk:
 Most useful rule:
 
 Next improvement:
+```
+
+### Evolution proposal template
+
+Used by the self-evolution protocol to propose rule or skill improvements. See `docs/agent-playbook.md` → Self-evolution protocol.
+
+```text
+## Evolution proposal: [short title]
+
+- **Target**: [rule ID, skill name, or operating-rules section]
+- **Current behavior**: [what the rule/skill currently says or does]
+- **Proposed change**: [specific wording or structural change]
+- **Evidence**:
+  - Trace: [trace file reference(s)]
+  - Feedback: [friction/miss-risk entries]
+  - Quality signal: [metric, if applicable]
+- **Impact scope**: [which roles, workflows, or task scales are affected]
+- **Severity**: [low | medium | high]
+- **Stability of target**: [core | behavior | experimental]
 ```
 
 ## Feature planner

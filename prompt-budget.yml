@@ -4,41 +4,56 @@
 # Agents read this file during skill loading and demand-triage to control
 # which roles and skills are active and to respect token budget targets.
 #
+# OVERRIDE CHAIN (optional)
+# ─────────────────────────
+# prompt-budget.yml (this file, git-tracked)
+#   ← prompt-budget.local.yml (same dir, .gitignore'd — local overrides)
+#   ← AGENT_BUDGET_PROFILE env var (overrides budget.profile only)
+#
+# See docs/layered-configuration.md → Configuration file layering.
+#
 # See docs/adoption-guide.md → Prompt budget trimming for step-by-step guidance.
 # See docs/adoption-guide.md → Autonomous execution mode for execution_mode guidance.
 # See skills/prompt-cache-optimization/SKILL.md → Prompt budget configuration
 # for how agents use this file.
 #
-# HOW TO USE THIS FILE
-# ─────────────────────
-# 1. Copy this file to your repository root.
-# 2. Enable only the roles your project actually uses.
-# 3. Disable skills that do not match your workflow.
-# 4. Adjust token targets based on your model's context window.
-# 5. Set execution_mode if you want autonomous (unattended) operation.
+# HOW TO USE THIS FILE: copy to repo root → enable roles your project uses →
+# disable skills that don't match your workflow → set execution_mode → adjust token targets.
+# Informational — agents use it as guidance; does not enforce hard API-level limits.
+# Defaults below: full-featured team project (all roles, semi-auto execution).
 #
-# This file is informational — agents use it as guidance to select which
-# skills and role templates to load. It does not enforce hard API-level limits.
-#
-# TEMPLATE DEFAULT
+# BUDGET PROFILES
 # ─────────────────
-# The defaults below represent a full-featured team project with all roles active
-# and supervised (human-in-the-loop) execution. See commented sections below
-# for autonomous and smaller project configurations.
+# Set budget.profile to control how many skills/roles load per request.
+# Profiles provide sensible defaults; explicit skills.*/roles.* entries override them.
+#
+#   nano     — 0 skills, 1 role. Single-file Small tasks only. < 3,000 total tokens.
+#   minimal  — 2 skills, 2-3 roles. For tight token budgets (< 16K total context).
+#   standard — 5 skills, 4-5 roles. Balanced for typical team usage. (default)
+#   full     — all applicable skills and roles. For generous budgets / large projects.
+#
+# See docs/agent-playbook.md → Budget profiles for the full specification.
 
 # ── Execution mode ─────────────────────────────────────────────────────────────
 #
-# supervised (default) — agents STOP at checkpoint gates and wait for user approval.
-# autonomous           — agents auto-proceed at most gates and log decisions instead.
+# Maps to the trust levels defined in docs/operating-rules.md → Trust level.
+#
+# supervised (default) — all mandatory checkpoints require human approval.
+#                        Full compliance output on every task.
+# semi-auto            — Small and low-risk Medium tasks run autonomously.
+#                        Checkpoints activate only for Large, high-risk,
+#                        or destructive work.
+# autonomous           — agent proceeds without human approval except for
+#                        irreversible/destructive actions and stuck escalation.
 #
 # IMPORTANT: autonomous mode is opt-in and must be declared explicitly here.
 # Agents must never infer autonomous mode from context.
 # See docs/operating-rules.md → Autonomous execution mode for the full behavior spec.
 #
-execution_mode: supervised  # supervised | autonomous
+execution_mode: semi-auto  # supervised | semi-auto | autonomous
 
 # ── Autonomous mode options ─────────────────────────────────────────────────────
-# Only read when execution_mode is autonomous. Ignored in supervised mode.
+# Only read when execution_mode is autonomous. Ignored in supervised/semi-auto mode.
 #
 autonomous_mode:
   # Gate 1: Plan approval — auto-proceed and log to DECISIONS.md?
@@ -73,6 +88,12 @@ autonomous_mode:
 # ─────────────────────────────────────────────────────────────────────────────
 
 budget:
+  # Budget profile: nano | minimal | standard | full
+  # Controls how many skills and roles load by default.
+  # Explicit skills.*/roles.* entries below override the profile defaults.
+  # If omitted, defaults to "standard".
+  profile: standard
+
   # Target for Layer 1 (docs/operating-rules.md + docs/agent-playbook.md)
   # These files are loaded on every request. Keep them lean.
   layer1_target_tokens: 4000
@@ -118,16 +139,18 @@ roles:
 
 skills:
   # Skills loaded on every request (regardless of task type).
-  # Keep this list minimal — these tokens are consumed unconditionally.
+  # For the standard profile, this includes all 5 Always-tier skills.
+  # See docs/agent-playbook.md → Skill activation tiers.
   always_load:
     - demand-triage
     - repo-exploration
+    - test-and-fix-loop
+    - error-recovery
+    - memory-and-state
 
   # Skills loaded on-demand, appended after the canonical set for the task type.
   # See skills/prompt-cache-optimization/SKILL.md → Canonical skill sets.
   on_demand:
-    - error-recovery
-    - memory-and-state
     - prompt-cache-optimization
 
   # Skills that should never be loaded for this project.
@@ -155,5 +178,23 @@ trimming:
   # Archive DECISIONS.md when it exceeds this number of entries.
   decisions_archive_threshold_entries: 50
 
+  # Relevance half-life for memory decay scoring (in days).
+  # Used by the optional relevance scoring formula in memory-and-state skill.
+  # Default: 90. Increase for projects with long-lived decisions.
+  # relevance_half_life_days: 90
+
   # Purge session memory files when count exceeds this number.
   session_memory_max_files: 10
+
+# ── Step phase overrides (optional) ────────────────────────────────────────
+# Override which POST steps auto-execute. By default all POST steps run.
+# Uncomment to skip specific post-steps for token-tight workflows.
+# See docs/agent-playbook.md → Step phase classification.
+# post_steps_skip: []
+#   # - feedback-loop    # skip mini retrospective
+#   # - trace            # skip trace emission (Small tasks already inline this)
+
+# ── BUDGET PROFILE EXAMPLES ─────────────────────────────────────────────────
+# Full minimal / standard / full profile examples: docs/prompt-budget-examples.md
+# Copy the relevant block into this file and uncomment as needed.
+# ─────────────────────────────────────────────────────────────────────────────

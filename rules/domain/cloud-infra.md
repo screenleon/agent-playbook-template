@@ -10,6 +10,7 @@ Repeat this block for each rule.
 ### Rule: <RULE_ID>
 - Owner layer: Domain
 - Domain: cloud-infra
+- Stability: <core | behavior | experimental>
 - Status: active
 - Scope: <module or surface>
 - Statement: <clear non-negotiable rule>
@@ -25,6 +26,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: cloud-infra
+- Stability: core
 - Status: active
 - Scope: infrastructure as code
 - Statement: All infrastructure changes must go through version-controlled IaC files.
@@ -37,6 +39,7 @@ Repeat this block for each rule.
 
 - Owner layer: Domain
 - Domain: cloud-infra
+- Stability: core
 - Status: active
 - Scope: secret management
 - Statement: Runtime secrets must come from managed secret stores; never from committed files.
