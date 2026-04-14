@@ -80,3 +80,34 @@ Scope layers (Global / Domain / Project) and stability levels (`core` / `behavio
 - `experimental` rules may change freely. Track in `DECISIONS.md` for auditability but do not require approval gates.
 
 See `docs/operating-rules.md` → Rule stability classification for the full change protocol.
+
+## Configuration file layering [OPTIONAL]
+
+In addition to rule layering (Global / Domain / Project), the operational configuration file `prompt-budget.yml` supports an optional override chain for per-developer or per-environment customization.
+
+### Override precedence
+
+| Priority | Source | Location | Tracked in git? |
+|----------|--------|----------|-----------------|
+| 1 (highest) | Environment hint | `AGENT_BUDGET_PROFILE` env var | No |
+| 2 | Local override | `prompt-budget.local.yml` (same directory) | No (add to `.gitignore`) |
+| 3 (lowest) | Repository default | `prompt-budget.yml` | Yes |
+
+### How agents apply overrides
+
+1. Read `prompt-budget.yml` as the base configuration.
+2. If `prompt-budget.local.yml` exists in the same directory, merge its keys on top (local wins on conflict).
+3. If `AGENT_BUDGET_PROFILE` is set in the environment, use its value to override `budget.profile` (e.g., `AGENT_BUDGET_PROFILE=minimal`).
+4. Proceed with the merged configuration.
+
+This allows individual developers to set personal budget profiles or disable skills locally without modifying the shared repository config.
+
+### Sensitive value masking
+
+When agents read or log configuration values, apply these masking rules:
+
+- Any YAML key containing `key`, `secret`, `token`, `password`, or `credential` (case-insensitive) must be masked in all output: display as `***MASKED***` instead of the actual value.
+- This applies to: task summaries, trace files, handoff artifacts, decision log entries, and any agent-generated output.
+- The masking rule is informational — agents enforce it by convention, not by code.
+
+If your project stores sensitive configuration outside `prompt-budget.yml` (e.g., in environment variables or secret managers), document the key names in `project/project-manifest.md` → Security and compliance boundaries so agents know which values to never output.
