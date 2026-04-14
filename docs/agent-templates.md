@@ -19,6 +19,16 @@ Waiting for approval before proceeding.
 
 If a tool does not support interactive approval, write the checkpoint to the output and stop.
 
+### Advisory template
+
+When a checkpoint gate outcome is **ADVISORY** (see `docs/operating-rules.md` → Checkpoint gate outcomes), emit this single-line format in the task output and continue without waiting:
+
+```text
+**Advisory [gate name]**: [finding summary]
+```
+
+Example: `**Advisory scope-expansion**: Adding utils/logger.ts — within original intent, proceeding.`
+
 ### Handoff artifact template
 
 ```text

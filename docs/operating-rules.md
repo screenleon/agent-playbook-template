@@ -39,7 +39,7 @@ This template supports three trust levels that control how much human approval i
 
 - **Destructive actions** (delete files, drop tables, force-push): always require human approval regardless of trust level — unless `dangerouslySkipAllCheckpoints: true` is explicitly set (see below).
 - **Plan approval**: required at `supervised`; required for Large scale at `semi-auto`; skipped at `autonomous`.
-- **Scope expansion**: required at `supervised` and `semi-auto`; advisory notice at `autonomous`.
+- **Scope expansion**: required at `supervised` and `semi-auto`; ADVISORY at `autonomous`.
 - **Stuck escalation** (3 failed attempts): requires human escalation unless `dangerouslySkipAllCheckpoints: true` is set.
 
 ### Setting the trust level
@@ -216,7 +216,7 @@ The `scripts/lint-layered-rules.sh` linter validates that every rule entry inclu
 
 ### Stability-aware change protocol
 
-- **Changing a `core` rule**: invoke `risk-reviewer` to assess blast radius. Record the change rationale, alternatives considered, and rollback plan in `DECISIONS.md`. At `supervised` and `semi-auto` trust levels, wait for user approval. At `autonomous` trust level, log an advisory notice and proceed.
+- **Changing a `core` rule**: invoke `risk-reviewer` to assess blast radius. Record the change rationale, alternatives considered, and rollback plan in `DECISIONS.md`. At `supervised` and `semi-auto` trust levels, wait for user approval. At `autonomous` trust level, log an ADVISORY and proceed.
 - **Changing a `behavior` rule**: run the validation loop to confirm no regression. Record in `DECISIONS.md`.
 - **Changing an `experimental` rule**: record in `DECISIONS.md` for traceability. No approval gate required.
 
@@ -266,16 +266,33 @@ When one agent's work feeds into the next, pass a **structured handoff artifact*
 
 Checkpoint behavior is governed by the trust level (see Trust level section above). The table below shows when each gate activates.
 
+### Checkpoint gate outcomes
+
+Each checkpoint gate produces one of three outcomes:
+
+| Outcome | Behavior | When used |
+|---------|----------|-----------|
+| **STOP** | Halt execution. Present the checkpoint to the user and wait for approval before continuing. | Default for active gates at `supervised` level; destructive actions at all levels |
+| **ADVISORY** | Log the checkpoint finding and continue without waiting. The finding is recorded in the trace and task summary but does not block progress. | Scope expansion at `autonomous` level; mid-implementation review at `semi-auto` for non-Large tasks |
+| **PASS** | Gate does not activate. No output, no log entry. The step is silently skipped. | Gates that are inactive for the current trust level and scale combination |
+
+When implementing a gate:
+
+1. Check the activation matrix below to determine the outcome for the current trust level.
+2. If the outcome is **STOP**, use the Checkpoint template from `docs/agent-templates.md`.
+3. If the outcome is **ADVISORY**, use the Advisory template from `docs/agent-templates.md`: emit a single-line advisory in the task output and continue.
+4. If the outcome is **PASS**, produce no output for this gate.
+
 ### Checkpoint activation matrix
 
 | Gate | `supervised` | `semi-auto` | `autonomous` | `autonomous` + `dangerouslySkipAllCheckpoints` |
 |---|---|---|---|---|
-| Plan approval | Always | Large or high-risk only | Skip | Skip |
-| Destructive/irreversible actions | Always | Always | Always | **Skip** |
-| Scope expansion | Always | Always | Advisory notice only | Skip |
-| Stuck escalation (3 failures) | Always | Always | Always | **Skip** (log and continue) |
-| Mid-implementation review (>5 files) | Always | Large only | Skip | Skip |
-| Before final merge | Always | Recommended | Skip | Skip |
+| Plan approval | STOP | STOP (Large/high-risk) / PASS | ADVISORY | PASS |
+| Destructive/irreversible actions | STOP | STOP | STOP | **PASS** |
+| Scope expansion | STOP | STOP | ADVISORY / STOP (unrelated expansion) | PASS |
+| Stuck escalation (3 failures) | STOP | STOP | STOP | **ADVISORY** (log and continue) |
+| Mid-implementation review (>5 files) | STOP | STOP (Large) / ADVISORY | PASS | PASS |
+| Before final merge | STOP | ADVISORY | PASS | PASS |
 
 ### Always-safe operations (never need human approval)
 
@@ -324,12 +341,12 @@ Do not use autonomous mode for tasks involving schema migrations on production d
 
 | Gate | Supervised behavior | Autonomous behavior |
 |------|---------------------|---------------------|
-| 1. Plan approval | STOP — wait for "PROCEED" | Log plan to `DECISIONS.md`, then auto-proceed |
-| 2. Destructive / irreversible actions | STOP — wait | **Always stop. Not bypassable.** |
-| 3. Scope expansion | STOP — present expanded scope | If expansion is within original intent: log and proceed. If unrelated module added: stop. |
-| 4. Stuck escalation (3 fails) | STOP — report | **Always stop. Not bypassable.** |
-| 5. Mid-implementation review | Recommended stop | Skip |
-| 6. Before final merge | Recommended stop | Skip |
+| 1. Plan approval | STOP — wait for "PROCEED" | ADVISORY — log plan to `DECISIONS.md`, then auto-proceed |
+| 2. Destructive / irreversible actions | STOP — wait | STOP — **always stop. Not bypassable.** |
+| 3. Scope expansion | STOP — present expanded scope | ADVISORY / STOP — if expansion is within original intent: ADVISORY (log and proceed). If unrelated module added: STOP. |
+| 4. Stuck escalation (3 fails) | STOP — report | STOP — **always stop. Not bypassable.** |
+| 5. Mid-implementation review | STOP | PASS |
+| 6. Before final merge | STOP | PASS |
 
 ### Non-bypassable rules in autonomous mode
 
