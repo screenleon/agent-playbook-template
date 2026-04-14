@@ -4,33 +4,30 @@
 # Agents read this file during skill loading and demand-triage to control
 # which roles and skills are active and to respect token budget targets.
 #
+# OVERRIDE CHAIN (optional)
+# ─────────────────────────
+# prompt-budget.yml (this file, git-tracked)
+#   ← prompt-budget.local.yml (same dir, .gitignore'd — local overrides)
+#   ← AGENT_BUDGET_PROFILE env var (overrides budget.profile only)
+#
+# See docs/layered-configuration.md → Configuration file layering.
+#
 # See docs/adoption-guide.md → Prompt budget trimming for step-by-step guidance.
 # See docs/adoption-guide.md → Autonomous execution mode for execution_mode guidance.
 # See skills/prompt-cache-optimization/SKILL.md → Prompt budget configuration
 # for how agents use this file.
 #
-# HOW TO USE THIS FILE
-# ─────────────────────
-# 1. Copy this file to your repository root.
-# 2. Enable only the roles your project actually uses.
-# 3. Disable skills that do not match your workflow.
-# 4. Adjust token targets based on your model's context window.
-# 5. Set execution_mode if you want autonomous (unattended) operation.
-#
-# This file is informational — agents use it as guidance to select which
-# skills and role templates to load. It does not enforce hard API-level limits.
-#
-# TEMPLATE DEFAULT
-# ─────────────────
-# The defaults below represent a full-featured team project with all roles active
-# and supervised (human-in-the-loop) execution. See commented sections below
-# for autonomous and smaller project configurations.
+# HOW TO USE THIS FILE: copy to repo root → enable roles your project uses →
+# disable skills that don't match your workflow → set execution_mode → adjust token targets.
+# Informational — agents use it as guidance; does not enforce hard API-level limits.
+# Defaults below: full-featured team project (all roles, semi-auto execution).
 #
 # BUDGET PROFILES
 # ─────────────────
 # Set budget.profile to control how many skills/roles load per request.
 # Profiles provide sensible defaults; explicit skills.*/roles.* entries override them.
 #
+#   nano     — 0 skills, 1 role. Single-file Small tasks only. < 3,000 total tokens.
 #   minimal  — 2 skills, 2-3 roles. For tight token budgets (< 16K total context).
 #   standard — 5 skills, 4-5 roles. Balanced for typical team usage. (default)
 #   full     — all applicable skills and roles. For generous budgets / large projects.
@@ -181,135 +178,23 @@ trimming:
   # Archive DECISIONS.md when it exceeds this number of entries.
   decisions_archive_threshold_entries: 50
 
+  # Relevance half-life for memory decay scoring (in days).
+  # Used by the optional relevance scoring formula in memory-and-state skill.
+  # Default: 90. Increase for projects with long-lived decisions.
+  # relevance_half_life_days: 90
+
   # Purge session memory files when count exceeds this number.
   session_memory_max_files: 10
 
-# ══════════════════════════════════════════════════════════════════════════════
-# BUDGET PROFILE EXAMPLES
-# ══════════════════════════════════════════════════════════════════════════════
-# Below are complete example configurations for each budget profile.
-# Copy the relevant section above, uncommenting as needed.
+# ── Step phase overrides (optional) ────────────────────────────────────────
+# Override which POST steps auto-execute. By default all POST steps run.
+# Uncomment to skip specific post-steps for token-tight workflows.
+# See docs/agent-playbook.md → Step phase classification.
+# post_steps_skip: []
+#   # - feedback-loop    # skip mini retrospective
+#   # - trace            # skip trace emission (Small tasks already inline this)
 
-# ── Minimal profile (< 16K total context) ──────────────────────────────────
-# Best for: solo devs with tight token limits, Small tasks only,
-#           pay-per-token APIs, or constrained model context windows.
-# Estimated Layer 2 cost: ~3,000-4,000 tokens
-#
-# budget:
-#   profile: minimal
-#   layer1_target_tokens: 3000
-#   layer2_max_tokens: 4000
-#   layer3_max_tokens: 2000
-#
-# roles:
-#   enabled:
-#     - application-implementer
-#     - critic
-#   disabled:
-#     - feature-planner
-#     - backend-architect
-#     - ui-image-implementer
-#     - integration-engineer
-#     - documentation-architect
-#     - risk-reviewer
-#
-# skills:
-#   always_load:
-#     - demand-triage
-#     - repo-exploration
-#   on_demand: []
-#   disabled:
-#     - test-and-fix-loop          # agent runs tests natively
-#     - error-recovery             # agent uses built-in retry
-#     - memory-and-state           # agent reads DECISIONS.md directly
-#     - self-reflection            # skipped
-#     - observability              # skipped
-#     - feature-planning           # no planning phase
-#     - backend-change-planning    # no planning phase
-#     - design-to-code             # not needed
-#     - documentation-architecture # not needed
-#     - prompt-cache-optimization  # not needed at minimal scale
-#     - on-project-start           # run once manually, then disable
-#     - mcp-validation             # not needed
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── Standard profile (default) ──────────────────────────────────────────────
-# Best for: typical team usage, Small/Medium tasks,
-#           moderate token budgets (16K-32K context).
-# Estimated Layer 2 cost: ~7,000-10,000 tokens
-#
-# budget:
-#   profile: standard
-#   layer1_target_tokens: 4000
-#   layer2_max_tokens: 8000
-#   layer3_max_tokens: 3000
-#
-# roles:
-#   enabled:
-#     - feature-planner
-#     - application-implementer
-#     - risk-reviewer
-#     - critic
-#   disabled:
-#     - backend-architect
-#     - ui-image-implementer
-#     - integration-engineer
-#     - documentation-architect
-#
-# skills:
-#   always_load:
-#     - demand-triage
-#     - repo-exploration
-#     - test-and-fix-loop
-#     - error-recovery
-#     - memory-and-state
-#   on_demand:
-#     - prompt-cache-optimization
-#   disabled:
-#     - design-to-code
-#     - documentation-architecture
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── Full profile ────────────────────────────────────────────────────────────
-# Best for: large teams, Large tasks, high-risk projects,
-#           generous budgets (32K+ context).
-# Estimated Layer 2 cost: ~12,000-18,000 tokens
-#
-# budget:
-#   profile: full
-#   layer1_target_tokens: 4000
-#   layer2_max_tokens: 15000
-#   layer3_max_tokens: 3000
-#
-# roles:
-#   enabled:
-#     - feature-planner
-#     - backend-architect
-#     - application-implementer
-#     - ui-image-implementer
-#     - integration-engineer
-#     - documentation-architect
-#     - risk-reviewer
-#     - critic
-#   disabled: []
-#
-# skills:
-#   always_load:
-#     - demand-triage
-#     - repo-exploration
-#     - test-and-fix-loop
-#     - error-recovery
-#     - memory-and-state
-#   on_demand:
-#     - self-reflection
-#     - observability
-#     - prompt-cache-optimization
-#     - feature-planning
-#     - backend-change-planning
-#     - application-implementation
-#     - design-to-code
-#     - documentation-architecture
-#     - on-project-start
-#     - mcp-validation
-#   disabled: []
+# ── BUDGET PROFILE EXAMPLES ─────────────────────────────────────────────────
+# Full minimal / standard / full profile examples: docs/prompt-budget-examples.md
+# Copy the relevant block into this file and uncomment as needed.
 # ─────────────────────────────────────────────────────────────────────────────
