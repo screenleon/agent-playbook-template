@@ -17,6 +17,7 @@ Format:
 
 ```markdown
 ## YYYY-MM-DD: [Decision title]
+- **Scope**: `global` | `component:<path>` — omit for project-wide decisions
 - **Context**: Why this decision was needed
 - **Decision**: What was decided
 - **Alternatives considered**: What was rejected and why
@@ -55,6 +56,56 @@ For in-progress tasks that span multiple agent interactions:
   - Open questions
 
 This prevents re-discovery and reduces repeated mistakes within a session.
+
+## Session Resume Protocol
+
+When returning to a repository **after a break** and the project boundaries are already confirmed, use this protocol instead of `on-project-start`.
+
+### First start vs. resume
+
+| Situation | Action |
+|-----------|--------|
+| First entry to a new repository | Use `on-project-start` skill |
+| Returning after a break, boundaries already confirmed | Use this protocol |
+| Resuming a mid-task after interruption | This protocol + read session notes |
+
+### Layered loading order
+
+Load context in this sequence, stopping as soon as you have enough to proceed:
+
+**L0 — Stable anchors** (always load, target ≤ 500 tokens)
+- `project/project-manifest.md` — confirmed project scope and constraints
+- The most recent 3 entries in `DECISIONS.md` — recent cross-cutting decisions
+
+**L1 — Last session state** (load if a summary exists, target ≤ 1,500 tokens)
+- Last task completion summary (from session notes or docs)
+- If no summary exists: the 5 most recent `DECISIONS.md` entries + module map section of `ARCHITECTURE.md` only (not the full file)
+
+**L2 — Task-specific context** (on demand, ≤ 1,000 tokens per pull)
+- Load only once the current task is defined
+- Apply selective retrieval — keyword match against affected modules + recency window (see Triage-driven selective retrieval)
+- Do not pre-load L2; wait until the scope of the task is clear
+
+### Loading stops when
+
+You can confidently answer all three:
+- "What was I doing last time?"
+- "What constraints currently apply?"
+- "What is the next concrete step?"
+
+If the token budget for a tier is reached before the question is answered, apply selective retrieval for remaining gaps rather than reading in full.
+
+### Resume confirmation output
+
+After loading, produce a brief confirmation before starting work:
+
+```text
+Session resumed:
+- Last completed: [brief summary]
+- Active constraints: [1–3 bullets from DECISIONS.md]
+- Pending work: [from session notes, if any]
+- Ready to: [next step]
+```
 
 ## Conversation memory tiering
 
@@ -139,11 +190,11 @@ RAG results **replace** the 3,000-token Tier 3 budget — they do not add to it.
 
 #### Fallback
 
-If the vector store is unavailable at runtime:
+If the vector store is unavailable at runtime, follow the **Retrieval degradation chain** (see below) starting at Level 1:
 
-1. Fall back to the **Triage-driven selective retrieval** procedure (see below).
-2. If selective retrieval is also not applicable (fewer than 30 entries), fall back to standard full-file reads.
-3. Log the fallback in the task summary: `**Memory fallback**: RAG unavailable, used file-based retrieval`.
+1. Fall back to the **Triage-driven selective retrieval** procedure (Level 1: keyword search + recency window).
+2. If selective retrieval is also not applicable (fewer than 30 entries), fall back to standard full-file reads (Level 3).
+3. Log the fallback in the task summary: `**Memory retrieval**: Level N — [method name]`.
 
 ### Token budget guideline
 
@@ -153,12 +204,6 @@ If the vector store is unavailable at runtime:
 | Mid-term (summary) | ≤ 1,500 tokens | Regenerate summary with tighter compression |
 | Long-term (persistent reads) | ≤ 3,000 tokens per task | Use selective read strategy (see below) |
 | **Total conversation memory** | **≤ 8,500 tokens** | Roughly 6–7% of a 128K context window |
-
-### Interaction with prompt cache optimization
-
-Conversation memory is entirely within Layer 4 (volatile context). It does not affect the cached prefix in Layers 1–3. However, keeping conversation memory compact:
-- Leaves more context window for actual code and tool outputs.
-- Reduces per-request cost even when cache misses occur.
 
 ## Context anchor protocol
 
@@ -204,11 +249,41 @@ STOP and wait for user decision. Do not resolve contradictions autonomously.
 
 ## Categorized memory structure
 
-| Category | Content | Primary store | Query when |
-|----------|---------|---------------|------------|
-| Project-level | Architectural decisions, global conventions, tech choices | `DECISIONS.md`, `ARCHITECTURE.md` | Starting any task, making architectural choices |
-| Component-level | Per-module patterns, quirks, module-specific constraints | Module READMEs, session/repo memory files | Working on a specific or unfamiliar module (search by module name/path) |
-| Change-pattern | Recurring fix patterns, validated approaches for similar tasks | Session/repo memory files | Starting a Small task (search by task-type keywords, e.g., "validation", "config update") |
+Memory is organized along two dimensions: **scope** (how broadly it applies) and **category** (what kind of information it contains).
+
+### Scope levels
+
+Tag every persistent memory entry with a scope to control when it is loaded:
+
+| Scope | Meaning | When loaded |
+|-------|---------|-------------|
+| `global` | Applies across all projects or sessions | Always (L0) |
+| `project` | Specific to this repository | On session resume (L1) |
+| `component:<path>` | Specific to one module or directory | On demand when working on that component (L2) |
+
+Use the narrowest scope that is accurate. Scope drives the loading order in the Session Resume Protocol — `global` loads first, `component` loads last and only on demand.
+
+### Category × Scope matrix
+
+| Category | Scope | Primary store | Query when |
+|----------|-------|---------------|------------|
+| Architectural decisions, global conventions | `project` | `DECISIONS.md`, `ARCHITECTURE.md` | Starting any task, making architectural choices |
+| Component patterns, quirks, module constraints | `component:<path>` | Module READMEs, session/repo memory files | Working on a specific or unfamiliar module |
+| Recurring fix patterns, validated approaches | `project` or `global` | Session/repo memory files | Starting a Small task (search by task-type keywords) |
+| User preferences, cross-repo conventions | `global` | Personal memory files | Any task |
+
+### Tagging memory files
+
+Include a `scope` field in frontmatter when writing persistent memory files:
+
+```yaml
+---
+name: <memory name>
+description: <one-line description — used to decide relevance at session start>
+type: feedback | project | reference | user
+scope: global | project | component:<relative-path>
+---
+```
 
 **Small task retrieval**: Before implementing a Small task, search session/repo memory for the affected module or task-type keywords. If a matching pattern exists, follow it. If not, proceed normally and capture the pattern in the task completion summary.
 
@@ -269,7 +344,7 @@ When `DECISIONS.md` grows large (over **30 entries** or **20 KB**), reading it i
 1. **Extract affected modules** — from the triage output, collect the file paths classified as affected. Derive module/directory names (e.g., `src/api/`, `src/services/user`).
 2. **Keyword search** — scan `DECISIONS.md` for entries whose title or constraint text contains any of the module keywords.
 3. **Recency window** — always load the **most recent 5 entries** regardless of keyword match, to catch recent cross-cutting decisions.
-4. **Title scan for contradiction detection** — for entries that did not match keywords or recency, read only the `## YYYY-MM-DD: [title]` header lines. If any title suggests relevance to the current task, load that full entry.
+4. **Title scan for contradiction detection** — for entries that did not match keywords or recency, read only the `## YYYY-MM-DD: [title]` header lines. If any title suggests relevance to the current task, load that full entry. This step also serves as Level 2 in the **Retrieval degradation chain** when keyword search returns zero matches.
 5. **Fallback** — if keyword search returns zero matches (excluding recency window), fall back to reading `DECISIONS.md` in full. Zero matches likely means the keywords were too narrow.
 
 #### Limitations
@@ -277,6 +352,28 @@ When `DECISIONS.md` grows large (over **30 entries** or **20 KB**), reading it i
 - Cross-cutting decisions (e.g., "all APIs use REST") may not contain module-specific keywords. The recency window and title scan partially mitigate this, but cannot guarantee full coverage.
 - Agent tools vary in search capability. If the tool cannot search within a file by keyword, fall back to full read.
 - This procedure is an optimization, not a hard requirement. Agents may always choose to read `DECISIONS.md` in full if token budget allows.
+
+#### Relevance scoring formula [OPTIONAL]
+
+When selective retrieval returns more entries than the token budget allows, use a weighted relevance score to rank and select entries:
+
+```text
+score = keyword_weight + recency_weight
+
+keyword_weight = 1.0 if entry matches affected module keywords, else 0.0
+recency_weight = 2^(-age_days / half_life)
+```
+
+- `age_days` = days since the decision entry was created.
+- `half_life` = 90 days (default; override in `prompt-budget.yml` under `trimming.relevance_half_life_days`).
+- Entries with `scope: global` or tagged `evergreen: true` in their frontmatter always receive `recency_weight = 1.0` (no decay).
+- **Active-constraint exemption**: entries whose constraints are still actively referenced by current code or docs also receive `recency_weight = 1.0`, regardless of age. This prevents the formula from de-prioritizing old but still-enforced decisions. Use the same "actively referenced" test as the archive procedure.
+
+Select the top-N entries by score until the Tier 3 token budget (3,000 tokens) is filled.
+
+**When to use**: Only when `DECISIONS.md` exceeds the selective retrieval threshold (30 entries / 20 KB) AND the keyword search returns more matches than the budget allows. Below threshold or with few matches, this formula adds no value.
+
+**Interaction with archive rules**: This formula does NOT replace the archive procedure. Archiving removes entries whose constraints are no longer active. Relevance scoring ranks active entries for retrieval priority. They are complementary — scoring never causes an entry to be archived, and archiving never depends on score.
 
 ### Session memory hygiene
 
@@ -306,6 +403,30 @@ Track during feedback loop quality signal reviews:
 | `DECISIONS_ARCHIVE.md` exists | Yes, once any archiving has occurred | No, with 50+ active decisions |
 | Session memory files | ≤ 5 active | > 10 without cleanup |
 | Stale constraint references | 0 | Any archived constraint still referenced in code |
+
+### Retrieval degradation chain
+
+When retrieving memory entries, attempt methods in order and fall back automatically on failure:
+
+```text
+Level 0 (best): RAG semantic search [if configured]
+  ↓ unavailable or zero results
+Level 1: Keyword search + recency window (Triage-driven selective retrieval)
+  ↓ zero keyword matches (excluding recency window)
+Level 2: Title scan — read only ## headers, load full entry on relevance match
+  ↓ title scan finds no matches
+Level 3: Full-file read of DECISIONS.md
+```
+
+#### Rules
+
+1. Start at the highest available level. If RAG is not configured, start at Level 1.
+2. At each level, if the method returns zero relevant results, drop to the next level.
+3. Never drop more than one level per attempt — if Level 1 returns zero, try Level 2 before jumping to Level 3.
+4. Log the final retrieval level used in the task summary: `**Memory retrieval**: Level N — [method name]`.
+5. If Level 3 (full read) would exceed the Tier 3 token budget, read only the most recent 20 entries and note the truncation.
+
+This chain is deterministic — agents follow it top-down without discretionary skipping.
 
 ## Context compaction protocol
 
