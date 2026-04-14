@@ -5,13 +5,7 @@ description: Use to maximize prompt cache hit rates across LLM providers by enfo
 
 # Prompt Cache Optimization
 
-Use this skill to reduce API costs and latency by maximizing prompt cache hits. The techniques here are **provider-agnostic** — they work with any LLM that uses prefix-based prompt caching (Anthropic, OpenAI, Google, local inference engines like vLLM/SGLang).
-
-## Why this matters
-
-All major LLM providers cache prompt prefixes. When consecutive requests share the same prefix, the provider skips recomputing those tokens — reducing cost (typically 50–90% for cached tokens) and latency. The key requirement across all providers is the same: **the beginning of the prompt must be identical byte-for-byte across requests**.
-
-This skill ensures that the project's instruction files are loaded in a consistent order so the stable prefix is as long as possible.
+Use this skill to reduce API costs and latency by maximizing prompt cache hits. The techniques here are **provider-agnostic** — they work with any LLM that uses prefix-based prompt caching (Anthropic, OpenAI, Google, local inference engines like vLLM/SGLang). The key requirement: **the beginning of the prompt must be identical byte-for-byte across requests** — instruction files must load in a consistent, deterministic order.
 
 ## Four-layer loading order
 
@@ -184,6 +178,30 @@ When `budget.profile: minimal`, agents should:
 - Skip self-reflection, observability, and planning skills entirely.
 
 See `docs/agent-playbook.md` → Budget profiles for the complete specification.
+
+### Profile-aware Layer 1 loading
+
+The Layer 1 content varies by budget profile to respect token targets:
+
+| Profile | Layer 1 content | Est. tokens |
+|---------|----------------|------------|
+| `minimal` | `docs/rules-quickstart.md` only | ~1,200 |
+| `standard` | `docs/rules-quickstart.md` → expand to full docs as needed | ~4,000–5,000 |
+| `full` | Full `docs/operating-rules.md` + `docs/agent-playbook.md` | ~18,350 |
+
+When `budget.profile: minimal`:
+
+- Layer 1 consists solely of `docs/rules-quickstart.md` (enhanced with constitutional principles, checkpoint outcomes, and minimal-profile role definitions).
+- Do NOT load `docs/operating-rules.md` or `docs/agent-playbook.md` unless a specific section is needed (deferred loading via "When to open full docs" in rules-quickstart.md).
+- This brings Layer 1 from ~18,350 tokens to ~1,200 tokens — a 15x reduction.
+
+When `budget.profile: standard` or unset:
+
+- Load `docs/rules-quickstart.md` first, then expand into the full source docs for task-specific detail.
+
+When `budget.profile: full`:
+
+- Load the complete `docs/operating-rules.md` and `docs/agent-playbook.md` immediately.
 
 If `prompt-budget.yml` does not exist, use the `standard` profile defaults with the full skill sets defined in the Canonical skill sets table above.
 
