@@ -388,7 +388,7 @@ To skip the critic, set `skip_critic_role: true` under `autonomous_mode` in `pro
 
 ### Risk-reviewer behavior in autonomous mode
 
-When the routed workflow includes `risk-reviewer`, it still runs after implementation in autonomous mode. Its findings are recorded in the task completion summary. If the risk-reviewer identifies a severity-high finding, the agent must stop and report — even in autonomous mode. Severity-medium and lower findings are logged and accepted.
+When the routed workflow includes `risk-reviewer`, it still runs in autonomous mode, including post-implementation review when that workflow step is required. Its findings are recorded in the task completion summary. For any `risk-reviewer` run in autonomous mode, a severity-high finding is a default hard stop when `autonomous_mode.halt_on_high_severity_risk: true`. If that setting is `false`, the agent must log the severity-high finding and may continue autonomously. Severity-medium and lower findings are logged and accepted.
 
 ### Autonomous mode is not "skip planning"
 

@@ -43,8 +43,9 @@
 # semi-auto (default)  — Small and low-risk Medium tasks run autonomously.
 #                        Checkpoints activate only for Large, high-risk,
 #                        or destructive work.
-# autonomous           — agent proceeds without human approval except for
-#                        irreversible/destructive actions and stuck escalation.
+# autonomous           — agent proceeds without human approval by default,
+#                        with autonomous_mode.* controlling which gates still
+#                        stop, auto-proceed, or log advisory findings.
 #
 # IMPORTANT: autonomous mode is opt-in and must be declared explicitly here.
 # Agents must never infer autonomous mode from context.
