@@ -6,7 +6,7 @@ All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, agent-deference, trust level, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, self-reflection, observability, MCP validation, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Discover → **Triage** → Plan → **Critique** → **Approve** → Implement → Test → Fix → Repeat → Record → **Summarize**. Steps in **bold** are trust-level-gated; see `docs/operating-rules.md` → Trust level for activation rules.
+3. **Loop** — every implementation follows: Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize. `Approve` is the primary trust-level-gated wait state; routing into planning, critique, and summary still depends on task shape, scale, and workflow. See `docs/operating-rules.md` → Trust level for activation rules.
 
 > **Note:** The 11-stage loop above is a conceptual overview. The detailed expansion into 16 mandatory steps (below) adds initialization, structured preamble, test-first, cache-aware loading, isolation, self-reflection, delivery formatting, observability traces, and the feedback loop. Both views describe the same workflow at different levels of granularity.
 
@@ -70,6 +70,8 @@ These skills are loaded only when the task type matches. Projects that do not us
 
 This classification aligns with `prompt-budget.yml` — the `always_load`, `on_demand`, and `disabled` lists should mirror these tiers.
 
+For `prompt-budget.yml`, conditional skills that do not justify a dedicated key may be listed under `on_demand` as long as their trigger condition is documented and they are not treated as unconditional always-load skills.
+
 > **Note**: At `minimal` and `nano` profiles, Always-tier *behaviors* remain mandatory, but the skill files themselves may not be loaded. Agents execute demand-triage, repo-exploration, test-and-fix-loop, error-recovery, and memory-and-state using native tool capabilities instead of loading the SKILL.md files.
 
 ### Budget profiles
@@ -102,7 +104,7 @@ Loads only the two skills required for triage and codebase navigation. Other ski
 - **Validation**: agent runs tests directly without loading `test-and-fix-loop` skill (uses tool-native test execution)
 - **Error recovery**: agent uses built-in retry logic; `error-recovery` skill is not loaded
 - **Memory**: agent reads `DECISIONS.md` directly; `memory-and-state` skill is not loaded
-- **Trade-offs**: no structured planning phase, no observability traces, no self-reflection rubric, no handoff artifacts. Suitable for Small tasks only.
+- **Trade-offs**: no separate planning skill, abbreviated reflection/trace behavior, and handoffs only when a same-session role transition genuinely occurs. Suitable for Small tasks only.
 
 #### Standard profile
 
@@ -129,7 +131,7 @@ Loads all applicable skills per the tier classification. No restrictions.
 3. Explicit `skills.*` and `roles.*` entries in `prompt-budget.yml` **override** profile defaults (allowing fine-tuning).
 4. If `budget.profile` is not set, behavior defaults to `standard`.
 
-See `prompt-budget.yml` for example configurations per profile.
+See `docs/prompt-budget-examples.md` for example configurations per profile.
 
 ## Repository asset map
 
@@ -184,6 +186,23 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 
 ## Role definitions
 
+Role defines the durable ownership boundary. Intent mode defines the current phase of work. They are orthogonal: one role may operate in different intent modes, but intent mode never grants capabilities beyond the role contract.
+
+### Role capability matrix
+
+This matrix defines the default capability ceiling for each role. Intent mode may further tighten behavior for the current step.
+
+| Role | Primary output | Modify implementation files | Modify docs / ADRs | Run validation | Default stance |
+|---|---|---|---|---|---|
+| `feature-planner` | scoped plan | No | Yes, when the plan itself is the deliverable | Optional, evidence-gathering only | read-mostly |
+| `backend-architect` | backend design and high-risk backend implementation | Yes, when routed to own the change | Yes | Yes | editable |
+| `application-implementer` | working product change | Yes | Yes, when sync is required | Yes | editable |
+| `ui-image-implementer` | implemented UI change | Yes | Yes, when sync is required | Yes | editable |
+| `integration-engineer` | end-to-end wiring | Yes | Yes, when sync is required | Yes | editable |
+| `documentation-architect` | rules / ADR / onboarding docs | No by default | Yes | Yes, when docs validation exists | docs-editable |
+| `risk-reviewer` | findings and risk assessment | No | No | Yes, read-only verification | read-only |
+| `critic` | adversarial critique | No | No | No, unless reviewing cited evidence | read-only |
+
 ### `feature-planner`
 
 - defines scope, non-goals, impacted modules, dependencies, order, and validation
@@ -224,6 +243,24 @@ Do not assume every tool supports named subagents. Keep the role model stable ev
 - does not rewrite proposals — states what is wrong and lets the proposer fix it
 - separate from `risk-reviewer`: critic challenges design quality; risk-reviewer checks implementation safety
 
+## Intent modes
+
+Intent mode describes the current phase of work, not the long-lived role identity.
+
+| Intent mode | Goal | Typical actions | Default mutation policy |
+|---|---|---|---|
+| `analyze` | understand current state and propose next steps | read, search, compare patterns, draft plan | no edits |
+| `implement` | apply the approved or in-scope change | edit, validate, update dependent docs | edits allowed |
+| `review` | inspect a proposal or implementation for flaws | read, diff, test, write findings | no edits |
+| `document` | update rules, decision logs, ADRs, and guidance | edit docs, sync references, validate docs | docs-only by default |
+
+Guidance:
+
+1. Intent mode does **not** require a new agent by default.
+2. If the same role stays in the same context, it may move from `analyze` to `implement` for Small tasks and relaxed Medium tasks.
+3. If the role changes, follow the context-isolation rules from `docs/operating-rules.md`.
+4. If a tool supports explicit subagents or session labels, map intent mode to those features. If not, declare the mode in the preamble or handoff and keep the same workflow rules.
+
 ## Suggested workflow
 
 ### Mandatory steps for all workflows
@@ -242,8 +279,8 @@ Every workflow below implicitly includes these steps:
 10. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
 11. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks need only one agent. Medium tasks at `semi-auto` or `autonomous` may relax isolation per `docs/operating-rules.md` → Task boundary rule
 12. **Self-reflect** — before emitting a deliverable or handoff, run the `self-reflection` skill rubric (correctness, consistency, adherence, completeness, isolation). For Small tasks, only correctness + adherence are required; isolation is skipped. See `skills/self-reflection/SKILL.md`
-13. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, a concise final summary may serve as the streamlined deliverable when allowed by the Small-task output contract
-14. **Trace** — emit a trace record using the `observability` skill. For Small tasks, embed minimal trace in the task summary. For Medium/Large tasks, produce a structured trace file. See `skills/observability/SKILL.md`
+13. **Deliver** — produce output using the role-appropriate final format (Deliverable template for non-review roles; findings-first review contract for `risk-reviewer` and `critic`). For Small tasks, a concise final summary may serve as the streamlined deliverable when allowed by the Small-task output contract
+14. **Trace** — emit a trace record using the `observability` skill. For Small tasks, embed minimal trace in the task summary. For Medium tasks, use the standard structured schema inline or in `.agent-trace/`. For Large tasks, produce a full structured trace file. See `skills/observability/SKILL.md`
 15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). For Small tasks, this may overlap with the streamlined final summary; for other tasks, it is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
@@ -369,7 +406,8 @@ stateDiagram-v2
 
     state "trust-level gated" as ApproveGate {
         Approve --> WaitUser : supervised / semi-auto Large
-        Approve --> AutoProceed : autonomous / semi-auto non-Large
+        Approve --> WaitUser : semi-auto high-risk
+        Approve --> AutoProceed : autonomous / semi-auto bounded Medium
     }
 
     WaitUser --> Implement
@@ -408,7 +446,7 @@ The static routing tables above cover known workflow patterns. When a task's sha
 #### Rules
 
 1. **Handoff required** — every dynamic spawn produces a handoff artifact matching `docs/schemas/handoff-artifact.schema.yaml`, with the `orchestration` block populated.
-2. **Plan of record** — the coordinator maintains a plan-of-record table (see `docs/agent-templates.md` → Plan of record) showing expected vs. actual sub-agent sequence. Update the table before each spawn.
+2. **Plan of record** — the coordinator maintains a plan-of-record table (see `docs/agent-templates.md` → Plan of record) showing expected vs. actual sub-agent sequence. Update the table before each spawn and after each completion.
 3. **Maximum spawn depth = 3** — a coordinator may not spawn a sub-role that itself spawns beyond depth 3. This is a hard limit to prevent infinite delegation.
 4. **No self-delegation** — a role may not spawn itself. If re-entry is needed, the coordinator must reclaim and re-route.
 5. **Idle reclaim** — if a spawned sub-role produces no deliverable after 2 exchange rounds (or the equivalent in a single-turn tool), the coordinator must reclaim the task and either retry with a different role or escalate.

@@ -45,6 +45,13 @@ If same-layer conflicts remain:
 2. latest dated rule wins
 3. record tie-break in `DECISIONS.md`
 
+## Role vs intent mode
+
+- **Role** = who owns the work
+- **Intent mode** = what phase the current work is in (`analyze`, `implement`, `review`, `document`)
+- Intent mode does not expand role permissions
+- Same-role mode switches do not require a new agent by default; role switches still follow context-isolation rules
+
 ## Mandatory workflow (compact)
 
 1. Discover (`skills/repo-exploration/SKILL.md`). At `minimal` profile + single-file Small task: skip reading `ARCHITECTURE.md` unless it has substantive non-template content (>50 lines).
@@ -123,6 +130,7 @@ When `budget.profile: minimal`, only these roles are active:
 - **critic** — adversarial review of plans and proposals before approval
 
 All other roles are disabled. Do not attempt to route to them.
+This describes the profile default. Repository-level explicit overrides in `prompt-budget.yml` may narrow or expand the available role set, but `minimal` remains intended for Small tasks only.
 Minimal profile is designed for Small tasks only. If demand-triage classifies a task as Medium or Large, escalate to the user and recommend switching to standard or full profile.
 For `standard` and `full` profiles, see `docs/agent-playbook.md` → Role definitions.
 

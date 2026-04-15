@@ -223,11 +223,75 @@ The `scripts/lint-layered-rules.sh` linter validates that every rule entry inclu
 - **Changing a `behavior` rule**: run the validation loop to confirm no regression. Record in `DECISIONS.md`.
 - **Changing an `experimental` rule**: record in `DECISIONS.md` for traceability. No approval gate required.
 
+## Rule authoring contract
+
+Write reusable rules as contracts, not as free-form narrative.
+
+Every active rule entry should include these minimum fields:
+
+1. `Rule ID`
+2. `Owner layer`
+3. `Scope`
+4. `Stability`
+5. `Status`
+6. `Directive`
+7. `Rationale`
+8. `Conflict handling`
+9. `Example`
+10. `Non-example`
+
+Use this canonical shape:
+
+```markdown
+### Rule: <RULE_ID>
+- Owner layer: Global | Domain | Project
+- Scope: [where this rule applies]
+- Stability: core | behavior | experimental
+- Status: active | superseded | draft
+- Directive: [clear imperative rule]
+- Rationale: [why this rule exists]
+- Conflict handling: [what overrides this rule or when to escalate]
+- Example: [positive example]
+- Non-example: [what this rule forbids or does not cover]
+```
+
+Incomplete rule entries are not considered stable source-of-truth material. At minimum, `Directive`, `Rationale`, and `Conflict handling` must never be omitted.
+
 ## Scope control
 
 - Do not expand the task beyond the requested outcome without stating why.
 - If a task is ambiguous, reduce ambiguity first through planning instead of guessing across multiple modules.
 - Keep fixes local unless the broader change is necessary for correctness.
+
+## Intent mode
+
+Roles answer **who owns the work**. Intent modes answer **what the current phase is**.
+
+Use these canonical intent modes:
+
+| Intent mode | Primary goal | Default file mutation stance |
+|---|---|---|
+| `analyze` | Understand current state, scope work, propose changes | read-only |
+| `implement` | Apply changes and validate them | edits allowed when the role permits edits |
+| `review` | Find bugs, risks, regressions, and gaps | read-only |
+| `document` | Update rules, ADRs, runbooks, and supporting docs | docs-only by default |
+
+Intent mode constrains the current step. It does not replace role routing and never expands a role's default capabilities.
+
+Examples:
+
+- A `feature-planner` in `analyze` mode explores and plans, but does not implement.
+- An `application-implementer` may start in `analyze` mode, then move to `implement` mode in the same task when the workflow allows it.
+- A `risk-reviewer` stays read-only even if a tool labels the session as `implement`.
+
+### Intent mode transition rules
+
+1. For Medium and Large tasks, state the current intent mode in the structured preamble, handoff artifact, or both.
+2. A mode switch inside the same role does **not** require a new agent or new context by default.
+3. A role switch still follows the Context isolation rules below unless the scale-based relaxation explicitly allows a shared context.
+4. Switching from `analyze` to `implement` must restate the intended change scope before edits begin.
+5. Switching into `review` mode ends implementation for that pass. Do not keep editing while presenting a final review.
+6. If a mode switch expands scope beyond the original intent, trigger the scope-expansion checkpoint.
 
 ## Initialization protocol
 
@@ -252,12 +316,20 @@ Each conceptual role (planner, architect, implementer, critic, reviewer) should 
 - One task = one agent = one context.
 - If a tool supports named subagents or new sessions, use them.
 - If a tool only supports a single conversation, insert a **hard context break** between roles: summarize the previous role's output into a structured handoff artifact, then begin the next role with only that artifact as input.
+- Changing **intent mode** within the same role is allowed when the current task scale permits a shared context. Changing **roles** still uses the stronger isolation rule.
 
 **Scale-based relaxation**: For Small tasks, a single agent context is sufficient. For Medium tasks at `semi-auto` or `autonomous` trust level, planner and implementer may share a context if the tool does not easily support subagents. Strict isolation remains mandatory for Large tasks and for any task at `supervised` trust level.
 
 ### Handoff artifact
 
 When one agent's work feeds into the next, pass a **structured handoff artifact** — not raw conversation history. Include: task, deliverable, key decisions (with DECISIONS.md refs), open risks, constraints for next step, and attached output. See `docs/agent-templates.md` → Handoff artifact template for the full format.
+
+Minimum validity rules:
+
+1. `Task`, `Deliverable`, `Key decisions`, `Constraints for next step`, and `Attached output` are required.
+2. `Open risks` may be `N/A — none identified`, but may not be silently omitted.
+3. Source and target intent modes should be included whenever the handoff crosses from planning to implementation, implementation to review, or implementation to documentation.
+4. If a required field is missing, the handoff is invalid. The receiving role must request a corrected handoff or reconstruct the missing context before proceeding.
 
 ### Anti-patterns (banned)
 
@@ -413,7 +485,7 @@ Before writing or modifying any code, perform these steps:
 4. **Check dependency graph** — understand imports, module boundaries, and shared types before making cross-file changes.
 5. **Read project-specific constraints** — check the `Project-specific constraints` section below and any `CONVENTIONS.md`, `ARCHITECTURE.md`, or similar files at the repo root.
 6. **Apply workspace boundaries** — if `project/project-manifest.md` defines a `Workspace boundaries` section, determine the active boundary before loading domain rules. See *Workspace boundary masking* above.
-7. **Use RAG when configured** — if RAG-augmented retrieval is set up (see `skills/memory-and-state/SKILL.md` → RAG-augmented retrieval), use semantic search at task start for `DECISIONS.md` and `ARCHITECTURE.md` instead of full-file reads.
+7. **Use retrieval when configured** — if RAG-augmented or selective retrieval is set up (see `skills/memory-and-state/SKILL.md`), use it to identify relevant `DECISIONS.md` and `ARCHITECTURE.md` entries at task start. When a rule below requires a contradiction-critical read, retrieval may be used as the discovery step, but the final decision must still be checked against the relevant full entry text before proceeding.
 
 If you skip discovery, state what you skipped and why.
 
@@ -515,7 +587,16 @@ If a section is not applicable, write "N/A — [reason]" instead of omitting it.
 
 ### Mandatory deliverable structure
 
-Every agent role must produce its final output using the Deliverable template in `docs/agent-templates.md`. The five required sections are: Proposal, Alternatives considered, Pros/Cons, Risks, Recommendation. Roles may add domain-specific sections but must not omit these five. Write "N/A — [reason]" for any section that genuinely does not apply.
+Non-review roles must produce final output using the Deliverable template in `docs/agent-templates.md`. The five required sections are: Proposal, Alternatives considered, Pros/Cons, Risks, Recommendation. Roles may add domain-specific sections but must not omit these five. Write `N/A — [reason]` for any section that genuinely does not apply.
+
+Review-first roles use a different final-output contract:
+
+- `risk-reviewer` and `critic` must lead with findings, ordered by severity.
+- Then list open questions or assumptions.
+- Then include residual risks or short summary.
+- If there are no findings, state that explicitly.
+
+Use the review output template in `docs/agent-templates.md` for these review-first roles. Findings-first review output takes precedence over the Deliverable template for review work.
 
 ### Small-task minimum output contract
 
@@ -671,7 +752,7 @@ Key rules:
 
 Before making any architectural or behavioral decision, agents **must**:
 
-1. Read `DECISIONS.md` in full
+1. Read the relevant active decision entries needed to evaluate the proposed change. For small logs, this means reading `DECISIONS.md` in full. For large logs, retrieval/selective loading is allowed if it still loads the relevant full entries before making the decision.
 2. If the task involves legacy code or historical migrations, search `DECISIONS_ARCHIVE.md` for related prior decisions if the archive file exists
 3. Check whether the proposed change contradicts any relevant decision found in the active log or archive search results
 4. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.

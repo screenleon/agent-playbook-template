@@ -12,9 +12,14 @@ type: object
 required:
   - task
   - source_role
+  - source_intent_mode
   - target_role
+  - target_intent_mode
   - deliverable_summary
   - decisions
+  - open_risks
+  - constraints
+  - attached_output
   - state
 
 properties:
@@ -35,6 +40,15 @@ properties:
       - risk-reviewer
       - critic
 
+  source_intent_mode:
+    type: string
+    description: Intent mode of the source role at handoff time.
+    enum:
+      - analyze
+      - implement
+      - review
+      - document
+
   target_role:
     type: string
     description: The role that will consume this handoff.
@@ -47,6 +61,15 @@ properties:
       - documentation-architect
       - risk-reviewer
       - critic
+
+  target_intent_mode:
+    type: string
+    description: Intent mode expected for the target role.
+    enum:
+      - analyze
+      - implement
+      - review
+      - document
 
   deliverable_summary:
     type: string
@@ -71,6 +94,7 @@ properties:
   open_risks:
     type: array
     description: Unresolved risks or questions for the next role.
+    minItems: 0
     items:
       type: object
       required:
@@ -85,12 +109,17 @@ properties:
             - high
             - medium
             - low
+            - none
 
   constraints:
     type: array
     description: Constraints the target role must respect.
     items:
       type: string
+
+  attached_output:
+    type: string
+    description: The actual plan, review, implementation summary, or equivalent artifact being handed off.
 
   state:
     type: object
@@ -151,6 +180,10 @@ properties:
         description: >
           Present only when this handoff is part of a dynamic orchestration chain.
           Omit for static routing workflows.
+        required:
+          - parent_role
+          - spawn_depth
+          - plan_of_record_ref
         properties:
           parent_role:
             type: string

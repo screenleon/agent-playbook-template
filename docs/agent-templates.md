@@ -33,6 +33,8 @@ Example: `**Advisory scope-expansion**: Adding utils/logger.ts — within origin
 
 ```text
 ## Handoff: [source role] → [target role]
+- **Source intent mode**: [analyze | implement | review | document]
+- **Target intent mode**: [analyze | implement | review | document]
 - **Task**: [one-sentence objective]
 - **Deliverable**: [what the source role produced]
 - **Key decisions**: [decisions made, with references to DECISIONS.md entries]
@@ -42,6 +44,13 @@ Example: `**Advisory scope-expansion**: Adding utils/logger.ts — within origin
 ```
 
 **Structured variant**: For machine-readable handoffs (graph-based workflows, CI integration, or automated routing), use the YAML schema in `docs/schemas/handoff-artifact.schema.yaml`. The structured variant adds `state` fields (files_changed, validation_status, reflection_result, decision_delta) not present in the text template.
+
+Minimum valid handoff:
+
+- `Task`, `Deliverable`, `Key decisions`, `Constraints for next step`, and `Attached output` are required.
+- `Open risks` must be present; use `N/A — none identified` when applicable.
+- Include intent modes whenever the handoff changes the phase of work.
+- If any required field is missing, the handoff is invalid and must be regenerated or completed before the next role proceeds.
 
 ### Plan of record template
 
@@ -120,18 +129,39 @@ Rules:
 [Clear, actionable recommendation for the user or the next agent]
 ```
 
+### Review output template
+
+Use this for review-first roles such as `risk-reviewer` and `critic`.
+
+```text
+## Review: [title]
+
+### Findings
+- [severity] [file:line] [issue]
+
+### Open questions / assumptions
+- [question or assumption]
+
+### Residual risks
+- [remaining risk after review, or "None"]
+
+### Summary
+[Short conclusion or "No findings."]
+```
+
 ## Agent preamble
 
-> **Note**: Ensure `docs/operating-rules.md` is loaded or read as Layer 1 before using these templates. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools. In tools that already auto-load `docs/operating-rules.md`, do not duplicate these instructions in the system prompt.
+> **Note**: Ensure the active Layer 1 rules for the current budget profile are loaded before using these templates. At `nano`, that is `docs/rules-nano.md`; at `minimal`, `docs/rules-quickstart.md`; at `standard`/`full`, `docs/operating-rules.md` plus `docs/agent-playbook.md`. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools.
 
 Key steps (see `docs/operating-rules.md` for full definitions):
 
-1. Read `docs/operating-rules.md` and `DECISIONS.md`
-2. Discover the codebase
-3. Classify task scale (`skills/demand-triage/SKILL.md`)
-4. State assumptions, constraints, proposed approach
-5. Follow validation loop after every code change
-6. Produce task completion summary
+1. Load the active Layer 1 rules for the current profile
+2. Read `DECISIONS.md` (and `ARCHITECTURE.md` when the task or profile requires it)
+3. Discover the codebase
+4. Classify task scale (`skills/demand-triage/SKILL.md`)
+5. State assumptions, constraints, proposed approach
+6. Follow validation loop after every code change
+7. Produce task completion summary
 
 ## Task intake
 
@@ -190,6 +220,25 @@ Used by the self-evolution protocol to propose rule or skill improvements. See `
 - **Severity**: [low | medium | high]
 - **Stability of target**: [core | behavior | experimental]
 ```
+
+### Rule entry template
+
+Use this when adding or refactoring reusable rules in Global, Domain, or Project layers.
+
+```markdown
+### Rule: <RULE_ID>
+- Owner layer: Global | Domain | Project
+- Scope: [where this rule applies]
+- Stability: core | behavior | experimental
+- Status: active | superseded | draft
+- Directive: [clear imperative rule]
+- Rationale: [why this rule exists]
+- Conflict handling: [what overrides this rule or when to escalate]
+- Example: [positive example]
+- Non-example: [what this rule forbids or does not cover]
+```
+
+Required fields: `Directive`, `Rationale`, and `Conflict handling` must never be omitted. If `Example` or `Non-example` is temporarily unknown, write `N/A — [reason]` instead of leaving the field out.
 
 ## Feature planner
 
@@ -256,16 +305,20 @@ After producing the plan, verify:
 - Every item above has been addressed (write "N/A" if not applicable, never omit)
 - No existing decision in DECISIONS.md is contradicted without flagging it
 
-STOP. Present this plan to the user and wait for explicit approval before
-any implementation begins. Do not proceed until the user says "PROCEED"
-or provides revised instructions.
+If the current trust level activates the plan-approval gate, STOP and present
+this plan to the user for explicit approval before implementation begins.
+If the gate outcome is ADVISORY or PASS, record that outcome and continue per
+the source-of-truth rules.
 
-After user approval, produce a handoff artifact for the implementation agent:
+After the plan gate is satisfied for the current trust level, produce a handoff artifact for the implementation agent:
+- Source intent mode: analyze
+- Target intent mode: implement
 - Task: [one-sentence objective]
-- Deliverable: the approved plan
+- Deliverable: the plan as accepted, auto-proceeded, or otherwise cleared by the current gate outcome
 - Key decisions: [decisions made, with DECISIONS.md references]
 - Open risks: [unresolved risks]
 - Constraints for next step: [what the implementer must respect]
+- Attached output: [the plan itself]
 ```
 
 ## Backend architect
@@ -293,8 +346,9 @@ Then check:
 
 Verify: every item above is addressed. Write "N/A — [reason]" for items that do not apply.
 
-If this is a high-risk change (schema migration, permission model, security):
-STOP and present the plan to the user for approval before implementing.
+If this is a high-risk change (schema migration, permission model, security),
+apply the source-of-truth plan-approval gate behavior for the current trust
+level: STOP when the gate is active; otherwise record the outcome and proceed.
 
 After implementation:
 - Run the validation loop: tests → static analysis → fix → repeat.
@@ -325,7 +379,9 @@ Then confirm:
 5. the verification path after changes (specific test commands)
 
 If scope exceeds the original plan (more files or modules than expected),
-STOP and present the expanded scope for approval before continuing.
+apply the source-of-truth scope-expansion gate behavior for the current trust
+level: STOP when required, or ADVISORY/continue only when the expansion
+remains within original intent and the rules allow it.
 
 After implementation:
 - Run the validation loop: tests → lint → fix → repeat.
@@ -455,7 +511,7 @@ Review in this order:
 
 Verify: every item above is addressed. Write "N/A — [reason]" for items that do not apply.
 
-Lead with findings, then open questions, then a short summary.
+Use the review output template: findings first, then open questions / assumptions, then residual risks, then short summary.
 Verify that the validation loop was actually run (tests pass, no lint errors).
 Flag any decision contradictions or missing DECISIONS.md entries.
 ```
@@ -480,24 +536,12 @@ For the proposal, systematically check:
 6. scope creep — does this quietly expand beyond the original request?
 7. assumption gaps — what unstated assumptions does this rely on?
 
-Output using the mandatory deliverable structure:
+Use the review output template:
 
-### Proposal
-[One-sentence summary of what was proposed]
-
-### Alternatives considered
-[At least one simpler or safer alternative the proposer did not consider]
-
-### Pros / Cons
-| Pros | Cons |
-|------|------|
-| ...  | ...  |
-
-### Risks
-[Risks the original proposal missed or underestimated]
-
-### Recommendation
-[Accept / Accept with changes / Reject with reason]
+- Findings should identify what is wrong, missing, risky, or overcomplicated.
+- Open questions should capture unresolved assumptions.
+- Residual risks should state what remains dangerous even if no blocking issue is found.
+- Summary should end with Accept / Accept with changes / Reject with reason.
 
 Rules:
 - Lead with problems, not praise.
