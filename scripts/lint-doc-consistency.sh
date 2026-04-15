@@ -4,12 +4,37 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXIT_CODE=0
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "[doc-lint][error] ripgrep (rg) is required but not installed"
+SEARCH_TOOL=""
+if command -v rg >/dev/null 2>&1; then
+  SEARCH_TOOL="rg"
+elif command -v grep >/dev/null 2>&1; then
+  SEARCH_TOOL="grep"
+else
+  echo "[doc-lint][error] neither ripgrep (rg) nor grep is installed"
   exit 1
 fi
 
 echo "[doc-lint] checking prompt-budget and docs consistency..."
+
+run_search() {
+  local mode="$1"
+  local pattern="$2"
+  shift 2
+
+  if [[ "$SEARCH_TOOL" == "rg" ]]; then
+    if [[ "$mode" == "files" ]]; then
+      rg -l "$pattern" "$@"
+    else
+      rg -n "$pattern" "$@"
+    fi
+  else
+    if [[ "$mode" == "files" ]]; then
+      grep -R -l -E "$pattern" "$@"
+    else
+      grep -R -n -E "$pattern" "$@"
+    fi
+  fi
+}
 
 check_grep() {
   local description="$1"
@@ -19,7 +44,7 @@ check_grep() {
   local status=0
 
   set +e
-  output=$(rg -n "$pattern" "$@" 2>&1)
+  output=$(run_search matches "$pattern" "$@" 2>&1)
   status=$?
   set -e
 
@@ -52,7 +77,7 @@ check_grep \
 non_autonomous_output=""
 non_autonomous_status=0
 set +e
-non_autonomous_output=$(rg -l "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
+non_autonomous_output=$(run_search files "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
   "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md" 2>&1)
 non_autonomous_status=$?
 set -e
@@ -70,14 +95,14 @@ for file in "${non_autonomous_files[@]}"; do
   file_output=""
   file_status=0
   set +e
-  file_output=$(rg -n "^[[:space:]]*autonomous_mode:" "$file" 2>&1)
+  file_output=$(run_search matches "^[[:space:]]*autonomous_mode:" "$file" 2>&1)
   file_status=$?
   set -e
 
   if [[ $file_status -eq 0 ]]; then
     echo "[doc-lint][error] non-autonomous example defines autonomous_mode: ${file#$ROOT_DIR/}"
     set +e
-    rg -n "^[[:space:]]*(execution_mode:|autonomous_mode:)" "$file"
+    run_search matches "^[[:space:]]*(execution_mode:|autonomous_mode:)" "$file"
     file_status=$?
     set -e
     if [[ $file_status -ge 2 ]]; then
