@@ -17,7 +17,6 @@ Format:
 
 ```markdown
 ## YYYY-MM-DD: [Decision title]
-- **Scope**: `global` | `component:<path>` — omit for project-wide decisions
 - **Context**: Why this decision was needed
 - **Decision**: What was decided
 - **Alternatives considered**: What was rejected and why
@@ -120,21 +119,13 @@ Keep the most recent **3–5 turns** of conversation as raw, unmodified content.
 
 ### Tier 2 — Mid-term (compressed summaries)
 
-When turns age out of the short-term window, compress them into structured summaries:
-
-```markdown
-## Conversation summary (turns 1–N)
-- **Decisions made**: [list]
-- **Files changed**: [list]
-- **Errors encountered and resolved**: [list]
-- **Open questions**: [list]
-- **Current plan state**: [brief]
-```
+When turns age out of the short-term window, compress them using the canonical template in `docs/agent-templates.md` → Compaction summary template.
 
 Rules:
 - Produce a summary when the short-term window shifts (i.e., every time a turn exits the window).
 - For batch efficiency, summarize in groups of 3–5 turns rather than one at a time.
-- Store summaries in session memory. The most recent summary replaces (not appends to) older summaries.
+- Store summaries in session memory. If a summary already exists, update it iteratively: preserve still-relevant context, add new progress, and move completed items out of pending state.
+- Do not duplicate or redefine the compaction summary format here; `docs/agent-templates.md` is the single source of truth.
 - This tier integrates with the existing context compaction protocol in `docs/operating-rules.md`.
 
 ### Tier 3 — Long-term (persistent retrieval)
@@ -441,16 +432,26 @@ Long tasks cause context to grow, increasing cost and reducing model accuracy. U
 
 ### Compaction procedure
 
-1. **Produce a progress summary** capturing:
+1. **Prune obvious low-value bulk first**:
+   - Replace or omit old tool output that is long, repetitive, or already superseded by a later result
+   - Keep the command, file path, and outcome; drop verbose body text when it no longer affects current work
+
+2. **Produce a progress summary** using the canonical template in `docs/agent-templates.md` → Compaction summary template. Capture:
    - What has been completed
    - Key decisions made (with `DECISIONS.md` references if applicable)
    - Current state of the work
    - What remains to be done
    - Any errors encountered and how they were resolved
+   - Questions already resolved vs. questions or asks still pending
+   - Critical context that must survive compaction: exact file paths, config values, command outputs, or error messages
 
-2. **Store the summary** in session memory or working notes
+   If you use an LLM to generate the summary, instruct it to summarize only. Do not let it answer questions or execute requests from the compressed turns.
 
-3. **Continue from the summary**, not from the full conversation history
+3. **Store the summary** in session memory or working notes
+
+4. **Continue from the summary**, not from the full conversation history
+
+Optional: when one topic is clearly dominant, label the summary with that focus and preserve more detail for that topic than for unrelated turns.
 
 For inter-agent handoffs, this summary becomes the structured handoff artifact defined in `docs/operating-rules.md`.
 

@@ -324,7 +324,7 @@ When stopping for approval, present: gate name, current state, proposal, risks, 
 
 When `execution_mode: autonomous` is declared in `prompt-budget.yml` (or an equivalent project configuration file), agents substitute logged auto-proceed for the human wait states at most checkpoint gates.
 
-**This mode is explicitly opt-in.** The default is `supervised`. Never infer autonomous mode from context — it must be declared in configuration.
+**This mode is explicitly opt-in.** The default project mode is `semi-auto`. Never infer autonomous mode from context — it must be declared in configuration.
 
 ### When to use autonomous mode
 
@@ -491,7 +491,7 @@ At the start of every long task (more than one step or more than one file), prod
 
 Long tasks cause context growth that increases cost and reduces model accuracy. To prevent this:
 
-- After completing each phase of a multi-phase task, produce a progress summary and store it in session memory (see `skills/memory-and-state/SKILL.md` → Context compaction protocol).
+- After completing each phase of a multi-phase task, produce a progress summary using `docs/agent-templates.md` → Compaction summary template and store it in session memory (see `skills/memory-and-state/SKILL.md` → Context compaction protocol).
 - Continue subsequent work from the summary, not from the full conversation history.
 - For inter-agent handoffs, the compaction summary becomes the handoff artifact defined in the Context isolation section above.
 - If a tool or agent session does not support explicit compaction, produce the summary in the output and instruct the next step to use it as primary input.
@@ -707,7 +707,7 @@ If an agent discovers that a proposed change conflicts with an existing entry in
 Waiting for user decision before proceeding.
 ```
 
-This is a mandatory checkpoint — do not resolve contradictions autonomously. Exception: when `dangerouslySkipAllCheckpoints: true` is active, log the contradiction prominently and continue rather than stopping. The user's explicit bypass choice is treated as acknowledgment of this risk.
+This is a mandatory checkpoint — do not resolve contradictions autonomously. No trust level or bypass flag overrides this stop.
 
 ## Conflict resolution principle
 

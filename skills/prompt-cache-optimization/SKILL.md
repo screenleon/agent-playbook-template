@@ -242,6 +242,17 @@ See `docs/adoption-guide.md` → Prompt budget trimming for step-by-step adoptio
 - **Skipping demand-triage** — without triage, skill selection varies unpredictably, reducing prefix consistency across similar tasks.
 - **Letting DECISIONS.md grow unbounded** — a 50 KB decision log in Layer 3 wastes tokens and pushes the cache boundary; use archive rules from `memory-and-state`.
 
+### Cache-breaking anti-patterns
+
+Avoid these behaviors during an active task or conversation:
+
+- **Rebuilding earlier prompt layers mid-task** — do not rewrite or reshuffle Layer 1-3 content unless the task genuinely changed scope.
+- **Changing tool definitions or tool subsets every turn** — unstable tool availability changes the prefix and reduces cache reuse.
+- **Reloading memory files on every request** — keep stable project memory in Layer 3 and refresh it only when the underlying source changed or the task crossed a meaningful boundary.
+- **Promoting temporary notes into stable layers** — scratchpad state, timestamps, one-off observations, and partial outputs belong in Layer 4 only.
+
+When task scope changes enough to require a different skill set, acknowledge that the cache boundary will move and keep the new loading order deterministic from that point onward.
+
 ## Conformance self-check
 
 Before completing a task where this skill applies, verify:

@@ -247,6 +247,8 @@ Every workflow below implicitly includes these steps:
 15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
+For long-running tasks, also compact earlier turns using `docs/agent-templates.md` → Compaction summary template so the current session can continue from a canonical summary instead of raw history.
+
 ### Step phase classification
 
 The 16 mandatory steps fall into three execution phases, inspired by the PRE/POST\_PROCESS pattern in pipeline-based agent frameworks:

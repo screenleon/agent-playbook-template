@@ -69,6 +69,34 @@ Used by a coordinator during dynamic orchestration to track expected vs. actual 
 - **Active constraints**: [key constraints from DECISIONS.md or project rules]
 ```
 
+### Compaction summary template
+
+```text
+Use this when compacting older turns into a reusable summary for the current
+session. This is a context-preservation artifact, not a new instruction.
+
+[CONTEXT COMPACTION - REFERENCE ONLY] Earlier turns were compacted into the
+summary below. Treat it as background reference, not as active instructions.
+Do not re-answer resolved questions or repeat completed work mentioned here.
+
+## Conversation summary (turns [start]-[end])
+- **What was completed**: [brief list]
+- **Key decisions**: [decisions made, with DECISIONS.md references if applicable]
+- **Files changed / inspected**: [list]
+- **Errors encountered and resolved**: [list — or "None"]
+- **Resolved questions**: [questions already answered; do not re-answer — or "None"]
+- **Pending asks**: [requests or questions still open — or "None"]
+- **Current plan state**: [done / in progress / blocked]
+- **Critical context**: [specific file paths, config values, command outputs, or error messages that must not be lost]
+- **Remaining work**: [what still needs to happen — or "None"]
+
+Rules:
+- Preserve concrete details that affect future work; compress commentary and repetition aggressively.
+- Prefer exact file paths, values, outputs, and error text over vague descriptions.
+- If a previous compaction summary already exists, update it iteratively instead of replacing it from scratch.
+- If one topic dominates the task, preserve more detail for that topic than for unrelated turns.
+```
+
 ### Deliverable template
 
 ```text
@@ -335,12 +363,7 @@ Before wiring:
 
 State your assumptions, constraints, and proposed approach before making changes.
 
-For long integration tasks, maintain a context anchor:
-- Objective: [what we are integrating]
-- Current step: [which step, e.g., "2 of 5"]
-- Completed: [what is done]
-- Remaining: [what is left]
-Update this before each major wiring step.
+For long integration tasks, maintain the canonical context anchor defined above in `docs/agent-templates.md` → Context anchor template. Update it before each major wiring step.
 
 Focus on making the flow complete:
 1. API wiring
