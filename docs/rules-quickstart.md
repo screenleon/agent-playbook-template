@@ -13,11 +13,11 @@ Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
 - **`standard`** (default): read this file first, then expand into `docs/operating-rules.md` and `docs/agent-playbook.md` for full rules.
 - **`full`**: load complete `docs/operating-rules.md` + `docs/agent-playbook.md` immediately.
 
-## Source of truth
+## Canonical docs
 
 1. `docs/operating-rules.md` for safety, scope, validation, conflict handling
 2. `docs/agent-playbook.md` for routing and role ownership
-3. `DECISIONS.md` for active architectural constraints
+3. `DECISIONS.md` for active architectural constraints and project state
 
 ## Trust level
 
@@ -25,7 +25,7 @@ Default: `semi-auto`. Override per project or session.
 
 - `supervised` — all checkpoints require human approval
 - `semi-auto` — Small/low-risk tasks run autonomously; checkpoints for Large/destructive work
-- `autonomous` — proceeds without approval except destructive actions (unless `dangerouslySkipAllCheckpoints: true`)
+- `autonomous` — proceeds without approval except for default hard stops; gate behavior may be tuned via `prompt-budget.yml` → `autonomous_mode`
 
 See `docs/operating-rules.md` → Trust level for the full activation matrix.
 
@@ -60,7 +60,7 @@ If same-layer conflicts remain:
 ## Hard constraints
 
 - Never expose credentials or secrets.
-- Never do destructive actions without approval unless bypass mode is explicitly enabled.
+- Never do destructive actions without approval unless the configured autonomous-mode gate override explicitly allows them.
 - Do not silently ignore errors. Do not remove or skip failing tests to make the suite pass.
 - Follow existing repository practice unless user explicitly asks for refactor.
 
@@ -84,7 +84,7 @@ If same-layer conflicts remain:
 ## Escalation points
 
 - Contradiction with existing decision in `DECISIONS.md`
-- Scope expansion beyond approved plan
+- Scope expansion beyond approved plan (or beyond original intent in autonomous mode)
 - Same error persists after 3 fix attempts
 - Architecture change without ADR/decision update
 

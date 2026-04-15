@@ -27,7 +27,7 @@ When adopting this template, review each rule section and mark items already cov
 
 ## Trust level
 
-This template supports three trust levels that control how much human approval is required. Set the trust level in project settings or at the start of a session.
+This template supports three trust levels that control how much human approval is required. The canonical project configuration surface is `prompt-budget.yml` → `execution_mode`; tools that do not use `prompt-budget.yml` may map the same three values through equivalent local settings.
 
 | Level | Description | When to use |
 |---|---|---|
@@ -37,44 +37,47 @@ This template supports three trust levels that control how much human approval i
 
 ### How trust level interacts with checkpoints
 
-- **Destructive actions** (delete files, drop tables, force-push): always require human approval regardless of trust level — unless `dangerouslySkipAllCheckpoints: true` is explicitly set (see below).
-- **Plan approval**: required at `supervised`; required for Large scale at `semi-auto`; skipped at `autonomous`.
+- **Destructive actions** (delete files, drop tables, force-push): always require human approval at `supervised` and `semi-auto`. In `autonomous`, stop by default unless `autonomous_mode.halt_on_destructive_actions: false` is explicitly configured.
+- **Plan approval**: required at `supervised`; required for Large or high-risk work at `semi-auto`; ADVISORY by default at `autonomous`, and may remain STOP behavior when `autonomous_mode.auto_proceed_on_plan: false` is configured.
 - **Scope expansion**: required at `supervised` and `semi-auto`; ADVISORY at `autonomous`.
-- **Stuck escalation** (3 failed attempts): requires human escalation unless `dangerouslySkipAllCheckpoints: true` is set.
+- **Stuck escalation** (3 failed attempts): requires human escalation by default. In `autonomous`, it may continue only when `autonomous_mode.halt_on_stuck_escalation: false` is explicitly configured.
 
 ### Setting the trust level
 
-Set via project-specific constraints at the bottom of this file, or at session start:
+Prefer setting the trust level in `prompt-budget.yml`:
 
 ```yaml
-trust_level: semi-auto  # supervised | semi-auto | autonomous
+execution_mode: semi-auto  # supervised | semi-auto | autonomous
 ```
 
-If not specified, `semi-auto` is the default.
+If your agent does not read `prompt-budget.yml`, map the same three values through the tool's equivalent local setting. If not specified, `semi-auto` is the default.
 
-### Full bypass mode (`dangerouslySkipAllCheckpoints`)
+### Autonomous gate overrides
 
-Users who understand the risks and want fully unattended execution can opt in to bypass mode:
+Users who understand the risks and want more unattended execution can tune gate behavior under `prompt-budget.yml` → `autonomous_mode`.
 
 ```yaml
-trust_level: autonomous
-dangerouslySkipAllCheckpoints: true
+execution_mode: autonomous
+autonomous_mode:
+  halt_on_destructive_actions: true
+  halt_on_stuck_escalation: true
+  skip_critic_role: false
 ```
 
-When both flags are set, **all** checkpoint gates — including always-dangerous operations — are bypassed. The agent executes destructive, irreversible, and high-impact actions without pausing for confirmation.
+Changing these flags reduces human stops in autonomous mode, but does not override constitutional principles or `DECISIONS.md` contradiction stops.
 
-**Use only when you accept full responsibility for irreversible outcomes.** Recommended safeguards before enabling:
+**Use only when you accept responsibility for the corresponding risk tradeoffs.** Recommended safeguards before enabling looser autonomous behavior:
 
 - Working on a non-production branch
 - A recent checkpoint or backup exists
 - CI/CD or branch protections provide a downstream safety net
 - The scope of the task is well-defined and bounded
 
-This flag has no effect unless `trust_level` is also set to `autonomous`. It does not override security rules (no secrets in code, no credential exposure).
+These flags have no effect unless `execution_mode` is `autonomous`. They do not override security rules (no secrets in code, no credential exposure).
 
 ## Constitutional principles
 
-These principles are **non-bypassable**. No trust level, `dangerouslySkipAllCheckpoints` flag, project-specific constraint, or override annotation can weaken or skip them. They represent the absolute floor of agent behavior.
+These principles are **non-bypassable**. No trust level, autonomous-mode override, project-specific constraint, or override annotation can weaken or skip them. They represent the absolute floor of agent behavior.
 
 1. **Never expose credentials** — never output secrets, tokens, private keys, API keys, or credentials in code, logs, screenshots, documentation, trace files, or any other artifact.
 2. **Never execute unvalidated input as code** — never run user-supplied or externally-sourced input as executable code without sandboxing or explicit validation. This includes `eval()`, dynamic SQL, shell injection vectors, and template injection.
@@ -86,9 +89,9 @@ Violation of any constitutional principle is a **hard stop** regardless of execu
 
 ## Safety rails
 
-In addition to the constitutional principles above, follow these safety rails. Unlike constitutional principles, these rails can be relaxed by `dangerouslySkipAllCheckpoints: true` where noted.
+In addition to the constitutional principles above, follow these safety rails. Unlike constitutional principles, some rails can be relaxed by specific `autonomous_mode.*` settings where noted.
 
-- Never perform destructive actions without explicit user approval when the tool or environment does not already enforce approval — unless `dangerouslySkipAllCheckpoints: true` is active, in which case the user has given blanket approval at configuration time.
+- Never perform destructive actions without explicit user approval when the tool or environment does not already enforce approval, unless `execution_mode: autonomous` and `autonomous_mode.halt_on_destructive_actions: false` are explicitly configured.
 - Treat branch protections, review requirements, and deployment safeguards as hard constraints, not suggestions.
 - Prefer the minimum required permissions, scope, and file changes.
 
@@ -285,14 +288,14 @@ When implementing a gate:
 
 ### Checkpoint activation matrix
 
-| Gate | `supervised` | `semi-auto` | `autonomous` | `autonomous` + `dangerouslySkipAllCheckpoints` |
+| Gate | `supervised` | `semi-auto` | `autonomous` | Configurable autonomous override |
 |---|---|---|---|---|
-| Plan approval | STOP | STOP (Large/high-risk) / PASS | ADVISORY | PASS |
-| Destructive/irreversible actions | STOP | STOP | STOP | **PASS** |
-| Scope expansion | STOP | STOP | ADVISORY / STOP (unrelated expansion) | PASS |
-| Stuck escalation (3 failures) | STOP | STOP | STOP | **ADVISORY** (log and continue) |
-| Mid-implementation review (>5 files) | STOP | STOP (Large) / ADVISORY | PASS | PASS |
-| Before final merge | STOP | ADVISORY | PASS | PASS |
+| Plan approval | STOP | STOP (Large/high-risk) / PASS | ADVISORY | `auto_proceed_on_plan: false` keeps STOP behavior |
+| Destructive/irreversible actions | STOP | STOP | STOP by default | `halt_on_destructive_actions: false` |
+| Scope expansion | STOP | STOP | ADVISORY / STOP (unrelated expansion) | `auto_proceed_on_scope_expansion` applies only within original intent |
+| Stuck escalation (3 failures) | STOP | STOP | STOP by default | `halt_on_stuck_escalation: false` |
+| Mid-implementation review (>5 files) | STOP | STOP (Large) / ADVISORY | PASS | none |
+| Before final merge | STOP | ADVISORY | PASS | none |
 
 ### Always-safe operations (never need human approval)
 
@@ -307,7 +310,7 @@ These operations are safe by nature and agents may execute them automatically at
 
 ### Always-dangerous operations (require human approval by default)
 
-These operations are irreversible or high-impact and require explicit human approval unless `dangerouslySkipAllCheckpoints: true` is set:
+These operations are irreversible or high-impact and require explicit human approval by default. In autonomous mode, they remain STOP behavior unless `autonomous_mode.halt_on_destructive_actions: false` is explicitly set:
 
 - Deleting files or directories
 - Dropping database tables or running destructive migrations
@@ -342,9 +345,9 @@ Do not use autonomous mode for tasks involving schema migrations on production d
 | Gate | Supervised behavior | Autonomous behavior |
 |------|---------------------|---------------------|
 | 1. Plan approval | STOP — wait for "PROCEED" | ADVISORY — log plan to `DECISIONS.md`, then auto-proceed |
-| 2. Destructive / irreversible actions | STOP — wait | STOP — **always stop. Not bypassable.** |
+| 2. Destructive / irreversible actions | STOP — wait | STOP by default; may be relaxed via `halt_on_destructive_actions: false` |
 | 3. Scope expansion | STOP — present expanded scope | ADVISORY / STOP — if expansion is within original intent: ADVISORY (log and proceed). If unrelated module added: STOP. |
-| 4. Stuck escalation (3 fails) | STOP — report | STOP — **always stop. Not bypassable.** |
+| 4. Stuck escalation (3 fails) | STOP — report | STOP by default; may be relaxed via `halt_on_stuck_escalation: false` |
 | 5. Mid-implementation review | STOP | PASS |
 | 6. Before final merge | STOP | PASS |
 
@@ -385,7 +388,7 @@ To skip the critic, set `skip_critic_role: true` under `autonomous_mode` in `pro
 
 ### Risk-reviewer behavior in autonomous mode
 
-The `risk-reviewer` role always runs after implementation in autonomous mode. Its findings are recorded in the task completion summary. If the risk-reviewer identifies a severity-high finding, the agent must stop and report — even in autonomous mode. Severity-medium and lower findings are logged and accepted.
+When the routed workflow includes `risk-reviewer`, it still runs after implementation in autonomous mode. Its findings are recorded in the task completion summary. If the risk-reviewer identifies a severity-high finding, the agent must stop and report — even in autonomous mode. Severity-medium and lower findings are logged and accepted.
 
 ### Autonomous mode is not "skip planning"
 
@@ -393,8 +396,8 @@ Autonomous mode removes the **human wait states**, not the **work steps**. The a
 
 - Discovers the codebase before coding
 - Classifies task scale with demand-triage
-- Produces a plan (feature-planner still runs)
-- Runs the critic
+- Produces whatever level of plan the current task scale and workflow require
+- Runs planner / critic / risk-reviewer steps when the routed workflow requires them
 - Validates with the test-and-fix loop
 - Records decisions in `DECISIONS.md`
 
@@ -422,7 +425,7 @@ After every code change, follow this mandatory loop. **This loop runs autonomous
 2. **Run static analysis** — execute linters and type checkers (e.g., `go vet`, `eslint`, `mypy`, `cargo clippy`).
 3. **Auto-fix on failure** — if tests or analysis fail, identify the root cause, apply the minimal fix, and re-run. Do not wait for human approval to retry.
 4. **Repeat** — continue the loop until all tests pass and no new warnings are introduced.
-5. **Escalate if stuck** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user. This escalation is mandatory at all trust levels except when `dangerouslySkipAllCheckpoints: true` is active — in that case, log the unresolved failures prominently and continue rather than waiting for user input.
+5. **Escalate if stuck** — if the loop cannot converge after 3 attempts, stop and report the remaining failures to the user. In autonomous mode only, this stop may be relaxed via `autonomous_mode.halt_on_stuck_escalation: false`; if relaxed, log the unresolved failures prominently before continuing.
 
 Never treat a change as complete until verification passes. If the project has no test suite, state that explicitly and describe what manual verification was done or is still needed.
 
@@ -435,7 +438,7 @@ When a CI pipeline triggers a risk review (rather than an interactive agent sess
 3. **Output** — a review summary artifact (YAML or PR comment) listing findings with severity levels.
 4. **Exit-code contract** — the CI step exits with code 0 (pass), 1 (severity-high finding), or 2 (parse error). See `skills/observability/SKILL.md` for the full contract.
 5. **Blocking behavior** — severity-high findings fail the CI job. This is equivalent to the "severity-high finding from risk-reviewer" hard stop in interactive mode.
-6. **No trust-level bypass** — CI-driven reviews always enforce severity-high blocking, regardless of trust level settings. `dangerouslySkipAllCheckpoints` does not apply to CI pipelines.
+6. **No trust-level bypass** — CI-driven reviews always enforce severity-high blocking, regardless of trust level settings. Autonomous-mode overrides do not apply to CI pipelines.
 
 ### TDAI (Test-Driven AI) requirement
 
@@ -531,9 +534,9 @@ Small tasks may simplify depth, but must keep explicit structure. The minimum ou
 1. DECISIONS.md contradiction check result (silent pass is acceptable — only report if contradiction found)
 2. Implement the change directly
 3. Run targeted validation and report outcome
-4. Brief summary of what changed and why
+4. Brief final summary of what changed and why (this may serve as the concise deliverable for Small tasks)
 
-At all trust levels, Small tasks must not skip verification. The difference is output ceremony, not rigor.
+At all trust levels, Small tasks must not skip verification. The difference is output ceremony, not rigor. For Small tasks, the deliverable structure may be collapsed into a concise final summary as long as the user still receives the outcome, validation result, and any relevant follow-up note.
 
 ## Feedback loop and quality signals
 
@@ -576,7 +579,7 @@ Do not rely on ad-hoc reminders once recurrence is detected.
 
 When the self-evolution protocol (`docs/agent-playbook.md` → Self-evolution protocol) produces rule or skill improvement proposals:
 
-1. **Human approval required** — evolution proposals always require explicit human approval before implementation, regardless of trust level. `dangerouslySkipAllCheckpoints` does not apply to evolution proposals.
+1. **Human approval required** — evolution proposals always require explicit human approval before implementation, regardless of trust level. Autonomous-mode overrides do not apply to evolution proposals.
 2. **Constitutional principles are immutable via evolution** — proposals that would weaken, remove, or reinterpret a constitutional principle must be rejected. Constitutional changes require a dedicated manual review process outside the evolution protocol.
 3. **Core stability rules require risk review** — proposals targeting `core` stability rules must pass through `risk-reviewer` before being presented for human approval.
 4. **Maximum 3 proposals per cycle** — to prevent churn, each evolution cycle produces at most 3 proposals. If more patterns are identified, prioritize by frequency and impact.

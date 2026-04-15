@@ -79,7 +79,7 @@ Users with limited agent token budgets can select a **named budget profile** in 
 | Profile | Skills loaded per request | Roles available | Layer 2 target | Recommended when |
 |---------|--------------------------|-----------------|----------------|------------------|
 | **nano** | 0 (native tool capabilities only) | 1 (application-implementer) | ≤ 0 tokens | < 3,000 total token budget; single-file Small tasks only |
-| **minimal** | 2 (demand-triage, repo-exploration) | 2–3 | ≤ 4,000 tokens | Token budget < 16K or pay-per-token with tight limits |
+| **minimal** | 2 (demand-triage, repo-exploration) | 2 | ≤ 4,000 tokens | Token budget < 16K or pay-per-token with tight limits |
 | **standard** | 5 (all Always-tier skills) | 4–5 | ≤ 8,000 tokens | Typical team usage with moderate token budget |
 | **full** | 5 + all applicable Conditional + On-demand | All enabled | ≤ 15,000 tokens | Generous token budget; large or high-risk projects |
 
@@ -242,9 +242,9 @@ Every workflow below implicitly includes these steps:
 10. **Cache-aware loading** — follow the instruction loading order in `skills/prompt-cache-optimization/SKILL.md` to maximize prefix cache hits
 11. **Isolate** — each role runs in a separate context. Pass structured handoff artifacts between roles, not raw conversation history (see Context isolation section below). Small tasks need only one agent. Medium tasks at `semi-auto` or `autonomous` may relax isolation per `docs/operating-rules.md` → Task boundary rule
 12. **Self-reflect** — before emitting a deliverable or handoff, run the `self-reflection` skill rubric (correctness, consistency, adherence, completeness, isolation). For Small tasks, only correctness + adherence are required; isolation is skipped. See `skills/self-reflection/SKILL.md`
-13. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, keep the required structure concise rather than replacing it
+13. **Deliver** — produce output using the mandatory deliverable structure (see `docs/operating-rules.md` → Mandatory deliverable structure). For Small tasks, a concise final summary may serve as the streamlined deliverable when allowed by the Small-task output contract
 14. **Trace** — emit a trace record using the `observability` skill. For Small tasks, embed minimal trace in the task summary. For Medium/Large tasks, produce a structured trace file. See `skills/observability/SKILL.md`
-15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). This summary is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
+15. **Summarize** — after completing any task, produce a brief task completion summary for memory (see `docs/agent-templates.md` → Task completion summary). For Small tasks, this may overlap with the streamlined final summary; for other tasks, it is additional to the required deliverable structure and enables future pattern reuse and prevents context loss across sessions
 16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
 For long-running tasks, also compact earlier turns using `docs/agent-templates.md` → Compaction summary template so the current session can continue from a canonical summary instead of raw history.
@@ -273,15 +273,15 @@ Publish the compliance block defined in `docs/operating-rules.md` → Mandatory 
 
 ### Checkpoint gates
 
-Checkpoint activation depends on trust level. See `docs/operating-rules.md` → Checkpoint activation matrix for the full table. Key gates: destructive actions (always), scope expansion (`supervised` and `semi-auto`), plan approval (`supervised` always, `semi-auto` Large only).
+Checkpoint activation depends on trust level. See `docs/operating-rules.md` → Checkpoint activation matrix for the full table. Key gates: destructive actions (always), scope expansion (`supervised` and `semi-auto`), plan approval (`supervised` always, `semi-auto` Large/high-risk only).
 
 ### New feature
 
-`feature-planner` → `critic` → **user decision** → `backend-architect`, `application-implementer`, and/or `ui-image-implementer` → `integration-engineer` → `documentation-architect` as needed → `risk-reviewer`
+`feature-planner` → `critic` → [approval if plan gate is active] → `backend-architect`, `application-implementer`, and/or `ui-image-implementer` → `integration-engineer` → `documentation-architect` as needed → `risk-reviewer`
 
 ### High-risk backend change
 
-`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user decision** → `backend-architect` → `risk-reviewer` (final review)
+`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → [approval if plan gate is active] → `backend-architect` → `risk-reviewer` (final review)
 
 ### Small change
 
@@ -309,7 +309,7 @@ If it is bounded and low ambiguity (Medium scale):
 
 If it also changes flow, state, or contracts:
 
-`feature-planner` → `critic` → **user decision** → `application-implementer` → `integration-engineer` → `risk-reviewer`
+`feature-planner` → `critic` → [approval if plan gate is active] → `application-implementer` → `integration-engineer` → `risk-reviewer`
 
 ### Image-led UI change
 
@@ -319,30 +319,30 @@ If it is visual only:
 
 If it also changes logic or flow:
 
-`feature-planner` → `critic` → **user decision** → `ui-image-implementer` → `integration-engineer` → `risk-reviewer`
+`feature-planner` → `critic` → [approval if plan gate is active] → `ui-image-implementer` → `integration-engineer` → `risk-reviewer`
 
 ### Documentation-heavy change
 
-`feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` when technical correctness matters
+`feature-planner` as needed → [approval if plan gate is active] → `documentation-architect` → `risk-reviewer` when technical correctness matters
 
 ### Autonomous workflow variants
 
-When `execution_mode: autonomous` is set in `prompt-budget.yml`, replace **user decision** and **user approval** steps with auto-proceed. All other steps remain unchanged.
+When `execution_mode: autonomous` is set in `prompt-budget.yml`, plan-gate approval auto-proceeds by default, but may remain STOP behavior when `autonomous_mode.auto_proceed_on_plan: false` is configured. At `semi-auto`, approval remains required only when the plan gate is active for Large or high-risk work. All other steps remain unchanged.
 
 **Important**: The loop structure (Discover → Triage → Plan → Critique → Implement → Test → Fix → Repeat → Record → Summarize) still executes in full. Only the human wait states are removed.
 
 | Supervised workflow | Autonomous equivalent |
 |--------------------|-----------------------|
-| `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → *(auto-proceed, logged)* → implementers → `risk-reviewer` |
-| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → *(auto-proceed, logged)* → `backend-architect` → `risk-reviewer` (final) |
-| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → *(auto-proceed, logged)* → `documentation-architect` → `risk-reviewer` |
+| `feature-planner` → `critic` → **user decision** → implementers → `risk-reviewer` | `feature-planner` → `critic` (critique embedded in handoff) → *(auto-proceed, logged by default; STOP if `auto_proceed_on_plan: false`)* → implementers → `risk-reviewer` |
+| `feature-planner` → `critic` → `risk-reviewer` (plan) → **user decision** → `backend-architect` → `risk-reviewer` (final) | `feature-planner` → `critic` → `risk-reviewer` (plan; stop if severity-high finding) → *(auto-proceed by default; STOP if `auto_proceed_on_plan: false`)* → `backend-architect` → `risk-reviewer` (final) |
+| `feature-planner` as needed → **user approval** → `documentation-architect` → `risk-reviewer` | `feature-planner` as needed → *(auto-proceed by default; STOP if `auto_proceed_on_plan: false`)* → `documentation-architect` → `risk-reviewer` |
 
-**Retained hard stops in autonomous mode** (see `docs/operating-rules.md` → Autonomous execution mode):
+**Retained hard stops in autonomous mode by default** (see `docs/operating-rules.md` → Autonomous execution mode):
 
-- Destructive or irreversible actions (gate 2) — always stop
-- Stuck escalation after 3 failed attempts (gate 4) — always stop
+- Destructive or irreversible actions (gate 2) — stop by default; may be relaxed only via `autonomous_mode.halt_on_destructive_actions: false`
+- Stuck escalation after 3 failed attempts (gate 4) — stop by default; may be relaxed only via `autonomous_mode.halt_on_stuck_escalation: false`
 - Contradiction detected in `DECISIONS.md` — always stop
-- Severity-high finding from `risk-reviewer` during plan assessment — always stop
+- Severity-high finding from `risk-reviewer` during plan assessment — stop by default; may be relaxed only via `autonomous_mode.halt_on_high_severity_risk: false`
 
 ## Graph workflow reference
 
@@ -375,17 +375,17 @@ stateDiagram-v2
     WaitUser --> Implement
     AutoProceed --> Implement
 
-    Implement --> SelfReflect
-    SelfReflect --> Validate
+    Implement --> Validate
 
     Validate --> Fix : fail
     Fix --> Validate
     Validate --> Escalate : 3 consecutive failures
-    Validate --> Record : pass
+    Validate --> SelfReflect : pass
+    SelfReflect --> Record
 
     Implement --> ScopeCheck : scope expanded?
     ScopeCheck --> Triage : re-triage needed
-    ScopeCheck --> SelfReflect : within scope
+    ScopeCheck --> Validate : within scope
 
     Record --> Trace
     Trace --> Summarize
@@ -398,8 +398,8 @@ stateDiagram-v2
 - **Labeled edges** show the condition that activates that path.
 - The **SmallPath** shortcut skips Plan, Critique, and Approve — the implementer uses a 1–2 sentence inline plan and proceeds directly to Implement.
 - **ScopeCheck** is triggered when the agent detects scope expansion during implementation. If expansion exceeds the original intent, the task re-enters Triage for reclassification.
-- **Escalate** is a hard stop at all trust levels (except `dangerouslySkipAllCheckpoints`).
-- **SelfReflect** runs the `self-reflection` skill rubric before validation. For Small tasks, only correctness + adherence are checked.
+- **Escalate** is a hard stop by default; in autonomous mode it may be relaxed only via `autonomous_mode.halt_on_stuck_escalation: false`.
+- **SelfReflect** runs the `self-reflection` skill rubric after validation passes and before final recording/delivery. For Small tasks, only correctness + adherence are checked.
 
 ### Dynamic orchestration
 

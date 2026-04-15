@@ -32,12 +32,16 @@ Before any implementation:
 7. For behavior-changing work, define tests first per TDAI requirement in `docs/operating-rules.md`.
 
 After planning (for Medium/Large work):
-8. Invoke `critic` to challenge the plan; present plan + critique to user. At `supervised`/`semi-auto` trust level, wait for user approval before continuing. At `autonomous` trust level, the critic still runs by default but does not block execution — the agent proceeds after the critique is produced unless `skip_critic_role: true` is explicitly set.
+8. Invoke `critic` to challenge the plan. At `supervised`, present plan + critique to the user and wait for approval. At `semi-auto`, wait only when the plan-approval gate is active for the current task (for example Large or high-risk work). At `autonomous`, the critic still runs by default; plan approval auto-proceeds by default, but remains STOP behavior when `autonomous_mode.auto_proceed_on_plan: false` is set. `skip_critic_role: true` controls whether the critic runs at all.
 
 After any code change:
 9. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`) — this runs autonomously (auto-fix without human approval). For Small tasks, run targeted tests only.
-10. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails. Escalate to human after 3 consecutive failures.
+10. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails. Escalate after 3 consecutive failures unless autonomous mode explicitly relaxes that stop via `autonomous_mode.halt_on_stuck_escalation: false`.
 11. Record decisions in `DECISIONS.md` when applicable.
 12. If architecture changed, update ADRs (or decision log when ADR directory does not exist) in the same task.
-13. If scope expands beyond the plan: at `supervised`/`semi-auto` trust level, STOP and present the expanded scope for approval. At `autonomous` trust level, log an ADVISORY and continue.
-14. Produce a task completion summary (`docs/agent-templates.md` → Task completion summary). At `semi-auto`/`autonomous` trust level for Small tasks, a brief summary suffices.
+13. If scope expands beyond the plan: at `supervised`/`semi-auto` trust level, STOP and present the expanded scope when the scope-expansion gate is active. At `autonomous`, log an ADVISORY and continue only when the expansion remains within original intent and `autonomous_mode.auto_proceed_on_scope_expansion` is enabled; if it adds an unrelated module, STOP.
+14. Before final output, run self-reflection (`skills/self-reflection/SKILL.md`) using the required rubric depth for the task scale.
+15. Produce the final deliverable using the mandatory deliverable structure from `docs/operating-rules.md`. For Small tasks, a concise final summary may serve as the streamlined deliverable when the Small-task output contract allows it.
+16. Emit trace output per `skills/observability/SKILL.md` (Small tasks may keep this minimal and inline).
+17. Produce a task completion summary (`docs/agent-templates.md` → Task completion summary). At `semi-auto`/`autonomous` trust level for Small tasks, a brief summary suffices and may overlap with the streamlined deliverable.
+18. Include the feedback-loop mini retrospective required by `docs/operating-rules.md`.

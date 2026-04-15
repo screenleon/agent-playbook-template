@@ -5,10 +5,11 @@
 This repository gives your team a reusable AI delivery workflow: clear agent roles, stable operating rules, reusable skills, and decision logging.
 
 Start here in order:
-0. `docs/rules-quickstart.md` (minimal rule load)
-1. `AGENTS.md` (entrypoint)
-2. `docs/operating-rules.md` (safety, scope, validation)
-3. `docs/agent-playbook.md` (role routing and workflow)
+0. `prompt-budget.yml` (choose `budget.profile` / `execution_mode`)
+1. `AGENTS.md` (entrypoint and loading order)
+2. `docs/rules-quickstart.md` (minimal Layer 1 for `minimal`; skip entirely at `nano`)
+3. `docs/operating-rules.md` (safety, scope, validation)
+4. `docs/agent-playbook.md` (role routing and workflow)
 
 Best for teams looking for: AI coding agent playbook, multi-agent software workflow, and documentation-driven engineering.
 
@@ -140,7 +141,7 @@ If you maintain a fork, keep these phrases in your repository description and RE
 
 - Claude subagents: 8 (`.claude/agents/*.md`)
 - Reusable skills: 16 (`skills/*/SKILL.md`)
-- Source-of-truth docs: `AGENTS.md`, `docs/operating-rules.md`, `docs/agent-playbook.md`
+- Source-of-truth docs: `docs/operating-rules.md`, `docs/agent-playbook.md` (`AGENTS.md` is the root entrypoint that should stay aligned with them)
 
 ## Example gallery
 
