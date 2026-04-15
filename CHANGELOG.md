@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-04-15
+
 ### Added
 
 - **Compaction summary template** (`docs/agent-templates.md`) — added a canonical template for mid-session context compaction with explicit handoff framing, resolved-vs-pending question tracking, critical-context preservation, and iterative-update guidance. This makes compaction output reusable across agents while reducing repeated work after long conversations.
