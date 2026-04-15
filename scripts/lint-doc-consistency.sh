@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXIT_CODE=0
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo "[doc-lint][error] ripgrep (rg) is required but not installed"
+  exit 1
+fi
+
 echo "[doc-lint] checking prompt-budget and docs consistency..."
 
 check_grep() {
@@ -11,9 +16,21 @@ check_grep() {
   local pattern="$2"
   shift 2
   local output
-  output=$(rg -n "$pattern" "$@" || true)
-  if [[ -n "$output" ]]; then
+  local status=0
+
+  set +e
+  output=$(rg -n "$pattern" "$@" 2>&1)
+  status=$?
+  set -e
+
+  if [[ $status -eq 0 ]]; then
     echo "[doc-lint][error] ${description}"
+    echo "$output"
+    EXIT_CODE=1
+  elif [[ $status -eq 1 ]]; then
+    :
+  else
+    echo "[doc-lint][error] ripgrep failed while checking: ${description}"
     echo "$output"
     EXIT_CODE=1
   fi
@@ -32,12 +49,47 @@ check_grep \
   "$ROOT_DIR/docs/adoption-guide.md" "$ROOT_DIR/docs/prompt-budget-examples.md" "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md"
 
 # Non-autonomous config examples should not define autonomous_mode.
-mapfile -t non_autonomous_files < <(rg -l "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
-  "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md" || true)
+non_autonomous_output=""
+non_autonomous_status=0
+set +e
+non_autonomous_output=$(rg -l "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
+  "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md" 2>&1)
+non_autonomous_status=$?
+set -e
+
+if [[ $non_autonomous_status -ge 2 ]]; then
+  echo "[doc-lint][error] ripgrep failed while discovering non-autonomous config examples"
+  echo "$non_autonomous_output"
+  exit 1
+fi
+
+mapfile -t non_autonomous_files <<< "$non_autonomous_output"
 for file in "${non_autonomous_files[@]}"; do
-  if rg -n "^[[:space:]]*autonomous_mode:" "$file" >/dev/null 2>&1; then
+  [[ -z "$file" ]] && continue
+
+  file_output=""
+  file_status=0
+  set +e
+  file_output=$(rg -n "^[[:space:]]*autonomous_mode:" "$file" 2>&1)
+  file_status=$?
+  set -e
+
+  if [[ $file_status -eq 0 ]]; then
     echo "[doc-lint][error] non-autonomous example defines autonomous_mode: ${file#$ROOT_DIR/}"
-    rg -n "^[[:space:]]*(execution_mode:|autonomous_mode:)" "$file" || true
+    set +e
+    rg -n "^[[:space:]]*(execution_mode:|autonomous_mode:)" "$file"
+    file_status=$?
+    set -e
+    if [[ $file_status -ge 2 ]]; then
+      echo "[doc-lint][error] ripgrep failed while printing context for ${file#$ROOT_DIR/}"
+      EXIT_CODE=1
+    fi
+    EXIT_CODE=1
+  elif [[ $file_status -eq 1 ]]; then
+    :
+  else
+    echo "[doc-lint][error] ripgrep failed while checking autonomous_mode in ${file#$ROOT_DIR/}"
+    echo "$file_output"
     EXIT_CODE=1
   fi
 done

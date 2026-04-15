@@ -109,7 +109,6 @@ properties:
             - high
             - medium
             - low
-            - none
 
   constraints:
     type: array
