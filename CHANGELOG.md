@@ -6,6 +6,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Compaction summary template** (`docs/agent-templates.md`) — added a canonical template for mid-session context compaction with explicit handoff framing, resolved-vs-pending question tracking, critical-context preservation, and iterative-update guidance. This makes compaction output reusable across agents while reducing repeated work after long conversations.
+
+### Changed
+
+- **agent-playbook long-task compaction guidance** (`docs/agent-playbook.md`) — the mandatory workflow now points long-running tasks to `docs/agent-templates.md` → Compaction summary template so session compaction is documented alongside task completion summaries.
+- **memory-and-state compaction guidance** (`skills/memory-and-state/SKILL.md`) — Tier 2 summaries and the compaction protocol now reference `docs/agent-templates.md` → Compaction summary template as the single source of truth instead of redefining the format inline. Keeps compaction rules aligned while avoiding template drift.
+- **prompt-cache-optimization cache safety guidance** (`skills/prompt-cache-optimization/SKILL.md`) — added cache-breaking anti-patterns for mid-task prompt rebuilds, unstable tool subsets, unnecessary memory reloads, and accidental promotion of volatile notes into stable layers.
+- **operating-rules context compaction reference** (`docs/operating-rules.md`) — the context compaction rule now points directly to `docs/agent-templates.md` → Compaction summary template so rules, skills, and templates all reference the same canonical format.
+- **documentation consistency sweep** (`AGENTS.md`, `README.md`, `.github/copilot-instructions.md`, `prompt-budget.yml`, `docs/example-task-walkthrough.md`, `skills/memory-and-state/SKILL.md`, `docs/agent-templates.md`, `docs/operating-rules.md`) — aligned the `nano` bootstrap order, source-of-truth wording, autonomous-mode defaults, Copilot autonomous configuration guidance, decision-log format, canonical context-anchor usage, and compliance-block references to remove stale or conflicting instructions across docs.
+
 ## [0.13.0] - 2026-04-14
 
 ### Changed
