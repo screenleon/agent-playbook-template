@@ -136,8 +136,9 @@ This is in addition to the regular risk-reviewer pass that happens after impleme
 
 After producing the plan:
 
-**STOP.** Present the plan to the user and wait for explicit approval.
-Do not pass the plan to implementation agents until the user confirms.
+If the current trust level activates the plan-approval gate, **STOP** and present the plan to the user for explicit approval.
+
+If the gate outcome is **ADVISORY** or **PASS** for the current trust level, record that outcome and continue without waiting.
 
 If the user requests changes, revise and present again.
 

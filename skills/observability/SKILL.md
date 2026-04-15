@@ -16,14 +16,19 @@ Produce a trace record at the end of every completed task, after the deliverable
 | Scale | Trace depth | Storage |
 |-------|-------------|---------|
 | Small | **Minimal** — inline in task completion summary | No separate file |
-| Medium | **Standard** — structured trace block in output | Optional `.agent-trace/` file |
-| Large | **Full** — structured trace file with per-role breakdown | `.agent-trace/` file recommended |
+| Medium | **Standard** — structured trace using the standard schema | Inline block or `.agent-trace/` file |
+| Large | **Full** — structured trace file with per-role breakdown | `.agent-trace/` file |
 
 ### Storage location
 
 By default, trace files go in `.agent-trace/` at the repository root. If the directory does not exist, create it on first use.
 
-Filename convention: `YYYY-MM-DD-<short-task-slug>.yaml`
+Filename convention:
+
+- Human-readable archive form: `YYYY-MM-DD-<short-task-slug>.yaml`
+- CI-friendly form: `<taskId>-<role>.trace.yaml`
+
+When CI integration is active, prefer the `.trace.yaml` form so automated review workflows can discover the files directly.
 
 ## Trace format
 
@@ -37,6 +42,8 @@ Embed directly in the task completion summary:
 
 ### Standard trace (Medium tasks)
 
+Use the same field names whether the trace is emitted inline or written to `.agent-trace/`.
+
 ```yaml
 task: "<one-sentence objective>"
 date: "YYYY-MM-DD"
@@ -44,6 +51,8 @@ scale: Medium
 trust_level: "<supervised | semi-auto | autonomous>"
 roles_invoked:
   - <role-name>
+skills_loaded:
+  - <skill-name>
 files_changed:
   - <file-path>
 decisions_made:
@@ -102,6 +111,7 @@ isolation_status: "<clean | violation | relaxed>"
 | `scale` | Yes | Small / Medium / Large |
 | `trust_level` | Standard+ | Active trust level for this task |
 | `roles_invoked` | Standard+ | List of roles that participated |
+| `skills_loaded` | Standard+ | Skills loaded or emulated for this task |
 | `files_changed` | Yes | Files modified during the task |
 | `decisions_made` | Yes | References to DECISIONS.md entries (empty list if none) |
 | `validation_outcome` | Yes | pass / fail / not-run |

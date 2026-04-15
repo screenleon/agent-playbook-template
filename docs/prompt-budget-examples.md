@@ -100,14 +100,14 @@ skills:
     - test-and-fix-loop          # agent runs tests natively
     - error-recovery             # agent uses built-in retry
     - memory-and-state           # agent reads DECISIONS.md directly
-    - self-reflection            # skipped
-    - observability              # skipped
+    - self-reflection            # full skill skipped; use lightweight inline check
+    - observability              # full skill skipped; use lightweight inline trace
     - feature-planning           # no planning phase
     - backend-change-planning    # no planning phase
     - design-to-code             # not needed
     - documentation-architecture # not needed
     - prompt-cache-optimization  # not needed at minimal scale
-    - on-project-start           # run once manually, then disable
+    - on-project-start           # minimal profile uses manual first-entry scan
     - mcp-validation             # not needed
     - skill-creator              # not needed at minimal scale
     - application-implementation # not needed at minimal scale

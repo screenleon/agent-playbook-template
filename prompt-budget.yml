@@ -95,8 +95,10 @@ budget:
   # If omitted, defaults to "standard".
   profile: standard
 
-  # Target for Layer 1 (docs/operating-rules.md + docs/agent-playbook.md)
-  # These files are loaded on every request. Keep them lean.
+  # Target for Layer 1 static instructions after profile-aware bootstrap.
+  # At `nano`, Layer 1 is `docs/rules-nano.md` only.
+  # At `minimal`, Layer 1 is `docs/rules-quickstart.md` only unless a specific lookup is needed.
+  # At `standard`/`full`, this target primarily covers `docs/operating-rules.md` + `docs/agent-playbook.md`.
   layer1_target_tokens: 4000
 
   # Maximum for Layer 2 (AGENTS.md + selected skills per task type)
@@ -149,8 +151,10 @@ skills:
     - error-recovery
     - memory-and-state
 
-  # Skills loaded on-demand, appended after the canonical set for the task type.
-  # See skills/prompt-cache-optimization/SKILL.md → Canonical skill sets.
+  # Additional skills explicitly listed for trigger-based loading.
+  # Conditional skills from the playbook may still activate by workflow trigger
+  # even if not exhaustively enumerated here; this list is for visible
+  # project-specific additions or overrides.
   on_demand:
     - prompt-cache-optimization
 

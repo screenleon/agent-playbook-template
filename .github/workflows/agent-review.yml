@@ -16,7 +16,7 @@ jobs:
       - name: Check for trace files
         id: check
         run: |
-          if compgen -G ".agent-trace/*.yaml" > /dev/null; then
+          if compgen -G ".agent-trace/*.trace.yaml" > /dev/null || compgen -G ".agent-trace/*.yaml" > /dev/null; then
             echo "has_traces=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_traces=false" >> "$GITHUB_OUTPUT"

@@ -11,10 +11,22 @@ Use this profile for older stacks where stability and compatibility are more imp
 ## Suggested configuration
 
 ```yaml
-trust_level: semi-auto
-prefer_existing_code_practice: true
-require_explicit_approval_for_pattern_replacement: true
-legacy_modules_require_archive_decision_search: true
+execution_mode: semi-auto
+
+budget:
+  profile: standard
+
+roles:
+  enabled:
+    - feature-planner
+    - application-implementer
+    - risk-reviewer
+    - critic
+
+skills:
+  disabled:
+    - design-to-code
+    - documentation-architecture
 ```
 
 ## Rules emphasis
@@ -26,6 +38,6 @@ legacy_modules_require_archive_decision_search: true
 
 ## Recommended workflow
 
-`application-implementer` (with repo-exploration discovery + demand-triage) → minimal-scope implementation → targeted validation (test-and-fix-loop) → `DECISIONS.md` update
+Bounded maintenance change: `application-implementer` → targeted validation → `risk-reviewer` when risk or regressions matter.
 
-All changes follow existing codebase conventions. Use `memory-and-state` skill to search both `DECISIONS.md` and `DECISIONS_ARCHIVE.md`.
+For legacy modules, use `memory-and-state` retrieval to inspect both `DECISIONS.md` and `DECISIONS_ARCHIVE.md` before changing behavior.

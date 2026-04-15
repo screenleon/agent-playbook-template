@@ -30,12 +30,15 @@ For high-risk plans (schema migrations on production data, auth/permission model
 
 Verify: every item is addressed. Write "N/A — [reason]" for items that do not apply.
 
-STOP. Present this plan to the user and wait for explicit approval.
-Do not pass the plan to implementation agents until the user confirms.
+If the current trust level activates the plan-approval gate, STOP and present this plan to the user for approval.
+If the gate is ADVISORY or PASS for the current trust level, record the outcome and proceed per the source-of-truth rules.
 
-After approval, produce a handoff artifact for the next agent:
+After the plan gate is satisfied for the current trust level, produce a handoff artifact for the next agent:
+- Source intent mode: analyze
+- Target intent mode: [analyze | implement | review | document]
 - Task: [one-sentence objective]
-- Deliverable: the approved plan
+- Deliverable: the plan as accepted, auto-proceeded, or otherwise cleared by the current gate outcome
 - Key decisions: [decisions made, with DECISIONS.md references]
 - Open risks: [unresolved risks]
 - Constraints for next step: [what the target agent must respect]
+- Attached output: [the plan itself]

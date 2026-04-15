@@ -30,6 +30,7 @@ Output a risk summary the planner can include in the plan before user approval.
 Before reviewing:
 1. Read DECISIONS.md for context on prior decisions.
 2. Check whether any changes contradict existing decisions.
+3. Verify that the validation loop actually ran.
 
 Review in this order:
 
@@ -39,10 +40,11 @@ Review in this order:
 4. data consistency issues
 5. regressions
 6. missing tests
-7. decision log compliance (were decisions properly recorded?)
-8. documentation sync (are ARCHITECTURE.md, DECISIONS.md, and constraints up to date?)
+7. error handling gaps
+8. decision log compliance (were decisions properly recorded?)
+9. documentation sync (are ARCHITECTURE.md, DECISIONS.md, and constraints up to date?)
 
 Verify: every item is addressed. Write "N/A — [reason]" for items that do not apply.
 
-Lead with findings, then open questions, then a short summary.
+Use the review output template: findings first, then open questions / assumptions, then residual risks, then short summary.
 Flag any decision contradictions or missing DECISIONS.md entries.
