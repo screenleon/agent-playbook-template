@@ -6,6 +6,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Compaction summary template** (`docs/agent-templates.md`) — added a canonical template for mid-session context compaction with explicit handoff framing, resolved-vs-pending question tracking, critical-context preservation, and iterative-update guidance. This makes compaction output reusable across agents while reducing repeated work after long conversations.
+
+### Changed
+
+- **agent-playbook long-task compaction guidance** (`docs/agent-playbook.md`) — the mandatory workflow now points long-running tasks to `docs/agent-templates.md` → Compaction summary template so session compaction is documented alongside task completion summaries.
+- **memory-and-state compaction guidance** (`skills/memory-and-state/SKILL.md`) — Tier 2 summaries and the compaction protocol now reference `docs/agent-templates.md` → Compaction summary template as the single source of truth instead of redefining the format inline. Keeps compaction rules aligned while avoiding template drift.
+- **prompt-cache-optimization cache safety guidance** (`skills/prompt-cache-optimization/SKILL.md`) — added cache-breaking anti-patterns for mid-task prompt rebuilds, unstable tool subsets, unnecessary memory reloads, and accidental promotion of volatile notes into stable layers.
+- **operating-rules context compaction reference** (`docs/operating-rules.md`) — the context compaction rule now points directly to `docs/agent-templates.md` → Compaction summary template so rules, skills, and templates all reference the same canonical format.
+- **documentation consistency sweep** (`AGENTS.md`, `README.md`, `.github/copilot-instructions.md`, `prompt-budget.yml`, `docs/example-task-walkthrough.md`, `skills/memory-and-state/SKILL.md`, `docs/agent-templates.md`, `docs/operating-rules.md`) — aligned the `nano` bootstrap order, source-of-truth wording, autonomous-mode defaults, Copilot autonomous configuration guidance, decision-log format, canonical context-anchor usage, and compliance-block references to remove stale or conflicting instructions across docs.
+- **autonomous-mode configuration alignment** (`docs/operating-rules.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`, `README.md`) — normalized docs around `prompt-budget.yml` → `execution_mode` / `autonomous_mode.*`, clarified which autonomous stops are configurable vs. non-bypassable, and aligned scope-expansion behavior with the canonical checkpoint rules.
+
 ## [0.13.0] - 2026-04-14
 
 ### Changed
@@ -38,7 +53,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **Nano budget profile** (`docs/rules-nano.md`, `docs/prompt-budget-examples.md`) — new `nano` profile targeting < 3,000 total execution tokens. Loads zero skills; agents use native tool capabilities only. Layer 1 is a single self-contained ~630-token file (`docs/rules-nano.md`) covering constitutional principles, always-dangerous ops, 5-step workflow, error recovery, and escalation triggers. Suitable for single-file Small tasks only — agent escalates immediately if task is multi-file or higher risk. Estimated total execution: ~2,000–2,500 tokens (AGENTS.md + rules-nano.md + DECISIONS.md + task files).
-- **Budget profile examples extracted** (`docs/prompt-budget-examples.md`) — moved the three profile example blocks (minimal/standard/full) out of `prompt-budget.yml` into a standalone reference file. `prompt-budget.yml` now references the doc with a 3-line comment. Saves ~1,500 tokens from every bootstrap read (prompt-budget.yml shrinks from ~3,825 to ~2,325 tokens).
+- **Budget profile examples extracted** (`docs/prompt-budget-examples.md`) — moved the profile example blocks out of `prompt-budget.yml` into a standalone reference file. `prompt-budget.yml` now references the doc with a 3-line comment. Saves ~1,500 tokens from every bootstrap read (prompt-budget.yml shrinks from ~3,825 to ~2,325 tokens).
 - **Output style at minimal profile** (`docs/rules-quickstart.md`) — explicit brevity contract: no compliance block for Small tasks at `semi-auto`, no context anchor, summary ≤ 3 sentences, errors include file+line only. Reduces completion tokens per task.
 
 ### Changed
@@ -122,7 +137,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - **Graph workflow reference** (`docs/agent-playbook.md`) — Mermaid stateDiagram-v2 showing the full agent workflow as a state graph with conditional transitions.
 - **Skill activation tiers** (`docs/agent-playbook.md`) — classifies all 15 skills into Always (5 mandatory), Conditional (7 trigger-based), and On-demand (3 opt-in) tiers. Defines the minimum required skill set.
-- **Budget profiles** (`docs/agent-playbook.md`, `prompt-budget.yml`, `skills/prompt-cache-optimization/SKILL.md`) — three named budget profiles (`minimal`, `standard`, `full`) for token-budget-aware skill/role loading. `minimal` loads only 2 skills (~3K-4K tokens) for users with tight token limits; `standard` loads all 5 Always-tier skills; `full` enables all applicable skills and roles. Profile selection via `budget.profile` in `prompt-budget.yml` with explicit override support.
+- **Budget profiles** (`docs/agent-playbook.md`, `prompt-budget.yml`, `skills/prompt-cache-optimization/SKILL.md`) — named budget profiles for token-budget-aware skill/role loading. `minimal` loads only 2 skills (~3K-4K tokens) for users with tight token limits; `standard` loads all 5 Always-tier skills; `full` enables all applicable skills and roles. Profile selection via `budget.profile` in `prompt-budget.yml` with explicit override support. Later releases added `nano` for ultra-small single-file tasks.
 - **Dynamic orchestration** (`docs/agent-playbook.md`) — coordinator roles can dynamically spawn sub-roles at runtime with plan-of-record tracking, max depth = 3, idle reclaim.
 - **Self-evolution protocol** (`docs/agent-playbook.md`) — feedback-driven rule/skill improvement proposals with evidence requirements, risk-routing, and mandatory human approval.
 - **Context isolation verification** (`docs/agent-playbook.md`) — detection and recording of context isolation violations via self-reflection rubric and trace `isolation_status` field.
@@ -176,10 +191,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **PR checklist for rule changes** (`.github/pull_request_template.md`) — explicit review checklist when layered rules are modified.
 - **Autonomous execution mode** — opt-in mode (`execution_mode: autonomous` in `prompt-budget.yml`) that replaces human checkpoint wait states with auto-proceed + `DECISIONS.md` logging. Full specification in `docs/operating-rules.md` → Autonomous execution mode.
   - Checkpoint gate substitution table (gates 1–6 in supervised vs. autonomous)
-  - Non-bypassable rules: destructive actions (gate 2), stuck escalation (gate 4), DECISIONS.md contradictions, and severity-high risk-reviewer findings always remain hard stops
+  - Non-bypassable rules: DECISIONS.md contradictions always remain hard stops; destructive actions (gate 2), stuck escalation (gate 4), and severity-high risk-reviewer findings remain hard stops by default and may be relaxed only through the documented autonomous-mode flags
   - Mandatory audit log format — every auto-proceeded gate produces a `DECISIONS.md` entry with `Execution mode: Autonomous` field
   - Critic behavior in autonomous mode: critique embedded in handoff artifact; implementers must address each point
-  - Risk-reviewer behavior: always runs after implementation; severity-high findings stop the agent even in autonomous mode
+  - Risk-reviewer behavior: runs whenever the routed workflow includes it, including required post-implementation review; severity-high findings stop the agent by default in autonomous mode unless `halt_on_high_severity_risk: false` is explicitly configured
   - "Autonomous mode is not skip planning" — the full workflow structure is preserved; only human wait states are removed
 - **`autonomous_mode` block in `prompt-budget.yml`** — six configurable flags: `auto_proceed_on_plan`, `auto_proceed_on_scope_expansion`, `halt_on_destructive_actions`, `halt_on_stuck_escalation`, `skip_critic_role`, `halt_on_high_severity_risk`. Defaults keep all hard stops active.
 - **Autonomous mode adoption guide** (`docs/adoption-guide.md`) — step-by-step setup (4 steps), risk tradeoff table, "when not to use" list. Placed in its own top-level section before the tool adapter reference.

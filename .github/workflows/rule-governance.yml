@@ -6,7 +6,11 @@ on:
       - "rules/**"
       - "project/**"
       - "docs/**"
+      - "examples/**"
+      - "prompt-budget.yml"
+      - "CHANGELOG.md"
       - "scripts/lint-layered-rules.sh"
+      - "scripts/lint-doc-consistency.sh"
   workflow_dispatch:
 
 jobs:
@@ -18,3 +22,12 @@ jobs:
 
       - name: Run layered rules linter
         run: bash scripts/lint-layered-rules.sh
+
+  lint-doc-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run documentation consistency linter
+        run: bash scripts/lint-doc-consistency.sh

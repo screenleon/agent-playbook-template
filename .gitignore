@@ -1,3 +1,5 @@
 .DS_Store
 *.log
 prompt-budget.local.yml
+.codex
+.claude/settings.json

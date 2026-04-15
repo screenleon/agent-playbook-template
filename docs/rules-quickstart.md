@@ -13,11 +13,11 @@ Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
 - **`standard`** (default): read this file first, then expand into `docs/operating-rules.md` and `docs/agent-playbook.md` for full rules.
 - **`full`**: load complete `docs/operating-rules.md` + `docs/agent-playbook.md` immediately.
 
-## Source of truth
+## Canonical docs
 
 1. `docs/operating-rules.md` for safety, scope, validation, conflict handling
 2. `docs/agent-playbook.md` for routing and role ownership
-3. `DECISIONS.md` for active architectural constraints
+3. `DECISIONS.md` for active architectural constraints and project state
 
 ## Trust level
 
@@ -25,7 +25,7 @@ Default: `semi-auto`. Override per project or session.
 
 - `supervised` — all checkpoints require human approval
 - `semi-auto` — Small/low-risk tasks run autonomously; checkpoints for Large/destructive work
-- `autonomous` — proceeds without approval except destructive actions (unless `dangerouslySkipAllCheckpoints: true`)
+- `autonomous` — proceeds without approval except for default hard stops; gate behavior may be tuned via `prompt-budget.yml` → `autonomous_mode`
 
 See `docs/operating-rules.md` → Trust level for the full activation matrix.
 
@@ -45,6 +45,13 @@ If same-layer conflicts remain:
 2. latest dated rule wins
 3. record tie-break in `DECISIONS.md`
 
+## Role vs intent mode
+
+- **Role** = who owns the work
+- **Intent mode** = what phase the current work is in (`analyze`, `implement`, `review`, `document`)
+- Intent mode does not expand role permissions
+- Same-role mode switches do not require a new agent by default; role switches still follow context-isolation rules
+
 ## Mandatory workflow (compact)
 
 1. Discover (`skills/repo-exploration/SKILL.md`). At `minimal` profile + single-file Small task: skip reading `ARCHITECTURE.md` unless it has substantive non-template content (>50 lines).
@@ -60,7 +67,7 @@ If same-layer conflicts remain:
 ## Hard constraints
 
 - Never expose credentials or secrets.
-- Never do destructive actions without approval unless bypass mode is explicitly enabled.
+- Never do destructive actions without approval unless the configured autonomous-mode gate override explicitly allows them.
 - Do not silently ignore errors. Do not remove or skip failing tests to make the suite pass.
 - Follow existing repository practice unless user explicitly asks for refactor.
 
@@ -84,7 +91,7 @@ If same-layer conflicts remain:
 ## Escalation points
 
 - Contradiction with existing decision in `DECISIONS.md`
-- Scope expansion beyond approved plan
+- Scope expansion beyond approved plan (or beyond original intent in autonomous mode)
 - Same error persists after 3 fix attempts
 - Architecture change without ADR/decision update
 
@@ -123,6 +130,7 @@ When `budget.profile: minimal`, only these roles are active:
 - **critic** — adversarial review of plans and proposals before approval
 
 All other roles are disabled. Do not attempt to route to them.
+This describes the profile default. Repository-level explicit overrides in `prompt-budget.yml` may narrow or expand the available role set, but `minimal` remains intended for Small tasks only.
 Minimal profile is designed for Small tasks only. If demand-triage classifies a task as Medium or Large, escalate to the user and recommend switching to standard or full profile.
 For `standard` and `full` profiles, see `docs/agent-playbook.md` → Role definitions.
 

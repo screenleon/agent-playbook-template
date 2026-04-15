@@ -7,6 +7,9 @@ Use this guide when adapting the template into a new repository.
 Copy these files first:
 
 - `AGENTS.md`
+- `prompt-budget.yml`
+- `docs/rules-nano.md`
+- `docs/rules-quickstart.md`
 - `docs/operating-rules.md`
 - `docs/agent-playbook.md`
 
@@ -71,7 +74,7 @@ Agents need to know exactly which commands to run. Add these to `docs/operating-
 - Build: `go build ./cmd/...`
 ```
 
-### 3. Decision log (recommended)
+### 3. Decision log (effectively mandatory)
 
 Create a `DECISIONS.md` at the repo root:
 
@@ -87,7 +90,7 @@ Create a `DECISIONS.md` at the repo root:
 - Constraint: Pricing logic reads from pricing_rules table, never hardcoded
 ```
 
-### 4. Architecture overview (recommended)
+### 4. Architecture overview (strongly recommended; required for unfamiliar-module work)
 
 Create an `ARCHITECTURE.md` or fill it into your README to help agents understand the codebase structure:
 
@@ -101,7 +104,7 @@ Create an `ARCHITECTURE.md` or fill it into your README to help agents understan
 - db/queries/       → sqlc query files
 ```
 
-### 5. Initialization protocol (recommended)
+### 5. Initialization protocol (required on first repo entry)
 
 Add the `skills/on-project-start/SKILL.md` workflow to your first-session process so agents dynamically discover missing boundaries.
 
@@ -145,7 +148,7 @@ Good candidates to remove early:
 
 ## Prompt budget trimming
 
-The full template loads all skills, roles, and format templates in every request. When adopted by a real project, trimming unused content reduces per-request token cost significantly.
+The full template can load a broad set of skills, roles, and format templates depending on `budget.profile` and task triggers. When adopted by a real project, trimming unused content reduces per-request token cost significantly.
 
 ### Step 1: Remove unused role templates
 
@@ -186,6 +189,7 @@ Set `budget.profile` in `prompt-budget.yml` based on your token constraints:
 
 | Your situation | Recommended profile | Estimated Layer 2 cost |
 |----------------|---------------------|------------------------|
+| Extremely tight token limit, single-file edits only | `nano` | ~0 Layer 2 tokens |
 | Tight token limit (< 16K context), solo dev, pay-per-token | `minimal` | ~3,000–4,000 tokens |
 | Typical team, moderate budget (16K–32K context) | `standard` (default) | ~7,000–10,000 tokens |
 | Large team, generous budget (32K+ context), high-risk project | `full` | ~12,000–18,000 tokens |
@@ -193,7 +197,7 @@ Set `budget.profile` in `prompt-budget.yml` based on your token constraints:
 For `minimal` profile:
 - Only `demand-triage` and `repo-exploration` are loaded as skills
 - The agent uses its native capabilities for testing, error handling, and memory
-- Best suited for Small tasks; Medium/Large tasks may lack planning and validation depth
+- Small tasks only; if triage returns Medium or Large, switch to `standard` or `full`
 
 For `standard` profile:
 - All 5 Always-tier skills load; Conditional skills activate by trigger
@@ -203,7 +207,7 @@ For `full` profile:
 - All applicable skills and roles are available
 - Recommended when compliance, risk, or project complexity justifies the token cost
 
-See `docs/agent-playbook.md` → Budget profiles for the full specification and `prompt-budget.yml` for example configurations per profile.
+See `docs/agent-playbook.md` → Budget profiles for the full specification and `docs/prompt-budget-examples.md` for example configurations per profile.
 
 ### Step 5: Set a token budget with `prompt-budget.yml`
 
@@ -213,9 +217,12 @@ Create a `prompt-budget.yml` at the repo root to declare your project's prompt c
 # prompt-budget.yml — Prompt budget configuration for this project
 # Agents read this file to determine which skills and roles to load.
 
+execution_mode: semi-auto
+
 budget:
-  layer1_target_tokens: 3000    # Target for static rules (operating-rules + agent-playbook)
-  layer2_max_tokens: 6000       # Max for skills loaded per request
+  profile: standard
+  layer1_target_tokens: 4000    # Target after profile-aware Layer 1 loading
+  layer2_max_tokens: 8000       # Max for skills loaded per request
   layer3_max_tokens: 3000       # Max for DECISIONS.md + ARCHITECTURE.md
 
 roles:
@@ -227,16 +234,17 @@ roles:
   disabled:
     - backend-architect          # Not needed: frontend-only project
     - ui-image-implementer       # Not needed: no design-to-code workflow
+    - integration-engineer       # handled inline by application-implementer
     - documentation-architect    # Not needed: docs are informal
 
 skills:
   always_load:
     - demand-triage
     - repo-exploration
-  on_demand:
     - test-and-fix-loop
     - error-recovery
     - memory-and-state
+  on_demand:
     - prompt-cache-optimization
   disabled:
     - design-to-code             # Not needed
@@ -250,7 +258,7 @@ trimming:
   session_memory_max_files: 10
 ```
 
-This file is informational — agents use it as guidance to select which skills and role templates to load. It does not enforce hard limits but makes the intended budget visible and auditable.
+This file is informational — agents use it as guidance to select which skills and role templates to load. It does not enforce hard limits but makes the intended execution mode, budget profile, and workflow surface visible and auditable.
 
 ### Trimming impact estimate
 
@@ -319,7 +327,7 @@ autonomous_mode:
 
 **Step 2**: Ensure `DECISIONS.md` is in a good state before enabling autonomous mode. The agent will auto-log decisions here — a messy decision log will produce noisy entries.
 
-**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document those in `Project-specific constraints` in `docs/operating-rules.md` so the agent knows which destructive operations are pre-approved.
+**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document that context in `Project-specific constraints` in `docs/operating-rules.md` so the agent and user understand why the operation exists. This documentation does **not** bypass the destructive-action gate; actual auto-execution still depends on `autonomous_mode.halt_on_destructive_actions`.
 
 **Step 4**: Review `DECISIONS.md` after the first few autonomous runs to verify the auto-logged entries are sensible.
 
@@ -354,6 +362,72 @@ The role model in this template is conceptual. Use the table below to find the r
 | **Custom OpenAI API** | `system` message (Layer 1+2) | `user` message prefix (Layer 3+4) | No native subagents; spawn separate API calls per role |
 | **Codex CLI** | `AGENTS.md` + `docs/operating-rules.md` via repo context | Role templates from `docs/agent-templates.md` | No native subagents; use prompt templates |
 
+## Intent mode mapping
+
+`intent mode` is the current phase of work: `analyze`, `implement`, `review`, or `document`.
+
+Adoption rule:
+
+1. Map **role** to the tool's strongest long-lived instruction surface.
+2. Map **intent mode** to the tool's lightest per-task surface.
+3. Do not create a separate agent for every mode unless the tool already makes that cheap and clear.
+4. Same-role mode changes may stay in one session. Role changes should still use a new session, subagent, or explicit handoff artifact when the workflow requires isolation.
+
+### Recommended mapping by tool family
+
+| Tool family | Map role to | Map intent mode to | Same-role mode switch |
+|-------------|-------------|--------------------|-----------------------|
+| Native subagent tools | subagent definition | task preamble, handoff field, or session label | keep same subagent unless risk/scale requires a new context |
+| Repo-rules tools without subagents | role-specific rule/prompt file | first 1-3 lines of the task prompt | stay in one conversation and restate current mode |
+| Raw API orchestration | system prompt variant or selected role template | task metadata field or user-message prefix | same API thread/call chain is fine for bounded tasks |
+
+### Canonical prompt tags
+
+When a tool does not provide a structured field for intent mode, use an explicit tag near the top of the task input:
+
+```text
+Role: application-implementer
+Intent mode: analyze
+Task: Inspect the current API response shape and propose the minimal change.
+```
+
+When the same role moves into implementation, restate the mode and scope before edits begin:
+
+```text
+Role: application-implementer
+Intent mode: implement
+Approved scope: update src/api/users.ts and its targeted tests only.
+```
+
+### Tool-specific intent-mode guidance
+
+#### Claude Code-style tools
+
+- Map `role` to `.claude/agents/*.md` or the tool's native subagent selection.
+- Carry `intent mode` in the task preamble or handoff artifact, not in a separate permanent agent definition.
+- Keep the same subagent when moving from `analyze` to `implement` for Small tasks and relaxed Medium tasks.
+- Switch subagents when the role changes, not merely because the mode changed.
+
+#### GitHub Copilot-style tools
+
+- Keep role behavior in `.github/copilot-instructions.md` and prompt files.
+- Put `intent mode` in the top lines of the prompt file or user request.
+- Because there are no native subagents, treat mode as a declared task state, not as a separate prompt family unless your team wants stricter separation.
+
+#### Cursor / Windsurf-style tools
+
+- Keep role behavior in rule files.
+- Put `intent mode` in the inline task preamble.
+- For same-role analyze-to-implement flows, keep one chat and restate the mode switch explicitly before edits.
+- For role changes, start a fresh chat or supply a handoff block so the new role does not inherit the entire old conversation implicitly.
+
+#### Custom OpenAI API / orchestration layers
+
+- Select the role template in the `system` message or orchestration layer.
+- Send `intent_mode` as explicit request metadata when possible; otherwise include it at the top of the `user` message.
+- For same-role mode switches, keep the same role template and send a new message that restates the mode and approved scope.
+- For role changes, start a new call chain with a structured handoff artifact instead of replaying full raw history.
+
 ### Cursor setup
 
 1. Create `.cursor/rules/` directory (or use `.cursorrules` at the repo root for older versions).
@@ -361,21 +435,24 @@ The role model in this template is conceptual. Use the table below to find the r
    - `.cursor/rules/operating-rules.mdc` — paste or reference `docs/operating-rules.md`
    - `.cursor/rules/agent-playbook.mdc` — paste or reference `docs/agent-playbook.md`
 3. For role-specific behavior, create a rule file per role and use it in the relevant context.
-4. Reference skills by asking the agent to read the relevant `skills/*/SKILL.md` file at the start of a task.
+4. Put `Intent mode: ...` in the first lines of the request; update that line when the same role changes phase.
+5. Reference skills by asking the agent to read the relevant `skills/*/SKILL.md` file at the start of a task.
 
 ### Windsurf setup
 
 1. Create `.windsurfrules` at the repo root.
 2. Include the core instructions from `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
 3. For token efficiency, summarize only the most critical rules and link to full files for on-demand reading.
-4. Skills and role templates work as referenced files — ask the agent to read them as needed.
+4. Put `Intent mode: ...` near the top of each task request so phase changes stay explicit even in one chat.
+5. Skills and role templates work as referenced files — ask the agent to read them as needed.
 
 ### Custom OpenAI API setup
 
-1. Place Layer 1 (`docs/operating-rules.md` + `docs/agent-playbook.md`) in the `system` message.
+1. Apply the same profile-aware loading rules as the repository docs: `nano` loads only `docs/rules-nano.md`; `minimal` uses `docs/rules-quickstart.md` as complete Layer 1; `standard`/`full` may place full Layer 1 docs in the `system` message.
 2. Place Layer 2 (selected skills) at the start of the `user` message, before the task description.
 3. Place Layer 3 (`DECISIONS.md`, `ARCHITECTURE.md`) after Layer 2 in the `user` message.
 4. Place the actual task query and current file content last (Layer 4).
-5. For multi-role workflows, spawn separate API calls for each role using the same Layer 1 `system` message to maximize cache hits.
+5. For same-role mode switches, keep the same role template and send `Intent mode: ...` plus the narrowed scope in the next user message.
+6. For multi-role workflows, spawn separate API calls for each role using the same Layer 1 prefix to maximize cache hits.
 
 See `skills/prompt-cache-optimization/SKILL.md` → Tool-specific adaptation for more detail on cache-aware loading per tool.

@@ -25,29 +25,22 @@ For the proposal, systematically check:
 
 ## Output
 
-Produce your output using the mandatory deliverable structure:
+Produce your output using the review output template:
 
 ```markdown
-## Deliverable: Critique of [proposal title]
+## Review: Critique of [proposal title]
 
-### Proposal
-[One-sentence summary of what was proposed]
+### Findings
+- [severity] [specific issue in the proposal]
 
-### Alternatives considered
-[At least one simpler or safer alternative the proposer did not consider]
+### Open questions / assumptions
+- [question or assumption that needs explicit confirmation]
 
-### Pros / Cons
-| Pros | Cons |
-|------|------|
-| ...  | ...  |
+### Residual risks
+- [what remains risky even if the proposal is accepted]
 
-### Risks
-[Risks the original proposal missed or underestimated]
-
-### Recommendation
-[Accept / Accept with changes / Reject with reason]
-- If "Accept with changes": list the specific changes needed
-- If "Reject": state what should be done instead
+### Summary
+- [Accept / Accept with changes / Reject with reason]
 ```
 
 ## Rules

@@ -11,10 +11,19 @@ Use this profile for regulated or security-critical systems.
 ## Suggested configuration
 
 ```yaml
-trust_level: supervised
-require_risk_reviewer_for_all_changes: true
-require_adr_for_architecture_change: true
-block_destructive_actions_without_manual_approval: true
+execution_mode: supervised
+
+budget:
+  profile: full
+
+roles:
+  enabled:
+    - feature-planner
+    - backend-architect
+    - application-implementer
+    - documentation-architect
+    - risk-reviewer
+    - critic
 ```
 
 ## Rules emphasis
@@ -26,4 +35,4 @@ block_destructive_actions_without_manual_approval: true
 
 ## Recommended workflow
 
-`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user approval** → `application-implementer` → `risk-reviewer` (final review)
+`feature-planner` → `critic` → `risk-reviewer` (plan assessment) → **user approval** → `application-implementer` or `backend-architect` → `risk-reviewer` (final review)

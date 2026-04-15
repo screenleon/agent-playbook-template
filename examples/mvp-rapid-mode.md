@@ -11,10 +11,22 @@ Use this profile for early-stage products prioritizing delivery speed.
 ## Suggested configuration
 
 ```yaml
-trust_level: semi-auto
-small_tasks_skip_compliance_block: true
-targeted_tests_for_small_tasks: true
-critic_required_only_for_large_changes: true
+execution_mode: semi-auto
+
+budget:
+  profile: standard
+
+roles:
+  enabled:
+    - feature-planner
+    - application-implementer
+    - risk-reviewer
+    - critic
+  disabled:
+    - backend-architect
+    - ui-image-implementer
+    - integration-engineer
+    - documentation-architect
 ```
 
 ## Rules emphasis
@@ -22,10 +34,8 @@ critic_required_only_for_large_changes: true
 - Keep changes small and reversible.
 - Preserve mandatory validation loop, but prefer targeted tests first.
 - Require architecture decisions only when boundaries or contracts change.
-- Use concise summaries instead of verbose deliverables for small tasks.
+- Use concise summaries instead of verbose deliverables for Small tasks.
 
 ## Recommended workflow
 
-`application-implementer` → targeted validation (test-and-fix-loop) → brief summary
-
-For Small tasks, skip planner and critic. Use concise summaries per `docs/agent-templates.md` → Task completion summary.
+Bounded Small/Medium changes: `application-implementer` → targeted validation → brief summary or `risk-reviewer` when the routed workflow requires it.

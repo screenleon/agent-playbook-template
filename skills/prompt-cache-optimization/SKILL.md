@@ -12,12 +12,13 @@ Use this skill to reduce API costs and latency by maximizing prompt cache hits. 
 Instruction content is classified into four layers by **change frequency**, loaded from most stable to most volatile:
 
 ```text
-Layer 1 — Static rules (rarely change)
+Layer 1 — Static bootstrap + rules (rarely change)
+  ├── profile-aware bootstrap (`docs/rules-nano.md` or `docs/rules-quickstart.md` or full docs)
+  ├── AGENTS.md (entrypoint when the selected profile uses it)
   ├── docs/operating-rules.md
   └── docs/agent-playbook.md
 
 Layer 2 — Stable skills (content stable; subset varies by task type)
-  ├── AGENTS.md
   └── skills/*/SKILL.md (selected by demand-triage)
 
 Layer 3 — Semi-stable project state (changes weekly to monthly)
@@ -59,16 +60,15 @@ When multiple skills are loaded for a task, use **alphabetical order by skill di
 
 | Task type | Skills loaded (in order) |
 |-----------|-------------------------|
-| Small task | `demand-triage`, `repo-exploration` |
-| Medium frontend | `application-implementation`, `demand-triage`, `repo-exploration`, `test-and-fix-loop` |
-| Medium backend | `backend-change-planning`, `demand-triage`, `repo-exploration`, `test-and-fix-loop` |
-| Large feature | `demand-triage`, `feature-planning`, `repo-exploration`, `test-and-fix-loop` |
-| Design-to-code | `demand-triage`, `design-to-code`, `repo-exploration`, `test-and-fix-loop` |
-| Documentation | `demand-triage`, `documentation-architecture`, `repo-exploration` |
-| Error recovery | `error-recovery` (added on-demand; appended after existing skills) |
-| Memory maintenance | `memory-and-state` (added on-demand; appended after existing skills) |
+| Small task | `demand-triage`, `error-recovery`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Medium frontend | `application-implementation`, `demand-triage`, `error-recovery`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Medium backend | `backend-change-planning`, `demand-triage`, `error-recovery`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Large feature | `demand-triage`, `error-recovery`, `feature-planning`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Design-to-code | `demand-triage`, `design-to-code`, `error-recovery`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Documentation | `demand-triage`, `documentation-architecture`, `error-recovery`, `memory-and-state`, `repo-exploration`, `test-and-fix-loop` |
+| Prompt/cache tuning | `prompt-cache-optimization` (added on-demand; appended after existing skills) |
 
-On-demand skills (`error-recovery`, `memory-and-state`, `prompt-cache-optimization`) are **appended after** the canonical set when needed. They never change the order of the canonical set.
+Always-tier skills remain part of every canonical set. On-demand skills such as `prompt-cache-optimization` are **appended after** the canonical set when needed. They never change the order of the canonical set.
 
 ## File size discipline
 
@@ -168,7 +168,7 @@ Adopting projects can declare a `prompt-budget.yml` at the repo root to control 
 | Profile | Layer 2 ceiling | Skills loaded | Behavior differences |
 |---------|-----------------|---------------|---------------------|
 | `nano` | 0 tokens | 0 (all behaviors native) | Single-file Small tasks only. Layer 1 = `docs/rules-nano.md` (~630 tokens). No skill files loaded. Agent escalates immediately for multi-file or complex tasks. |
-| `minimal` | ≤ 4,000 tokens | 2 (demand-triage, repo-exploration) | Agent uses native tool capabilities for testing, error handling, and memory. No structured traces. Small tasks only. |
+| `minimal` | ≤ 4,000 tokens | 2 (demand-triage, repo-exploration) | Agent uses native tool capabilities for testing, error handling, and memory. Reflection/trace behavior is abbreviated and usually inline. Small tasks only. |
 | `standard` | ≤ 8,000 tokens | 5 (all Always-tier) | Conditional skills activate by trigger. On-demand domain skills require explicit opt-in. |
 | `full` | ≤ 15,000 tokens | 5 + all applicable Conditional + On-demand | No restrictions. Full observability, self-reflection, and planning. |
 
@@ -176,7 +176,8 @@ When `budget.profile: minimal`, agents should:
 - Run tests directly using tool-native test execution instead of loading `test-and-fix-loop`.
 - Use built-in retry logic instead of loading `error-recovery`.
 - Read `DECISIONS.md` directly instead of loading `memory-and-state`.
-- Skip self-reflection, observability, and planning skills entirely.
+- Keep self-reflection and observability lightweight and inline instead of loading the full skills.
+- Escalate immediately if triage classifies the task as Medium or Large.
 
 See `docs/agent-playbook.md` → Budget profiles for the complete specification.
 
@@ -211,10 +212,12 @@ If `prompt-budget.yml` does not exist, use the `standard` profile defaults with 
 
 ```yaml
 # prompt-budget.yml
+execution_mode: semi-auto
+
 budget:
   profile: standard
-  layer1_target_tokens: 3000    # Static rules target
-  layer2_max_tokens: 6000       # Skills per request
+  layer1_target_tokens: 4000    # Static rules target after profile-aware bootstrap
+  layer2_max_tokens: 8000       # Skills per request
   layer3_max_tokens: 3000       # DECISIONS.md + ARCHITECTURE.md
 
 roles:
@@ -241,6 +244,17 @@ See `docs/adoption-guide.md` → Prompt budget trimming for step-by-step adoptio
 - **Inlining DECISIONS.md into Layer 1** — project state changes frequently; mixing it into static rules invalidates the most stable cache layer.
 - **Skipping demand-triage** — without triage, skill selection varies unpredictably, reducing prefix consistency across similar tasks.
 - **Letting DECISIONS.md grow unbounded** — a 50 KB decision log in Layer 3 wastes tokens and pushes the cache boundary; use archive rules from `memory-and-state`.
+
+### Cache-breaking anti-patterns
+
+Avoid these behaviors during an active task or conversation:
+
+- **Rebuilding earlier prompt layers mid-task** — do not rewrite or reshuffle Layer 1-3 content unless the task genuinely changed scope.
+- **Changing tool definitions or tool subsets every turn** — unstable tool availability changes the prefix and reduces cache reuse.
+- **Reloading memory files on every request** — keep stable project memory in Layer 3 and refresh it only when the underlying source changed or the task crossed a meaningful boundary.
+- **Promoting temporary notes into stable layers** — scratchpad state, timestamps, one-off observations, and partial outputs belong in Layer 4 only.
+
+When task scope changes enough to require a different skill set, acknowledge that the cache boundary will move and keep the new loading order deterministic from that point onward.
 
 ## Conformance self-check
 

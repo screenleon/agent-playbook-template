@@ -40,7 +40,7 @@ Evaluate your draft output against these five dimensions. For each, state **pass
 
 ### 3. Adherence to operating-rules
 
-- Does the output follow the mandatory deliverable structure?
+- Does the output follow the required role-appropriate final format?
 - Are trust-level gates respected?
 - Are safety rails followed (no secrets, no unauthorized destructive actions)?
 - Is the scope within what was requested (no silent expansion)?
@@ -77,7 +77,7 @@ After evaluating, produce a brief reflection block (do not omit even if all pass
 
 1. If any dimension is **fail**, revise the draft to fix the specific issue before emitting.
 2. After revision, re-evaluate only the failed dimensions (not all dimensions).
-3. If a dimension still fails after the maximum revision rounds, **emit the output anyway** but include the unresolved issue in the reflection block and flag it as an open risk in the deliverable.
+3. If a dimension still fails after the maximum revision rounds, **emit the output anyway** but include the unresolved issue in the reflection block and flag it as an open risk in the final output.
 
 Do not enter an infinite revision loop. The maximum rounds are defined by task scale (see table above).
 
