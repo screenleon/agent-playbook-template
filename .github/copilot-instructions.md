@@ -2,7 +2,7 @@
 
 - Read `AGENTS.md` first.
 - **Agent-deference principle**: this template only adds rules the agent tool does not already provide natively. Capabilities the agent handles out of the box (e.g., built-in safety rails, tool routing, output formatting) should not be re-specified here. See `docs/operating-rules.md` → Agent-deference principle.
-- **Trust level**: the project defaults to `semi-auto`. Override with `supervised` or `autonomous` as needed. For fully unattended execution (no approval gates at all), set `trust_level: autonomous` + `dangerouslySkipAllCheckpoints: true`. See `docs/operating-rules.md` → Trust level.
+- **Trust level**: the project defaults to `semi-auto`. Override with `supervised` or `autonomous` as needed via `prompt-budget.yml` → `execution_mode`. For unattended execution, use `execution_mode: autonomous` and configure `autonomous_mode.*` explicitly. See `docs/operating-rules.md` → Trust level and Autonomous execution mode.
 - **Profile-aware loading**: read `prompt-budget.yml` → `budget.profile` first. At `minimal`, use `docs/rules-quickstart.md` as your complete Layer 1 — do not load the full operating-rules.md or agent-playbook.md unless a specific lookup is needed.
 - Treat named roles such as `feature-planner` or `risk-reviewer` as conceptual roles. If the tool cannot spawn named subagents, use the matching prompt template or local docs instead.
 - Follow `docs/operating-rules.md` for safety, scope, and validation rules.
@@ -32,7 +32,7 @@ Before any implementation:
 7. For behavior-changing work, define tests first per TDAI requirement in `docs/operating-rules.md`.
 
 After planning (for Medium/Large work):
-8. Invoke `critic` to challenge the plan; present plan + critique to user. At `supervised`/`semi-auto` trust level, wait for user approval before continuing. At `autonomous` trust level, critic review runs for Large tasks but does not block execution — the agent proceeds after the critique is produced.
+8. Invoke `critic` to challenge the plan; present plan + critique to user. At `supervised`/`semi-auto` trust level, wait for user approval before continuing. At `autonomous` trust level, the critic still runs by default but does not block execution — the agent proceeds after the critique is produced unless `skip_critic_role: true` is explicitly set.
 
 After any code change:
 9. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`) — this runs autonomously (auto-fix without human approval). For Small tasks, run targeted tests only.

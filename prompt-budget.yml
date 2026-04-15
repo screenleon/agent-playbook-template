@@ -38,9 +38,9 @@
 #
 # Maps to the trust levels defined in docs/operating-rules.md → Trust level.
 #
-# supervised (default) — all mandatory checkpoints require human approval.
+# supervised           — all mandatory checkpoints require human approval.
 #                        Full compliance output on every task.
-# semi-auto            — Small and low-risk Medium tasks run autonomously.
+# semi-auto (default)  — Small and low-risk Medium tasks run autonomously.
 #                        Checkpoints activate only for Large, high-risk,
 #                        or destructive work.
 # autonomous           — agent proceeds without human approval except for

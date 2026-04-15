@@ -256,4 +256,4 @@ Next improvement: The deliverable template's Risks section should include a
 
 ### Formats referenced
 
-All format templates (compliance block, deliverable, task summary, mini retrospective) are defined in `docs/agent-templates.md`. The rules that make each step mandatory are in `docs/operating-rules.md`. The routing logic that determines which agent roles are used is in `docs/agent-playbook.md`.
+The deliverable, task summary, and mini retrospective templates are defined in `docs/agent-templates.md`. The compliance-block rules and required fields are defined in `docs/operating-rules.md` → Mandatory first-response compliance block. The routing logic that determines which agent roles are used is in `docs/agent-playbook.md`.

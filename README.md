@@ -25,7 +25,7 @@ This template is intentionally project-agnostic. Copy, adapt, and version it in 
 ## Quick Start (3 steps)
 
 1. Copy this template into your repository (or create a repo from this template).
-2. Edit the three source-of-truth files first: `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+2. Edit the two source-of-truth docs first: `docs/operating-rules.md` and `docs/agent-playbook.md`. Update `AGENTS.md` after them as the root entrypoint.
 3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions.
 
 For first entry into a new repository, run `skills/on-project-start/SKILL.md` before implementation to confirm project-specific boundaries.
@@ -40,7 +40,7 @@ Use case: add a new repository rule that all API handlers must enforce request I
 2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
 3. Sync tool instructions: update `.github/copilot-instructions.md` to keep tool-specific guidance consistent.
 4. Record the decision: append a dated entry to `DECISIONS.md` with context, decision, alternatives, and constraints.
-5. Validate consistency: ensure no contradiction between `AGENTS.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md`.
+5. Validate consistency: ensure `AGENTS.md` matches `docs/operating-rules.md` and `docs/agent-playbook.md`.
 
 Outcome: every future implementation task follows the same logging requirement with traceable reasoning.
 
@@ -208,5 +208,6 @@ The role names in this template are conceptual first:
 - `integration-engineer`
 - `documentation-architect`
 - `risk-reviewer`
+- `critic`
 
 Some tools can map these directly to project subagents. Others cannot. In tools without native subagents, use the same role names through prompt templates, reusable skills, or repository instructions instead.

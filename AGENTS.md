@@ -2,11 +2,12 @@
 
 Read these files before starting work:
 
-0. `docs/rules-quickstart.md` — minimal rules for first-pass loading (read this first)
-1. Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
+0. Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
    - `nano`: load only `docs/rules-nano.md`. **Stop here — do not read any other files unless the task requires a specific lookup. No skills are loaded.**
-   - `minimal`: rules-quickstart.md is your complete Layer 1. Skip to step 3.
+   - `minimal`: continue to step 1.
    - `standard` / `full`: continue to step 2.
+1. `docs/rules-quickstart.md` — minimal rules for first-pass loading
+   - At `minimal`, this is your complete Layer 1. Skip to step 3.
 2. `docs/operating-rules.md` — mandatory safety, scope, validation, error recovery, and project-specific constraint rules
    `docs/agent-playbook.md` — routing rules and role definitions
 3. `docs/agent-templates.md` — reusable task and prompt templates as optional helpers
