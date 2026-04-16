@@ -6,6 +6,8 @@ See `skills/memory-and-state/SKILL.md` for when to read and write.
 
 > **Adopter note**: This file is intentionally blank in the template. Start adding your own decisions from day one. Template development history has been moved to `DECISIONS_ARCHIVE.md` so you inherit a clean log.
 >
+> For this template repository itself, framework-level decisions are recorded in `DECISIONS_ARCHIVE.md` and summarized in `CHANGELOG.md` so adopters can still see rationale without inheriting non-project decisions in this active log.
+>
 > The fastest way to get value: keep one entry per architectural choice so every future agent run can perform contradiction checks.
 
 <!-- Append new decisions below using the format shown. -->

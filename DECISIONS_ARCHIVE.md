@@ -4,6 +4,8 @@ This file holds decisions that were made during the development of this template
 
 **Adopters**: You should not need this file for your day-to-day work. Use the active `DECISIONS.md` for your own project decisions. Only read this archive if you are modifying the template framework itself (e.g., changing `docs/operating-rules.md`, `docs/agent-playbook.md`, or the skill files) and need to understand why a structural choice was made.
 
+For visibility, major template-framework decisions are also summarized in `CHANGELOG.md`. This keeps rationale discoverable while preserving a clean adopter-facing `DECISIONS.md`.
+
 Agents should search this archive only when working on the template's own framework files — not for ordinary adopter tasks.
 
 See `skills/memory-and-state/SKILL.md` → Selective read strategy for when to read this file.
