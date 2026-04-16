@@ -1,76 +1,62 @@
 # Architecture Overview
 
-> **Adopter note**: Fill this file in when adopting this template. This file is intentionally blank so teams start with a clean architecture description. Keep it updated as the codebase evolves.
+> **Adopter note**: This file documents the template repository itself. When adopting this template into a product repository, replace module names and data flow with your actual system.
 >
 > Agents read this file before working on unfamiliar modules (see `skills/memory-and-state/SKILL.md` → Architecture memory). When it is missing or stale, agents lose structural context and may make incorrect assumptions.
 >
-> Minimum viable content: fill in Module map and Data flow. Add the remaining sections as the project matures.
+> Keep this file updated when module boundaries, governance flows, or validation automation change.
 
 ## Module map
 
 | Directory / module | Purpose |
 |-------------------|---------|
-| _example: `src/api/`_ | _HTTP handlers — one file per resource_ |
-| _example: `src/services/`_ | _Business logic — stateless service objects_ |
-| _example: `src/repos/`_ | _Database access — one repo per aggregate_ |
-| _example: `db/migrations/`_ | _SQL migration files (up/down pairs)_ |
-
-<!-- Replace the example rows with your actual directory structure. -->
+| `AGENTS.md` | Root entrypoint and profile-aware loading order |
+| `docs/` | Source-of-truth governance docs, workflow rules, templates, and guides |
+| `skills/` | Reusable execution skills (planning, implementation, validation, recovery, memory) |
+| `rules/global/` | Cross-project rules layer |
+| `rules/domain/` | Domain-specific rules layer |
+| `project/project-manifest.md` | Project-local constraints and boundary declarations |
+| `scripts/` | Documentation and layered-rule lint automation |
+| `.github/workflows/` | CI execution for governance and agent review checks |
+| `DECISIONS.md` / `DECISIONS_ARCHIVE.md` | Active and archived architectural/behavioral decisions |
+| `prompt-budget.yml` | Execution mode, budget profile, and role/skill enablement controls |
+| `examples/` | Reference operating profiles and usage patterns |
 
 ## Data flow
 
-<!-- Describe how data moves through the system for the primary user actions.
-     A simple linear diagram is fine.
+Primary flow for repository usage:
 
-     Example:
-       Client → HTTP handler (src/api/) → Service (src/services/) → Repository (src/repos/) → PostgreSQL
-       Background jobs: Scheduler → Worker (src/workers/) → Service → DB
-
-     Add notes for async paths, event-driven flows, or external service calls. -->
-
-_Not yet documented. Fill in when adopting._
+1. User request enters through agent runtime.
+2. Agent reads `AGENTS.md` and resolves profile from `prompt-budget.yml`.
+3. Agent loads rules from `docs/rules-quickstart.md` or `docs/rules-nano.md`, then expands into `docs/operating-rules.md` and `docs/agent-playbook.md` when profile requires it.
+4. Agent loads applicable `skills/*/SKILL.md` files for discovery, triage, implementation, and validation.
+5. Agent performs repository changes and records durable decisions in `DECISIONS.md`.
+6. Validation loop executes tests/lint and applies error recovery as needed.
+7. Governance scripts (`scripts/lint-doc-consistency.sh`, `scripts/lint-layered-rules.sh`) and CI workflows enforce documentation/rule consistency.
 
 ## Key interfaces and contracts
 
-<!-- List the major interfaces, shared types, or public API surfaces that multiple modules depend on.
-     Agents use this to understand the blast radius of changes.
-
-     Example format:
-     - `UserService` (src/services/user.ts) — owns user creation, lookup, and auth token generation
-     - `OrderRepository` (src/repos/order.ts) — owns all SQL for orders; no direct DB access outside this file
-     - `POST /api/orders` — external contract; breaking changes require versioning -->
-
-_Not yet documented. Fill in as key interfaces are identified._
+- `docs/operating-rules.md` — canonical safety/scope/validation contract.
+- `docs/agent-playbook.md` — canonical role ownership and routing contract.
+- `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, and enabled roles/skills.
+- `docs/schemas/handoff-artifact.schema.yaml` — structured handoff artifact contract between roles.
+- `DECISIONS.md` format — contradiction-check contract used before planning and implementation.
 
 ## External service dependencies
 
 | Service | Purpose | Notes |
 |---------|---------|-------|
-| _example: PostgreSQL_ | _Primary data store_ | _Connection via DATABASE_URL env var_ |
-| _example: SendGrid_ | _Transactional email_ | _Only used in notification service_ |
-
-<!-- Add any external APIs, message queues, caches, object stores, or third-party services here.
-     Include where credentials come from and which internal module owns the integration. -->
+| GitHub Actions | Runs governance and review workflows | Triggered by workflow files in `.github/workflows/` |
+| Shell tooling (`bash`, `grep`, `awk`, `sed`) | Executes local lint scripts | Required by `scripts/lint-*.sh` |
 
 ## Deployment units
 
-<!-- If the project has multiple deployable units (monorepo with separate services, packages, or apps),
-     list them here so agents know which changes are cross-unit (higher risk).
+Single documentation/governance repository. Primary execution units are:
 
-     Example:
-     - `apps/api` — Node.js REST API, deployed to Fly.io
-     - `apps/worker` — Background job processor, deployed as a separate Fly machine
-     - `packages/shared` — Shared TypeScript types; changes here affect both apps -->
-
-_Single deployable unit — not yet documented._
+- Local agent runtime (interactive development sessions)
+- CI workflows for governance and consistency checks
 
 ## Known technical debt
 
-<!-- Optional but valuable. Record known shortcuts or deferred work so agents do not mistake
-     intentional debt for bugs, and do not introduce more of the same pattern.
-
-     Example:
-     - User search uses a full-table ILIKE scan (no index). Known N+1 with >10k users. Deferred until load justifies indexing.
-     - Order status transitions are hardcoded strings, not an enum. Refactor tracked in issue #42. -->
-
-_None documented yet._
+- Architectural docs are now filled for the template repo, but adopters still need to replace this file with their repository-specific module map and flow.
+- Governance checks are shell-script based; portability to non-POSIX environments relies on CI rather than local parity.
