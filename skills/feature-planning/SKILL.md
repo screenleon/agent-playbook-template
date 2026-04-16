@@ -108,6 +108,15 @@ Output format:
 | ...                            | ...        | ...    | ...                               | ...      |
 ```
 
+## How to know it's working (auditable)
+
+All conditions below must be verifiable from the plan artifact:
+
+- **Completeness evidence**: all 12 checklist items are present (or N/A with reason).
+- **Implementation readiness evidence**: implementation order is numbered and executable without missing dependencies.
+- **Testability evidence**: each test scenario includes type, input/precondition, and expected outcome.
+- **Risk evidence**: each risk entry includes likelihood, impact, mitigation, and owner.
+
 ## How to define implementation order
 
 When specifying the implementation order (checklist item 9):

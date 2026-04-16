@@ -73,9 +73,16 @@ Suggested next step: [what a human should check]
 - You see unexpected runtime behavior
 - Static analysis reports new warnings
 
-## Conformance self-check
+## How to know it's working (auditable)
 
-Before marking error recovery as complete, verify:
+All conditions below must be verifiable from task artifacts:
+
+- **Full-error evidence**: output includes exact failing command and primary error location (`file:line`).
+- **Attempt log evidence**: each retry records action and result; max 3 attempts before escalation.
+- **Minimal-fix evidence**: changed files map to error path; unrelated edits are absent or justified.
+- **Escalation evidence**: if escalated, report includes error, attempts, hypothesis, and next step.
+
+## Conformance self-check
 
 - [ ] The full error message was read (not guessed from partial output)
 - [ ] Root cause was identified and stated

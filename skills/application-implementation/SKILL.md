@@ -70,6 +70,15 @@ Good: Check the scale classification. For Small tasks, use the lightweight path.
 - the task is frontend or app behavior work without a dedicated visual source
 - the task needs code changes but not a new architecture pass
 
+## How to know it's working (auditable)
+
+All conditions below must be verifiable from task artifacts:
+
+- **Scope traceability**: every changed file is listed in approved scope or explicitly approved scope expansion.
+- **Pattern conformance**: output cites at least one existing in-repo pattern reused for the change.
+- **State coverage evidence**: output confirms loading/empty/error/success handling, or marks each as N/A with reason.
+- **Validation evidence**: output lists executed verification commands and outcomes.
+
 ## Conformance self-check
 
 Before marking implementation as complete, verify:

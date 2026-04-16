@@ -64,6 +64,15 @@ If same-layer conflicts remain:
 8. Validate (test -> lint/typecheck -> fix -> repeat). Never mark complete until verification passes. If no test suite exists, state that explicitly.
 9. Record decisions and ADR updates when architecture changes
 
+## Pre-emit checks (auditable)
+
+Pass all checks before emitting code changes:
+
+- **Assumption evidence**: output includes either explicit assumptions or the statement "No unresolved assumptions".
+- **Simplicity evidence**: if a simpler approach was considered, output states why current approach is still minimal.
+- **Scope evidence**: each changed file maps to a user-requested requirement; unrelated edits are removed.
+- **Verification evidence**: output includes concrete success criteria (test/command/check), not only intent statements.
+
 ## Hard constraints
 
 - Never expose credentials or secrets.
