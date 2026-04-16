@@ -207,7 +207,7 @@ Use `examples/` for ready-to-adapt constraint profiles:
 2. Edit `docs/operating-rules.md` with your real safety, testing, and review expectations.
 3. Edit `docs/agent-playbook.md` so the role routing matches your stack.
 4. Update `AGENTS.md` so the root entrypoint reflects those source-of-truth docs.
-5. Fill in `ARCHITECTURE.md` with your module map and data flow.
+5. Review and replace `ARCHITECTURE.md` with your repository's module map and data flow (the template repo now includes its own reference architecture).
 6. Keep, rename, or remove subagents in `.claude/agents/` based on the tools your team actually uses.
 7. Keep, rename, or remove skills in `skills/` based on the workflows you repeat often.
 8. Update `.github/copilot-instructions.md` so it reflects the same role model.

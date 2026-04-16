@@ -75,6 +75,27 @@ When adding new behavior (not fixing a bug in existing code), consider writing t
 3. **Implement** — write the minimal code to make the test pass
 4. **Refine** — add edge case tests, then adjust implementation as needed
 
+### Step → verify pattern
+
+For multi-step tasks, use an explicit verification plan before starting. This format transforms imperative instructions into verifiable goals:
+
+```text
+1. [Step description] → verify: [concrete check]
+2. [Step description] → verify: [concrete check]
+3. [Step description] → verify: [concrete check]
+```
+
+Examples of strong vs. weak verification:
+
+| Weak (vague) | Strong (verifiable) |
+|---|---|
+| "Add validation" | "Write tests for invalid inputs, then make them pass" |
+| "Fix the bug" | "Write a test that reproduces it, then make it pass" |
+| "Refactor X" | "Ensure tests pass before and after, diff shows no behavior change" |
+| "Make it work" | "Endpoint returns 200 with expected JSON; integration test passes" |
+
+Strong success criteria let the agent loop independently. Weak criteria require constant clarification.
+
 This is a **recommendation, not a mandate**. Use test-first when:
 - The expected behavior is clear and can be expressed as assertions before coding
 - The change is a new function, endpoint, or feature (not a refactor or bug fix)
@@ -105,9 +126,16 @@ If no test command is identifiable, state that explicitly.
 - A previous code generation did not include a verification step
 - The user reports that generated code does not compile or pass tests
 
-## Conformance self-check
+## How to know it's working (auditable)
 
-Before marking the validation loop as complete, verify:
+All conditions below must be verifiable from task artifacts:
+
+- **Execution evidence**: output lists executed test/lint commands, not planned commands.
+- **Loop evidence**: each failed run is followed by a fix and re-run until pass or escalation.
+- **Escalation evidence**: recurring error is escalated after 3 failed attempts with attempt history.
+- **Final-state evidence**: output reports test counts/results and remaining warnings.
+
+## Conformance self-check
 
 - [ ] Tests were actually executed (not just planned)
 - [ ] The test scope matches the task scale (Small: targeted, Medium: module, Large: full suite)

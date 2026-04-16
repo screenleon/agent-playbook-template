@@ -32,6 +32,15 @@ Violation = hard stop regardless of execution mode.
 - Publishing packages, creating releases, or pushing to main/production
 - Modifying auth, permissions, or security config in production
 
+## Pre-emit checks (auditable)
+
+Pass all checks before emitting any change:
+
+- Assumptions are explicit, or output says "No unresolved assumptions".
+- Changes are minimal and map directly to requested scope.
+- Verification is concrete (named command/test/check), not vague intent.
+- If ambiguity exists, clarification is requested before edits.
+
 ## Workflow
 
 1. Read the target file and its direct test file (if any)

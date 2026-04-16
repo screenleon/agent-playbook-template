@@ -4,11 +4,21 @@ This file holds decisions that were made during the development of this template
 
 **Adopters**: You should not need this file for your day-to-day work. Use the active `DECISIONS.md` for your own project decisions. Only read this archive if you are modifying the template framework itself (e.g., changing `docs/operating-rules.md`, `docs/agent-playbook.md`, or the skill files) and need to understand why a structural choice was made.
 
+For visibility, major template-framework decisions are also summarized in `CHANGELOG.md`. This keeps rationale discoverable while preserving a clean adopter-facing `DECISIONS.md`.
+
 Agents should search this archive only when working on the template's own framework files — not for ordinary adopter tasks.
 
 See `skills/memory-and-state/SKILL.md` → Selective read strategy for when to read this file.
 
 ---
+
+## 2026-04-16: Adopt behavioral self-checks and success indicators
+
+- **Context**: The playbook had rules and skills but lacked inline self-check sentences and observable success indicators. This reduced adherence and made quality hard to audit.
+- **Decision**: Integrate three features: (1) four one-line quick self-checks in `docs/rules-quickstart.md` and `docs/rules-nano.md`, (2) "How to know it's working" sections in four core skills, (3) a step → verify pattern in the test-and-fix-loop skill. All adapted to existing structure.
+- **Alternatives considered**: (a) Adopt a single-file behavior spec entirely — rejected because the playbook's multi-role, multi-skill architecture provides capabilities that a single file cannot. (b) Add a separate behavior skill file — rejected to avoid another file load; embedding into existing rules/skills is more token-efficient.
+- **Constraints introduced**: Self-check sentences must remain concise (≤ 1 line each) to preserve token budgets, especially at `nano` and `minimal` profiles. Success indicator sections must not duplicate conformance self-check lists.
+- **Archived on**: 2026-04-16 — Template development history; intentionally kept out of active `DECISIONS.md` so adopters inherit a clean decision log.
 
 ## 2026-04-09: Memory lifecycle management for persistent memory files
 

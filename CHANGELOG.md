@@ -8,6 +8,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-04-16
+
+### Added
+
+All items in this release are inspired by [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) — a set of Karpathy-derived behavioral guidelines for reducing common LLM coding mistakes.
+
+- **Quick self-check sentences** (`docs/rules-quickstart.md`, `docs/rules-nano.md`) — added four one-line self-tests (assumption check, simplicity check, surgical check, goal check) that agents apply before emitting any code change. These directly counter the most common LLM pitfalls: silent assumptions, overengineering, orthogonal edits, and vague execution. The nano profile uses a more compact phrasing (~40 tokens less).
+
+- **"How to know it's working" sections** (`skills/application-implementation/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`) — each skill now includes observable success indicators so agents (and users) can verify the skill is being applied effectively, not just loaded. Indicators are specific and measurable (e.g., "diffs contain only requested changes", "fixes are minimal", "escalation reports are actionable").
+
+- **Step → verify pattern** (`skills/test-and-fix-loop/SKILL.md`) — added a structured `[Step] → verify: [check]` template for multi-step tasks, with a weak-vs-strong verification comparison table. Transforms imperative instructions into declarative goals with verification loops, enabling agents to loop independently on strong criteria.
+
+### Changed
+
+- **Template architecture documented** (`ARCHITECTURE.md`) — replaced placeholder content with a concrete module map, repository data flow, key governance interfaces, external dependencies, deployment units, and known technical debt notes for this template repository.
+- **Decision-log template cleanup** (`DECISIONS.md`, `DECISIONS_ARCHIVE.md`) — converted the in-file example decision heading to a comment-only template and moved template-framework decisions to `DECISIONS_ARCHIVE.md` so adopters inherit a clean active decision log.
+- **Runtime docs made auditable** (`docs/rules-quickstart.md`, `docs/rules-nano.md`, `skills/application-implementation/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`) — converted subjective guidance into evidence-based pass conditions (scope traceability, command execution evidence, testability evidence, risk-field completeness, and escalation evidence).
+- **README alignment for architecture state** (`README.md`) — adoption step now clarifies that `ARCHITECTURE.md` contains a reference architecture for this template and must be replaced by adopters.
+
+### Attribution
+
+All additions reference the source: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (MIT License). The four behavioral principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) were adapted into the existing playbook structure rather than adopted verbatim.
+
 ## [0.14.0] - 2026-04-15
 
 ### Added
