@@ -10,6 +10,14 @@ See `skills/memory-and-state/SKILL.md` → Selective read strategy for when to r
 
 ---
 
+## 2026-04-16: Adopt behavioral self-checks and success indicators
+
+- **Context**: The playbook had rules and skills but lacked inline self-check sentences and observable success indicators. This reduced adherence and made quality hard to audit.
+- **Decision**: Integrate three features: (1) four one-line quick self-checks in `docs/rules-quickstart.md` and `docs/rules-nano.md`, (2) "How to know it's working" sections in four core skills, (3) a step → verify pattern in the test-and-fix-loop skill. All adapted to existing structure.
+- **Alternatives considered**: (a) Adopt a single-file behavior spec entirely — rejected because the playbook's multi-role, multi-skill architecture provides capabilities that a single file cannot. (b) Add a separate behavior skill file — rejected to avoid another file load; embedding into existing rules/skills is more token-efficient.
+- **Constraints introduced**: Self-check sentences must remain concise (≤ 1 line each) to preserve token budgets, especially at `nano` and `minimal` profiles. Success indicator sections must not duplicate conformance self-check lists.
+- **Archived on**: 2026-04-16 — Template development history; intentionally kept out of active `DECISIONS.md` so adopters inherit a clean decision log.
+
 ## 2026-04-09: Memory lifecycle management for persistent memory files
 
 - **Context**: Persistent memory files (especially `DECISIONS.md`) grow unboundedly over time. A real-world instance reached ~20,000 characters, consuming significant context tokens and slowing agent discovery. No archival, pruning, or selective-read mechanism existed.

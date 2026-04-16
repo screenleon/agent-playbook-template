@@ -23,7 +23,7 @@ All items in this release are inspired by [forrestchang/andrej-karpathy-skills](
 ### Changed
 
 - **Template architecture documented** (`ARCHITECTURE.md`) — replaced placeholder content with a concrete module map, repository data flow, key governance interfaces, external dependencies, deployment units, and known technical debt notes for this template repository.
-- **Decision-log template cleanup** (`DECISIONS.md`) — converted the in-file example decision heading to a comment-only template to prevent accidental contradiction checks against placeholder entries.
+- **Decision-log template cleanup** (`DECISIONS.md`, `DECISIONS_ARCHIVE.md`) — converted the in-file example decision heading to a comment-only template and moved template-framework decisions to `DECISIONS_ARCHIVE.md` so adopters inherit a clean active decision log.
 - **Runtime docs made auditable** (`docs/rules-quickstart.md`, `docs/rules-nano.md`, `skills/application-implementation/SKILL.md`, `skills/error-recovery/SKILL.md`, `skills/feature-planning/SKILL.md`, `skills/test-and-fix-loop/SKILL.md`) — converted subjective guidance into evidence-based pass conditions (scope traceability, command execution evidence, testability evidence, risk-field completeness, and escalation evidence).
 - **README alignment for architecture state** (`README.md`) — adoption step now clarifies that `ARCHITECTURE.md` contains a reference architecture for this template and must be replaced by adopters.
 
