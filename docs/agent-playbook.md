@@ -229,7 +229,7 @@ This matrix defines the default capability ceiling for each role. Intent mode ma
 
 - owns repository instructions, onboarding docs, ADRs, runbooks, process docs, and architecture explanations
 - optimizes for long-term maintainability and future agent readability
-- responsible for automatic maintenance of `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes
+- responsible for automatic maintenance of `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes — unless `prompt-budget.yml` → `decision_log.policy: example_only`, in which case decision capture goes to the task summary, handoff artifact, or trace file instead of `DECISIONS.md`
 
 ### `risk-reviewer`
 

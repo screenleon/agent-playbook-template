@@ -191,6 +191,28 @@ trimming:
   # Purge session memory files when count exceeds this number.
   session_memory_max_files: 10
 
+# ── Decision log policy ──────────────────────────────────────────────────────
+#
+# Controls whether agents may write to DECISIONS.md.
+#
+#   example_only — DECISIONS.md exists as a format example only.
+#                  Agents read it for contradiction checks but must NOT
+#                  auto-append task decisions to it.
+#                  Decisions are recorded in the task summary, handoff
+#                  artifact, or trace file instead.
+#                  Writes are only allowed when the user explicitly asks, or
+#                  when maintaining the template's own decision-format.
+#   normal       — Standard behavior: agents append to DECISIONS.md after
+#                  architectural decisions, schema changes, tradeoffs, etc.
+#
+# Default for this template repo: example_only.
+# When adopting this template for a real project, change to: normal
+#
+decision_log:
+  policy: example_only  # example_only | normal
+  # If an unrecognised value is provided, agents must treat it as 'normal'
+  # (i.e., fall back to standard decision-capture behavior) and log a warning.
+
 # ── Step phase overrides (optional) ────────────────────────────────────────
 # Override which POST steps auto-execute. By default all POST steps run.
 # Uncomment to skip specific post-steps for token-tight workflows.

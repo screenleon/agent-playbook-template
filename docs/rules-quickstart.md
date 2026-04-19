@@ -17,7 +17,7 @@ Read `prompt-budget.yml` → `budget.profile` to determine loading depth:
 
 1. `docs/operating-rules.md` for safety, scope, validation, conflict handling
 2. `docs/agent-playbook.md` for routing and role ownership
-3. `DECISIONS.md` for active architectural constraints and project state
+3. `DECISIONS.md` for active architectural constraints and project state (read-only reference when `decision_log.policy: example_only`)
 
 ## Trust level
 
@@ -43,7 +43,7 @@ If same-layer conflicts remain:
 
 1. narrower scope wins
 2. latest dated rule wins
-3. record tie-break in `DECISIONS.md`
+3. record tie-break in `DECISIONS.md` (or in the task summary when `decision_log.policy: example_only`)
 
 ## Role vs intent mode
 
@@ -62,7 +62,7 @@ If same-layer conflicts remain:
 6. If a task is ambiguous, reduce ambiguity through planning or clarification before guessing across modules
 7. Implement with minimal scope
 8. Validate (test -> lint/typecheck -> fix -> repeat). Never mark complete until verification passes. If no test suite exists, state that explicitly.
-9. Record decisions and ADR updates when architecture changes
+9. Record decisions and ADR updates when architecture changes. **Exception**: if `prompt-budget.yml` → `decision_log.policy: example_only`, record in the task summary, handoff artifact, or trace file instead of appending to `DECISIONS.md`.
 
 ## Pre-emit checks (auditable)
 

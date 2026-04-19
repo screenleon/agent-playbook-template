@@ -216,6 +216,8 @@ STOP and wait for user decision. Do not resolve contradictions autonomously.
 
 ## When to write memory
 
+> **Policy check**: If `prompt-budget.yml` → `decision_log.policy: example_only`, replace every `Append to DECISIONS.md` action in the table below with `Record in task summary or trace`. Do not write to `DECISIONS.md` unless the user explicitly requests it, or you are updating the template's own decision-format.
+
 | Event | Action |
 |-------|--------|
 | Architectural decision made | Append to `DECISIONS.md` |
@@ -258,7 +260,7 @@ Use the narrowest scope that is accurate. Scope drives the loading order in the 
 
 | Category | Scope | Primary store | Query when |
 |----------|-------|---------------|------------|
-| Architectural decisions, global conventions | `project` | `DECISIONS.md`, `ARCHITECTURE.md` | Starting any task, making architectural choices |
+| Architectural decisions, global conventions | `project` | `DECISIONS.md`, `ARCHITECTURE.md` (task summary/handoff/trace when `decision_log.policy: example_only`) | Starting any task, making architectural choices |
 | Component patterns, quirks, module constraints | `component:<path>` | Module READMEs, session/repo memory files | Working on a specific or unfamiliar module |
 | Recurring fix patterns, validated approaches | `project` or `global` | Session/repo memory files | Starting a Small task (search by task-type keywords) |
 | User preferences, cross-repo conventions | `global` | Personal memory files | Any task |
