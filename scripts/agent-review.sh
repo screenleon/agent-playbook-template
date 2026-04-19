@@ -61,7 +61,7 @@ decisions_has_entries() {
 
 count_reflection_failures() {
   local file="$1"
-  grep -Ec '^[[:space:]]{2,}(correctness|consistency|adherence|completeness|isolation):[[:space:]]*fail[[:space:]]*$' "$file" || true
+  grep -Ec '^[[:space:]]{2,}(correctness|consistency|adherence|completeness|isolation):[[:space:]]*("fail"|fail)[[:space:]]*$' "$file" || true
 }
 
 print_summary() {

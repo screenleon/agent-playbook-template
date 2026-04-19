@@ -11,9 +11,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **Starter adoption audit** (`scripts/adoption-audit.sh`, `.github/workflows/rule-governance.yml`, `docs/adoption-guide.md`, `README.md`) — added a minimal audit script that catches blank project manifest fields, untouched project-specific constraints, empty decision logs, unchanged template architecture docs, and missing CI review scripts. The template repo runs it in advisory `--template-mode`; adopters can switch to `--strict` after first customization.
-- **Starter CI trace review script** (`scripts/agent-review.sh`, `.github/workflows/agent-review.yml`) — replaced the placeholder CI hook with a working shell-based reviewer for `.agent-trace/*.yaml`. The starter rubric treats malformed traces as parse errors, `validation_outcome: fail` as severity-high, multiple reflection failures as severity-medium, and missing Medium/Large decisions as severity-low.
+- **Starter CI trace review script** (`scripts/agent-review.sh`, `.github/workflows/agent-review.yml`) — replaced the placeholder CI hook with a working shell-based reviewer for `.agent-trace/*.trace.yaml`. The starter rubric treats malformed traces as parse errors, `validation_outcome: fail` as severity-high, multiple reflection failures as severity-medium, and missing Medium/Large decisions as severity-low.
 - **Medium task trace example** (`.agent-trace/example-medium-change.trace.yaml`) — added a Medium-scale trace with `decisions_made` entries, multiple roles, and full reflection summary. Complements the existing Small trace example.
-- **Global security baseline starter** (`rules/global/security-baseline.md`) — added starter rule file with 3 core-stability security rules (no secrets in code, no unvalidated input execution, require auth checks). Fills the gap in the three-layer architecture where `rules/global/` had only a README.
+- **Global security baseline starter** (`rules/global/security-baseline.md`) — added starter rule file with 3 core-stability security rules in the canonical rule-entry format (no secrets in code, no unvalidated input execution, require auth checks). Fills the gap in the three-layer architecture where `rules/global/` had only a README.
 - **Adoption audit: `prompt-budget.yml` validation** (`scripts/adoption-audit.sh`) — audit now checks that `prompt-budget.yml` exists, `execution_mode` is valid, and `budget.profile` is set.
 - **Adoption audit: required doc existence** (`scripts/adoption-audit.sh`) — audit now verifies `docs/rules-nano.md`, `docs/rules-quickstart.md`, `docs/operating-rules.md`, and `docs/agent-playbook.md` exist.
 - **Doc lint: asset count validation** (`scripts/lint-doc-consistency.sh`) — lint now verifies hardcoded skill and agent counts in `README.md` match the actual filesystem.
@@ -31,6 +31,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - **`agent-review.sh` decisions exit code bug** (`scripts/agent-review.sh`) — fixed bug where `decisions_has_entries` exit code (1=empty, 2=malformed) was lost inside an if/else, always reading as 1.
 - **`lint-doc-consistency.sh` missing file guards** (`scripts/lint-doc-consistency.sh`) — script no longer fails with grep exit code 2 when optional paths (`CHANGELOG.md`, `examples/`) do not exist. All search paths are now guarded with existence checks.
+- **`adoption-audit.sh` missing file guards** (`scripts/adoption-audit.sh`) — audit now checks `docs/operating-rules.md` and `ARCHITECTURE.md` exist before grepping them, so missing files are reported through `report_issue` instead of raw shell errors.
+- **`lint-doc-consistency.sh` portability and optional-dir handling** (`scripts/lint-doc-consistency.sh`) — README asset-count parsing now uses `awk` instead of `grep -P`, and optional `skills/` / `.claude/agents/` directories are guarded before counting.
+- **`agent-review.sh` quoted fail detection** (`scripts/agent-review.sh`) — reflection failure counting now treats both `fail` and `"fail"` scalars as severity-medium signals.
 - **`prompt-budget.yml` comment** — profile example reference now correctly lists all four profiles (nano/minimal/standard/full).
 
 ## [0.15.0] - 2026-04-16

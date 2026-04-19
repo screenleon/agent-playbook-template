@@ -160,11 +160,20 @@ fi
 
 # Validate hardcoded asset counts in README.md match actual filesystem.
 if [[ -f "$ROOT_DIR/README.md" ]]; then
-  actual_skills=$(find "$ROOT_DIR/skills" -mindepth 2 -name 'SKILL.md' 2>/dev/null | wc -l)
-  actual_agents=$(find "$ROOT_DIR/.claude/agents" -name '*.md' 2>/dev/null | wc -l)
+  if [[ -d "$ROOT_DIR/skills" ]]; then
+    actual_skills=$(find "$ROOT_DIR/skills" -mindepth 2 -name 'SKILL.md' | wc -l)
+  else
+    actual_skills=0
+  fi
 
-  readme_skills=$(grep -oP 'Reusable skills: \K[0-9]+' "$ROOT_DIR/README.md" || echo "")
-  readme_agents=$(grep -oP 'Claude subagents: \K[0-9]+' "$ROOT_DIR/README.md" || echo "")
+  if [[ -d "$ROOT_DIR/.claude/agents" ]]; then
+    actual_agents=$(find "$ROOT_DIR/.claude/agents" -name '*.md' | wc -l)
+  else
+    actual_agents=0
+  fi
+
+  readme_skills=$(awk -F'Reusable skills: ' '/Reusable skills: [0-9]+/ { split($2, parts, /[^0-9]/); print parts[1]; exit }' "$ROOT_DIR/README.md")
+  readme_agents=$(awk -F'Claude subagents: ' '/Claude subagents: [0-9]+/ { split($2, parts, /[^0-9]/); print parts[1]; exit }' "$ROOT_DIR/README.md")
 
   if [[ -n "$readme_skills" && "$readme_skills" -ne "$actual_skills" ]]; then
     echo "[doc-lint][error] README.md says $readme_skills skills but found $actual_skills in skills/*/SKILL.md"

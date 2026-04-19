@@ -46,17 +46,19 @@ if [[ -f "$ROOT_DIR/project/project-manifest.md" ]]; then
   fi
 fi
 
-if grep -Fq 'Source of truth: `project/project-manifest.md`.' "$ROOT_DIR/docs/operating-rules.md"; then
-  :
-elif grep -Eq '^## Project-specific constraints$' "$ROOT_DIR/docs/operating-rules.md"; then
-  report_issue 'docs/operating-rules.md project-specific constraints section is not aligned to the manifest source-of-truth pattern'
+if [[ -f "$ROOT_DIR/docs/operating-rules.md" ]]; then
+  if grep -Fq 'Source of truth: `project/project-manifest.md`.' "$ROOT_DIR/docs/operating-rules.md"; then
+    :
+  elif grep -Eq '^## Project-specific constraints$' "$ROOT_DIR/docs/operating-rules.md"; then
+    report_issue 'docs/operating-rules.md project-specific constraints section is not aligned to the manifest source-of-truth pattern'
+  fi
 fi
 
 if [[ -f "$ROOT_DIR/DECISIONS.md" ]] && ! grep -Eq '^## [0-9]{4}-[0-9]{2}-[0-9]{2}:' "$ROOT_DIR/DECISIONS.md"; then
   report_issue 'DECISIONS.md has no real decision entries yet'
 fi
 
-if grep -Fq '> **Adopter note**: This file documents the template repository itself.' "$ROOT_DIR/ARCHITECTURE.md"; then
+if [[ -f "$ROOT_DIR/ARCHITECTURE.md" ]] && grep -Fq '> **Adopter note**: This file documents the template repository itself.' "$ROOT_DIR/ARCHITECTURE.md"; then
   report_issue 'ARCHITECTURE.md still describes the template repository'
 fi
 
