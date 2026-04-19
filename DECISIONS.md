@@ -1,27 +1,18 @@
 # Decision Log
 
-This file records architectural and behavioral decisions that affect future work.
-Agents must read this file before planning or implementation tasks.
-See `skills/memory-and-state/SKILL.md` for when to read and write.
+This file records active architectural and behavioral decisions for this repository.
+Agents must read it before planning or implementation tasks.
 
-> **Adopter note**: This file is intentionally blank in the template. Start adding your own decisions from day one. Template development history has been moved to `DECISIONS_ARCHIVE.md` so you inherit a clean log.
->
-> For this template repository itself, framework-level decisions are recorded in `DECISIONS_ARCHIVE.md` and summarized in `CHANGELOG.md` so adopters can still see rationale without inheriting non-project decisions in this active log.
->
-> The fastest way to get value: keep one entry per architectural choice so every future agent run can perform contradiction checks.
+## 2026-04-19: Project-local constraints live in the manifest
 
-<!-- Append new decisions below using the format shown. -->
-<!-- Do not remove or silently contradict existing entries. -->
-<!-- To reverse a decision, add a new entry that explicitly references and supersedes the old one. -->
+- **Context**: Repo-local constraints were split between `project/project-manifest.md` and the placeholder `Project-specific constraints` section in `docs/operating-rules.md`. That made discovery and adoption less clear.
+- **Decision**: Treat `project/project-manifest.md` as the canonical location for repo-local constraints, validation commands, and operational boundaries. `docs/operating-rules.md` stays generic and points to the manifest.
+- **Alternatives considered**: Keep constraints duplicated in both files; keep using `docs/operating-rules.md` as the active location. Both were rejected because duplication causes drift and the project layer already exists for this purpose.
+- **Constraints introduced**: New repo-local constraints should be written in the manifest. References to project-specific constraints should prefer the manifest over `docs/operating-rules.md`.
 
-<!-- Template format:
-## YYYY-MM-DD: [Decision title]
-- **Context**: Why this decision was needed
-- **Decision**: What was decided
-- **Alternatives considered**: What was rejected and why
-- **Constraints introduced**: What future work must respect
--->
+## 2026-04-19: Template repo ships starter governance automation
 
----
-
-<!-- Add your real decisions below this line -->
+- **Context**: The repository defined CI review and adoption checks, but key pieces were placeholders. This reduced trust in the workflow.
+- **Decision**: Ship minimal working automation: `scripts/agent-review.sh`, `scripts/adoption-audit.sh`, and a sample `.agent-trace` artifact.
+- **Alternatives considered**: Leave the scripts as adoption-time placeholders; add a heavier validator with external dependencies. The first kept the workflow incomplete and the second added unnecessary setup cost.
+- **Constraints introduced**: Governance automation should remain lightweight, shell-based, and runnable in CI without additional runtimes.

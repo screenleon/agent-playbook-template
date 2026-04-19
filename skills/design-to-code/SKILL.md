@@ -13,7 +13,7 @@ Before writing any code:
 
 1. Read the existing component library or UI pattern files in the codebase
 2. Check `DECISIONS.md` for prior decisions on UI framework, token system, or component conventions
-3. Check `docs/operating-rules.md` → Project-specific constraints for any CSS/styling rules
+3. Check `project/project-manifest.md` for any CSS/styling or UI constraints
 4. Confirm with `demand-triage` whether this task also involves logic or flow changes — if so, route through `feature-planner` first
 
 ## Design breakdown (required before coding)

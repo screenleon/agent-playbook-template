@@ -1,10 +1,6 @@
 # Architecture Overview
 
-> **Adopter note**: This file documents the template repository itself. When adopting this template into a product repository, replace module names and data flow with your actual system.
->
-> Agents read this file before working on unfamiliar modules (see `skills/memory-and-state/SKILL.md` → Architecture memory). When it is missing or stale, agents lose structural context and may make incorrect assumptions.
->
-> Keep this file updated when module boundaries, governance flows, or validation automation change.
+Architecture for this repository. Replace with your own module map and data flow when adopting.
 
 ## Module map
 
@@ -13,7 +9,7 @@
 | `AGENTS.md` | Root entrypoint and profile-aware loading order |
 | `docs/` | Source-of-truth governance docs, workflow rules, templates, and guides |
 | `skills/` | Reusable execution skills (planning, implementation, validation, recovery, memory) |
-| `rules/global/` | Cross-project rules layer |
+| `rules/global/` | Cross-project rules layer (security baseline starter included) |
 | `rules/domain/` | Domain-specific rules layer |
 | `project/project-manifest.md` | Project-local constraints and boundary declarations |
 | `scripts/` | Documentation and layered-rule lint automation |
@@ -58,5 +54,5 @@ Single documentation/governance repository. Primary execution units are:
 
 ## Known technical debt
 
-- Architectural docs are now filled for the template repo, but adopters still need to replace this file with their repository-specific module map and flow.
 - Governance checks are shell-script based; portability to non-POSIX environments relies on CI rather than local parity.
+- Trace review uses lightweight YAML heuristics instead of a dedicated schema validator.

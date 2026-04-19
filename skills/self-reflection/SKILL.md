@@ -90,3 +90,19 @@ When this skill produces a reflection result, include it in the handoff artifact
 - **Skipping reflection on Small tasks**: Small tasks still require Correctness + Adherence checks. Only the depth is reduced, not the step itself.
 - **Reflection as filler**: Do not produce a generic "all pass" without actually checking. Each dimension must reference specific aspects of the output.
 - **Revision scope creep**: Revisions fix the specific failed dimension only. Do not use reflection as an excuse to refactor or expand scope.
+
+## Use this skill when
+
+- Producing any draft deliverable (plan, implementation, review, documentation)
+- Before emitting a handoff artifact to another role
+- After revising a draft to verify the fix resolved the failed dimension
+
+## Conformance self-check
+
+Before marking self-reflection as complete, verify:
+
+- [ ] All scale-required rubric dimensions were evaluated (2/5 for Small, 5/5 for Medium/Large)
+- [ ] Each dimension references specific aspects of the output (no generic "all pass")
+- [ ] Failed dimensions were revised within the allowed round limit
+- [ ] Unresolved issues after max rounds are flagged as open risks
+- [ ] Reflection block is included in the final output or handoff artifact

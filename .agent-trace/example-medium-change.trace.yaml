@@ -1,0 +1,38 @@
+task: "add governance script robustness and skill structural consistency"
+date: "2026-04-19"
+scale: Medium
+trust_level: "semi-auto"
+roles_invoked:
+  - feature-planner
+  - application-implementer
+skills_loaded:
+  - demand-triage
+  - repo-exploration
+  - test-and-fix-loop
+  - error-recovery
+  - memory-and-state
+  - self-reflection
+  - observability
+files_changed:
+  - scripts/agent-review.sh
+  - scripts/lint-doc-consistency.sh
+  - scripts/adoption-audit.sh
+  - .agent-trace/example-medium-change.trace.yaml
+  - skills/documentation-architecture/SKILL.md
+  - skills/mcp-validation/SKILL.md
+  - skills/memory-and-state/SKILL.md
+  - skills/observability/SKILL.md
+  - skills/repo-exploration/SKILL.md
+  - skills/self-reflection/SKILL.md
+decisions_made:
+  - "2026-04-19: Standardize skill structure with Conformance self-check and Use this skill when sections"
+  - "2026-04-19: Guard lint scripts against missing optional paths"
+validation_outcome: "pass"
+reflection_summary:
+  correctness: "pass"
+  consistency: "pass"
+  adherence: "pass"
+  completeness: "pass"
+  isolation: "pass"
+isolation_status: "clean"
+risks_accepted: []

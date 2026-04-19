@@ -266,3 +266,9 @@ Before completing a task where this skill applies, verify:
 - [ ] Volatile content (user query, current file, session notes) is in Layer 4 only
 - [ ] Always-loaded instruction files stay within the 8 KB guideline; justified exceptions are limited to on-demand skills
 - [ ] DECISIONS.md is within the 30 KB threshold (or archive has been triggered)
+
+## Use this skill when
+
+- Setting up or tuning the instruction loading order for a project
+- Diagnosing unexpectedly high API costs or latency from cache misses
+- Configuring `prompt-budget.yml` for a new or existing project

@@ -36,7 +36,7 @@ Before cross-file changes:
 
 ### 4. Constraint check
 
-- Read `docs/operating-rules.md` → `Project-specific constraints` section.
+- Read `project/project-manifest.md` for project-local constraints.
 - Read `DECISIONS.md` if it exists.
 - Do not introduce patterns that contradict recorded decisions.
 
@@ -55,3 +55,13 @@ Files to read before coding: [list]
 
 - Starting work on an unfamiliar module or when the task touches more than 2 files
 - You are unsure about conventions or a previous attempt didn't match the project style
+
+## Conformance self-check
+
+Before completing codebase exploration, verify:
+
+- [ ] Top-level directory structure was listed
+- [ ] At least one existing file per modified layer was read for pattern identification
+- [ ] `project/project-manifest.md` and `DECISIONS.md` were checked for constraints
+- [ ] A brief discovery summary was produced (modules, patterns, constraints, files to read)
+- [ ] No patterns were introduced that contradict recorded decisions

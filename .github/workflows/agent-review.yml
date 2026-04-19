@@ -16,7 +16,7 @@ jobs:
       - name: Check for trace files
         id: check
         run: |
-          if compgen -G ".agent-trace/*.trace.yaml" > /dev/null || compgen -G ".agent-trace/*.yaml" > /dev/null; then
+          if compgen -G ".agent-trace/*.trace.yaml" > /dev/null; then
             echo "has_traces=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_traces=false" >> "$GITHUB_OUTPUT"
@@ -25,13 +25,4 @@ jobs:
 
       - name: Run agent review
         if: steps.check.outputs.has_traces == 'true'
-        run: |
-          # Project-specific review script.
-          # Create scripts/agent-review.sh with your quality rubric.
-          # Exit codes: 0 = pass, 1 = severity-high finding, 2 = parse error.
-          if [[ -f scripts/agent-review.sh ]]; then
-            bash scripts/agent-review.sh
-          else
-            echo "scripts/agent-review.sh not found — skipping review."
-            echo "See docs/adoption-guide.md → Enabling CI agentic review for setup instructions."
-          fi
+        run: bash scripts/agent-review.sh

@@ -38,7 +38,7 @@ For placement criteria, conflict resolution details, and anti-patterns, follow `
 
 ### 1. Project-specific constraints (mandatory)
 
-Open `docs/operating-rules.md` and fill the `Project-specific constraints` section with your actual rules. Be concrete and specific — agents cannot follow "best practices", they can only follow explicit instructions.
+Open `project/project-manifest.md` and fill the `Non-negotiable constraints` section with your actual rules. Be concrete and specific — agents cannot follow "best practices", they can only follow explicit instructions.
 
 Good examples:
 
@@ -63,7 +63,7 @@ Bad examples (too vague for agents):
 
 ### 2. Validation commands (mandatory)
 
-Agents need to know exactly which commands to run. Add these to `docs/operating-rules.md` or a `CONTRIBUTING.md`:
+Agents need to know exactly which commands to run. Add these to `project/project-manifest.md` under `Build and validation commands` (or mirror them in `CONTRIBUTING.md` if you keep contributor-facing setup there):
 
 ```markdown
 ## Validation commands
@@ -120,10 +120,26 @@ If your repository uses `.agent-trace/` trace files (see `skills/observability/S
 
 1. **Copy the workflow** — `.github/workflows/agent-review.yml` provides a skeleton GitHub Actions job.
 2. **Configure trigger** — by default, the workflow runs on `pull_request` when `.agent-trace/` files change. Adjust paths or add `workflow_dispatch` as needed.
-3. **Provide a review script** — the workflow calls `scripts/agent-review.sh` (project-specific). This script should parse trace YAML files, apply your quality rubric, and exit with the code contract: 0 = pass, 1 = severity-high, 2 = parse error.
+3. **Keep or tune the review script** — the template now includes a starter `scripts/agent-review.sh`. Keep the default rubric or tighten it for your repo.
 4. **Set severity threshold** — by default, any severity-high finding fails the job. To also fail on medium findings, modify the script's exit logic.
 
 See `docs/operating-rules.md` → CI-driven risk review for the operational rules that apply during CI reviews.
+
+### 7. Run an adoption audit (recommended)
+
+After the first customization pass, run:
+
+```bash
+bash scripts/adoption-audit.sh --strict
+```
+
+This catches the most common adoption misses:
+
+- blank `project/project-manifest.md` fields
+- untouched project-local constraints in `project/project-manifest.md`
+- empty `DECISIONS.md`
+- unchanged template `ARCHITECTURE.md`
+- missing `scripts/agent-review.sh` when CI review is enabled
 
 ## First customization pass
 
@@ -131,7 +147,7 @@ Edit these items immediately:
 
 - repository module names
 - safety rails
-- validation commands and expectations
+- build and validation commands in `project/project-manifest.md`
 - project-specific constraints (see above)
 - role names you do or do not want to keep
 - review and merge expectations
@@ -279,7 +295,7 @@ For a project running 50 agent requests/day, aggressive trimming can save 250K�
 3. Review whether repeated prompts should graduate into templates or skills.
 4. Remove stale roles rather than letting them drift.
 5. Update `DECISIONS.md` when architectural decisions are made or reversed.
-6. Review `Project-specific constraints` quarterly — remove stale rules, add new ones.
+6. Review `project/project-manifest.md` quarterly — remove stale rules, add new constraints, and keep validation commands current.
 7. Run a **memory health check** whenever a health indicator triggers (>50 entries, >30 KB, >10 session files), or at least quarterly for low-volume projects:
    - If `DECISIONS.md` exceeds 50 entries or 30 KB, archive inactive decisions to `DECISIONS_ARCHIVE.md` (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
    - Purge session memory files that were not promoted to repo memory
@@ -327,7 +343,7 @@ autonomous_mode:
 
 **Step 2**: Ensure `DECISIONS.md` is in a good state before enabling autonomous mode. The agent will auto-log decisions here — a messy decision log will produce noisy entries.
 
-**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document that context in `Project-specific constraints` in `docs/operating-rules.md` so the agent and user understand why the operation exists. This documentation does **not** bypass the destructive-action gate; actual auto-execution still depends on `autonomous_mode.halt_on_destructive_actions`.
+**Step 3**: If your project uses destructive operations as a normal part of its workflow (e.g., a data-migration script that drops temporary tables), document that context in `project/project-manifest.md` so the agent and user understand why the operation exists. This documentation does **not** bypass the destructive-action gate; actual auto-execution still depends on `autonomous_mode.halt_on_destructive_actions`.
 
 **Step 4**: Review `DECISIONS.md` after the first few autonomous runs to verify the auto-logged entries are sensible.
 

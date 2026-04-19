@@ -61,7 +61,7 @@ Practical interpretation:
 
 Use case: add a new repository rule that all API handlers must enforce request ID logging.
 
-1. Update rule source: add the non-negotiable rule in `docs/operating-rules.md` under Project-specific constraints.
+1. Update rule source: add the non-negotiable rule in `project/project-manifest.md` under `Non-negotiable constraints`.
 2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
 3. Sync tool instructions: update `.github/copilot-instructions.md` to keep tool-specific guidance consistent.
 4. Record the decision: append a dated entry to `DECISIONS.md` with context, decision, alternatives, and constraints.
@@ -214,6 +214,7 @@ Use `examples/` for ready-to-adapt constraint profiles:
 9. Keep `DECISIONS.md` active from day one so agents can run contradiction checks before planning/implementation.
 10. Apply memory lifecycle rules from `skills/memory-and-state/SKILL.md` (archive stale decisions when thresholds are hit and use selective reads for active vs. archived decisions).
 11. Update `prompt-budget.yml` so the budget profile, execution mode, and enabled roles/skills match your project.
+12. Run `bash scripts/adoption-audit.sh --strict` after your first customization pass.
 
 ## Customization checklist
 

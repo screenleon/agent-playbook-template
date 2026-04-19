@@ -69,11 +69,11 @@ Action: update the relevant section of `ARCHITECTURE.md`. If the file does not e
 - [Description] — [file path or module] — [why it exists]
 ```
 
-### `Project-specific constraints` — auto-append after constraint discovery
+### `project/project-manifest.md` — auto-append after constraint discovery
 
 Trigger: during implementation, an agent discovers an unwritten rule that is enforced by the codebase (e.g., "all handlers use middleware X", "dates are always UTC").
 
-Action: add it to the `Project-specific constraints` section in `docs/operating-rules.md`.
+Action: add it to `project/project-manifest.md`.
 
 ### Documentation sync check
 
@@ -81,7 +81,7 @@ After any code change that affects architecture, contracts, or decisions, agents
 
 1. `DECISIONS.md` has entries for all decisions made in this task
 2. `ARCHITECTURE.md` reflects any structural changes
-3. `docs/operating-rules.md` project-specific constraints include any newly discovered rules
+3. `project/project-manifest.md` includes any newly discovered project-local rules
 4. Tool-specific files (`.claude/agents/`, `.github/copilot-instructions.md`) are still aligned with the source-of-truth docs
 
 If any are stale, update them before marking the task complete.
@@ -101,3 +101,14 @@ If any are stale, update them before marking the task complete.
 - generating ADRs, runbooks, or architecture notes
 - keeping agent-facing and human-facing docs aligned
 - code changes require documentation sync (structural changes, new decisions, new constraints)
+
+## Conformance self-check
+
+Before marking documentation work as complete, verify:
+
+- [ ] Audience and source of truth were identified before writing
+- [ ] Each doc focuses on one topic; no unbounded appending
+- [ ] `DECISIONS.md` has entries for all decisions made in this task
+- [ ] `ARCHITECTURE.md` reflects any structural changes
+- [ ] Tool-specific files (`.claude/agents/`, `.github/copilot-instructions.md`) are aligned with source-of-truth docs
+- [ ] Tables are used for structured data; examples are concrete, not abstract

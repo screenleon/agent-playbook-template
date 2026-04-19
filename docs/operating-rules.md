@@ -301,7 +301,7 @@ Required outcomes:
 
 1. Detect dominant stack signals (for example Spring Boot, AWS, Terraform, CDK, React).
 2. Ask targeted boundary questions to the user before coding.
-3. Record confirmed constraints into the project layer (`project/project-manifest.md` and/or `Project-specific constraints`).
+3. Record confirmed constraints into the project layer (`project/project-manifest.md`).
 
 This converts boundary discovery from hardcoded assumptions into dynamic confirmation.
 
@@ -483,7 +483,7 @@ Before writing or modifying any code, perform these steps:
 2. **Identify existing patterns** — look for naming conventions, folder structure, error handling style, logging patterns, and test conventions already in use.
 3. **Follow repository conventions** — match the existing code style, framework idioms, and architectural patterns. Do not introduce a new pattern when an established one exists.
 4. **Check dependency graph** — understand imports, module boundaries, and shared types before making cross-file changes.
-5. **Read project-specific constraints** — check the `Project-specific constraints` section below and any `CONVENTIONS.md`, `ARCHITECTURE.md`, or similar files at the repo root.
+5. **Read project-specific constraints** — check `project/project-manifest.md` and any `CONVENTIONS.md`, `ARCHITECTURE.md`, or similar files at the repo root.
 6. **Apply workspace boundaries** — if `project/project-manifest.md` defines a `Workspace boundaries` section, determine the active boundary before loading domain rules. See *Workspace boundary masking* above.
 7. **Use retrieval when configured** — if RAG-augmented or selective retrieval is set up (see `skills/memory-and-state/SKILL.md`), use it to identify relevant `DECISIONS.md` and `ARCHITECTURE.md` entries at task start. When a rule below requires a contradiction-critical read, retrieval may be used as the discovery step, but the final decision must still be checked against the relevant full entry text before proceeding.
 
@@ -582,6 +582,8 @@ After producing structured output (plans, reviews, checklists), agents must veri
 - Every item in the required checklist has been addressed (not skipped)
 - The output format matches the template (section headers, required fields)
 - No required section was silently omitted
+
+Default to the shortest output that still lets the user verify assumptions, scope, validation, and blockers. Expand only when risk, ambiguity, or the user asks for more detail.
 
 If a section is not applicable, write "N/A — [reason]" instead of omitting it.
 
@@ -706,16 +708,9 @@ Do not leave stale stage names (for example `Read` as a standalone stage after s
 
 ## Project-specific constraints
 
-<!-- Teams MUST fill this section when adopting the template. -->
-<!-- Examples of concrete constraints: -->
-<!-- - Use raw SQL with sqlc; no ORM -->
-<!-- - Do not modify the DB schema without a migration file -->
-<!-- - Pricing logic must use JSONB rule definitions -->
-<!-- - All HTTP handlers must use the shared middleware stack -->
-<!-- - Authentication uses JWT with RS256; do not switch algorithms -->
-<!-- - Frontend state management uses Zustand; do not introduce Redux -->
+Source of truth: `project/project-manifest.md`.
 
-*This section is intentionally blank in the template. Fill it with your repository's actual technical constraints, architectural decisions, and non-negotiable patterns.*
+Keep project-local constraints, validation commands, and operational boundaries there. Do not duplicate active repo-specific constraints in this file unless you are documenting a temporary migration note.
 
 ## Decision log
 
@@ -799,7 +794,7 @@ When generic agent guidance conflicts with repository-specific practice, resolve
 
 1. Explicit user instruction for the current task
 2. Existing codebase practice and enforced repository constraints
-3. Project Context (`project/project-manifest.md`, `Project-specific constraints`, active decisions)
+3. Project Context (`project/project-manifest.md`, active decisions)
 4. Domain Rules
 5. Global Rules and model default preferences
 
