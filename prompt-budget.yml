@@ -210,6 +210,8 @@ trimming:
 #
 decision_log:
   policy: example_only  # example_only | normal
+  # If an unrecognised value is provided, agents must treat it as 'normal'
+  # (i.e., fall back to standard decision-capture behavior) and log a warning.
 
 # ── Step phase overrides (optional) ────────────────────────────────────────
 # Override which POST steps auto-execute. By default all POST steps run.
