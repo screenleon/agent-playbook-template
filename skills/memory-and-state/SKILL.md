@@ -216,6 +216,8 @@ STOP and wait for user decision. Do not resolve contradictions autonomously.
 
 ## When to write memory
 
+> **Policy check**: If `prompt-budget.yml` → `decision_log.policy: example_only`, replace every `Append to DECISIONS.md` action in the table below with `Record in task summary or trace`. Do not write to `DECISIONS.md` unless the user explicitly requests it, or you are updating the template's own decision-format.
+
 | Event | Action |
 |-------|--------|
 | Architectural decision made | Append to `DECISIONS.md` |

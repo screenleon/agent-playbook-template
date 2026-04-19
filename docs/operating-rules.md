@@ -437,6 +437,9 @@ The rules below are enforced by default and **strongly recommended** to keep ena
 
 ### Mandatory audit log in autonomous mode
 
+> **Policy check**: Before writing, read `prompt-budget.yml` → `decision_log.policy`.
+> If `policy: example_only`, **do not append to `DECISIONS.md`**. Record the auto-proceeded gate in the task completion summary or trace file instead. Skip the rest of this section.
+
 Every gate that is auto-proceeded must be recorded. Append to `DECISIONS.md` using the standard format, adding one extra field:
 
 ```markdown
@@ -753,6 +756,9 @@ Before making any architectural or behavioral decision, agents **must**:
 4. If it contradicts: stop and present the contradiction to the user with both the existing decision and the proposed change. Do not silently override.
 
 ### Automatic decision capture
+
+> **Policy check**: Before writing, read `prompt-budget.yml` → `decision_log.policy`.
+> If `policy: example_only`, **do not append to `DECISIONS.md`**. Record the decision in the task completion summary, handoff artifact, or trace file instead. Skip the rest of this section.
 
 After any of these events, agents must append a new entry to `DECISIONS.md`:
 

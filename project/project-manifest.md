@@ -14,6 +14,7 @@ Project-local boundaries and constraints for this repository.
 - Constraint 1: Source of truth for project-local constraints is `project/project-manifest.md`; do not duplicate active repo-specific constraints in `docs/operating-rules.md`.
 - Constraint 2: Workflow wording changes must keep `AGENTS.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`, and affected skills aligned in the same change.
 - Constraint 3: Governance automation should stay shell-first and runnable in CI without extra language runtimes.
+- Constraint 4 (**DECISIONS.md is example-only**): This is a template repository. `DECISIONS.md` exists solely to demonstrate the decision-log format for adopters — it is **not** a live task journal. Agents must **not** auto-append task decisions to it. Read `DECISIONS.md` for contradiction checks only. Writes are permitted only when (a) the user explicitly requests an update to the example content, or (b) the change targets the template's own decision-format or schema. This overrides the generic `Automatic decision capture` and `Mandatory audit log` rules from `docs/operating-rules.md`. See also `prompt-budget.yml` → `decision_log.policy`.
 
 ## Build and validation commands
 
@@ -59,6 +60,7 @@ Example:
 | Base Rule ID | Project Rule ID | Reason | Status |
 |---|---|---|---|
 | API-002 | PROJECT-TEMPLATE-001 | Template repo keeps repo-local constraints in the manifest instead of the generic operating-rules placeholder | active |
+| decision-log-write | PROJECT-TEMPLATE-002 | `DECISIONS.md` is example-only in this template repo; automatic decision capture and autonomous audit-log writes are disabled | active |
 
 ## Workspace boundaries
 

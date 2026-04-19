@@ -38,7 +38,7 @@ After planning (for Medium/Large work):
 After any code change:
 9. Run the validation loop (`skills/test-and-fix-loop/SKILL.md`) — this runs autonomously (auto-fix without human approval). For Small tasks, run targeted tests only.
 10. Use error recovery (`skills/error-recovery/SKILL.md`) if anything fails. Escalate after 3 consecutive failures unless autonomous mode explicitly relaxes that stop via `autonomous_mode.halt_on_stuck_escalation: false`.
-11. Record decisions in `DECISIONS.md` when applicable.
+11. Record decisions in `DECISIONS.md` when applicable — unless `prompt-budget.yml` → `decision_log.policy: example_only`, in which case record in the task summary or handoff artifact instead and do not write to `DECISIONS.md`.
 12. If architecture changed, update ADRs (or decision log when ADR directory does not exist) in the same task.
 13. If scope expands beyond the plan: at `supervised`/`semi-auto` trust level, STOP and present the expanded scope when the scope-expansion gate is active. At `autonomous`, log an ADVISORY and continue only when the expansion remains within original intent and `autonomous_mode.auto_proceed_on_scope_expansion` is enabled; if it adds an unrelated module, STOP.
 14. Before final output, run self-reflection (`skills/self-reflection/SKILL.md`) using the required rubric depth for the task scale.

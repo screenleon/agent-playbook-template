@@ -58,7 +58,7 @@ Pass all checks before emitting any change:
 
 ## Record
 
-If the change introduces a decision future work depends on, append to `DECISIONS.md`.
+If the change introduces a decision future work depends on, append to `DECISIONS.md`. **Exception**: if `prompt-budget.yml` → `decision_log.policy: example_only`, record in the task summary instead — do not write to `DECISIONS.md`.
 
 ## Escalate when
 
