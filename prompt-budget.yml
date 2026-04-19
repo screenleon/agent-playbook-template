@@ -200,6 +200,6 @@ trimming:
 #   # - trace            # skip trace emission (Small tasks already inline this)
 
 # ── BUDGET PROFILE EXAMPLES ─────────────────────────────────────────────────
-# Full minimal / standard / full profile examples: docs/prompt-budget-examples.md
+# Full nano / minimal / standard / full profile examples: docs/prompt-budget-examples.md
 # Copy the relevant block into this file and uncomment as needed.
 # ─────────────────────────────────────────────────────────────────────────────

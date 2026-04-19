@@ -61,26 +61,47 @@ check_grep() {
   fi
 }
 
+# Helper: collect only existing paths from a list.
+existing_paths() {
+  local paths=()
+  for p in "$@"; do
+    [[ -e "$p" ]] && paths+=("$p")
+  done
+  if [[ ${#paths[@]} -eq 0 ]]; then
+    return 1
+  fi
+  printf '%s\n' "${paths[@]}"
+}
+
 # Disallow stale profile wording.
-check_grep \
-  "stale three-profile wording found" \
-  "three named budget profiles|three profile example blocks" \
-  "$ROOT_DIR/CHANGELOG.md" "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/examples" "$ROOT_DIR/skills"
+mapfile -t stale_profile_paths < <(existing_paths "$ROOT_DIR/CHANGELOG.md" "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/examples" "$ROOT_DIR/skills")
+if [[ ${#stale_profile_paths[@]} -gt 0 ]]; then
+  check_grep \
+    "stale three-profile wording found" \
+    "three named budget profiles|three profile example blocks" \
+    "${stale_profile_paths[@]}"
+fi
 
 # Disallow stale top-level trust_level config examples on config-like surfaces.
-check_grep \
-  "stale top-level trust_level config found" \
-  "^[[:space:]]*trust_level:" \
-  "$ROOT_DIR/docs/adoption-guide.md" "$ROOT_DIR/docs/prompt-budget-examples.md" "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md"
+mapfile -t trust_level_paths < <(existing_paths "$ROOT_DIR/docs/adoption-guide.md" "$ROOT_DIR/docs/prompt-budget-examples.md" "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md")
+if [[ ${#trust_level_paths[@]} -gt 0 ]]; then
+  check_grep \
+    "stale top-level trust_level config found" \
+    "^[[:space:]]*trust_level:" \
+    "${trust_level_paths[@]}"
+fi
 
 # Non-autonomous config examples should not define autonomous_mode.
+mapfile -t non_auto_search_paths < <(existing_paths "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md")
 non_autonomous_output=""
 non_autonomous_status=0
-set +e
-non_autonomous_output=$(run_search files "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
-  "$ROOT_DIR/examples" "$ROOT_DIR/skills/prompt-cache-optimization/SKILL.md" 2>&1)
-non_autonomous_status=$?
-set -e
+if [[ ${#non_auto_search_paths[@]} -gt 0 ]]; then
+  set +e
+  non_autonomous_output=$(run_search files "^[[:space:]]*execution_mode:[[:space:]]*(supervised|semi-auto)" \
+    "${non_auto_search_paths[@]}" 2>&1)
+  non_autonomous_status=$?
+  set -e
+fi
 
 if [[ $non_autonomous_status -ge 2 ]]; then
   echo "[doc-lint][error] ripgrep failed while discovering non-autonomous config examples"
@@ -120,16 +141,41 @@ for file in "${non_autonomous_files[@]}"; do
 done
 
 # Canonical prompt-budget keys should be used in examples/docs.
-check_grep \
-  "stale prompt-budget key found" \
-  "require_risk_reviewer_for_all_changes|require_adr_for_architecture_change|block_destructive_actions_without_manual_approval|small_tasks_skip_compliance_block|targeted_tests_for_small_tasks|critic_required_only_for_large_changes|prefer_existing_code_practice|require_explicit_approval_for_pattern_replacement|legacy_modules_require_archive_decision_search" \
-  "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/examples" "$ROOT_DIR/skills"
+mapfile -t canonical_key_paths < <(existing_paths "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/examples" "$ROOT_DIR/skills")
+if [[ ${#canonical_key_paths[@]} -gt 0 ]]; then
+  check_grep \
+    "stale prompt-budget key found" \
+    "require_risk_reviewer_for_all_changes|require_adr_for_architecture_change|block_destructive_actions_without_manual_approval|small_tasks_skip_compliance_block|targeted_tests_for_small_tasks|critic_required_only_for_large_changes|prefer_existing_code_practice|require_explicit_approval_for_pattern_replacement|legacy_modules_require_archive_decision_search" \
+    "${canonical_key_paths[@]}"
+fi
 
 # `prompt-budget.yml` is not the example gallery file anymore.
-check_grep \
-  "stale prompt-budget example reference found" \
-  'prompt-budget\.yml` for example configurations per profile' \
-  "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/skills"
+mapfile -t gallery_paths < <(existing_paths "$ROOT_DIR/README.md" "$ROOT_DIR/docs" "$ROOT_DIR/skills")
+if [[ ${#gallery_paths[@]} -gt 0 ]]; then
+  check_grep \
+    "stale prompt-budget example reference found" \
+    'prompt-budget\.yml` for example configurations per profile' \
+    "${gallery_paths[@]}"
+fi
+
+# Validate hardcoded asset counts in README.md match actual filesystem.
+if [[ -f "$ROOT_DIR/README.md" ]]; then
+  actual_skills=$(find "$ROOT_DIR/skills" -mindepth 2 -name 'SKILL.md' 2>/dev/null | wc -l)
+  actual_agents=$(find "$ROOT_DIR/.claude/agents" -name '*.md' 2>/dev/null | wc -l)
+
+  readme_skills=$(grep -oP 'Reusable skills: \K[0-9]+' "$ROOT_DIR/README.md" || echo "")
+  readme_agents=$(grep -oP 'Claude subagents: \K[0-9]+' "$ROOT_DIR/README.md" || echo "")
+
+  if [[ -n "$readme_skills" && "$readme_skills" -ne "$actual_skills" ]]; then
+    echo "[doc-lint][error] README.md says $readme_skills skills but found $actual_skills in skills/*/SKILL.md"
+    EXIT_CODE=1
+  fi
+
+  if [[ -n "$readme_agents" && "$readme_agents" -ne "$actual_agents" ]]; then
+    echo "[doc-lint][error] README.md says $readme_agents agents but found $actual_agents in .claude/agents/*.md"
+    EXIT_CODE=1
+  fi
+fi
 
 if [[ $EXIT_CODE -ne 0 ]]; then
   echo "[doc-lint] failed"
