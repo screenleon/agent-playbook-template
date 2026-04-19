@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-04-19
+
 ### Added
 
 - **Starter adoption audit** (`scripts/adoption-audit.sh`, `.github/workflows/rule-governance.yml`, `docs/adoption-guide.md`, `README.md`) — added a minimal audit script that catches blank project manifest fields, untouched project-specific constraints, empty decision logs, unchanged template architecture docs, and missing CI review scripts. The template repo runs it in advisory `--template-mode`; adopters can switch to `--strict` after first customization.
