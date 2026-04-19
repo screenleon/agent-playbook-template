@@ -63,7 +63,7 @@ Bad examples (too vague for agents):
 
 ### 2. Validation commands (mandatory)
 
-Agents need to know exactly which commands to run. Add these to `docs/operating-rules.md` or a `CONTRIBUTING.md`:
+Agents need to know exactly which commands to run. Add these to `project/project-manifest.md` under `Build and validation commands` (or mirror them in `CONTRIBUTING.md` if you keep contributor-facing setup there):
 
 ```markdown
 ## Validation commands
@@ -147,7 +147,7 @@ Edit these items immediately:
 
 - repository module names
 - safety rails
-- validation commands and expectations
+- build and validation commands in `project/project-manifest.md`
 - project-specific constraints (see above)
 - role names you do or do not want to keep
 - review and merge expectations
@@ -295,7 +295,7 @@ For a project running 50 agent requests/day, aggressive trimming can save 250K�
 3. Review whether repeated prompts should graduate into templates or skills.
 4. Remove stale roles rather than letting them drift.
 5. Update `DECISIONS.md` when architectural decisions are made or reversed.
-6. Review `Project-specific constraints` quarterly — remove stale rules, add new ones.
+6. Review `project/project-manifest.md` quarterly — remove stale rules, add new constraints, and keep validation commands current.
 7. Run a **memory health check** whenever a health indicator triggers (>50 entries, >30 KB, >10 session files), or at least quarterly for low-volume projects:
    - If `DECISIONS.md` exceeds 50 entries or 30 KB, archive inactive decisions to `DECISIONS_ARCHIVE.md` (see `skills/memory-and-state/SKILL.md` → Memory lifecycle management)
    - Purge session memory files that were not promoted to repo memory
