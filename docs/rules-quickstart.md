@@ -72,6 +72,7 @@ Pass all checks before emitting code changes:
 - **Simplicity evidence**: if a simpler approach was considered, output states why current approach is still minimal.
 - **Scope evidence**: each changed file maps to a user-requested requirement; unrelated edits are removed.
 - **Verification evidence**: output includes concrete success criteria (test/command/check), not only intent statements.
+- **Response sizing**: output length matches user need; default to the shortest sufficient response.
 
 ## Hard constraints
 

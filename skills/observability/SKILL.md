@@ -178,3 +178,19 @@ findings:
     reason: "<one-line description>"
 exit_code: <0 | 1 | 2>
 ```
+
+## Use this skill when
+
+- Completing any task (trace is mandatory per the workflow loop)
+- Emitting a deliverable that should be auditable after the session
+- CI pipelines need structured quality data from agent work
+
+## Conformance self-check
+
+Before marking trace emission as complete, verify:
+
+- [ ] Trace depth matches task scale (minimal for Small, standard for Medium, full for Large)
+- [ ] All required fields are present (`task`, `scale`, `validation_outcome`, `decisions_made`)
+- [ ] No secrets, full file contents, or raw conversation history are included
+- [ ] Trace file is stored in `.agent-trace/` for Medium/Large tasks
+- [ ] `isolation_status` accurately reflects context isolation compliance

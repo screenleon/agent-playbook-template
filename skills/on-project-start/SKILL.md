@@ -64,3 +64,9 @@ Initialization summary:
 - [ ] At least one boundary question was asked when constraints were unclear
 - [ ] Confirmed constraints were written to project context
 - [ ] Workflow proceeded to discovery/triage before implementation
+
+## Use this skill when
+
+- Entering a repository for the first time in a session
+- Project boundaries are unclear and need explicit confirmation
+- `prompt-budget.yml` does not yet have `budget.profile` set

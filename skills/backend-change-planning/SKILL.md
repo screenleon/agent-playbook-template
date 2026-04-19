@@ -67,3 +67,9 @@ Before marking backend planning as complete, verify:
 - [ ] Implementation order follows: migrations → shared types → repository → service → handlers → tests
 - [ ] Common backend mistakes were checked against
 - [ ] For high-risk changes: plan was presented to user for approval before implementing
+
+## Use this skill when
+
+- Implementing non-trivial backend changes (schema, API contract, permissions, side effects)
+- Backend work involves database migrations or query changes
+- Planning changes that affect multiple service layers or external integrations

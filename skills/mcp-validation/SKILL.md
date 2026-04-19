@@ -85,3 +85,19 @@ Declare MCP tools in `project/project-manifest.md` → `## MCP tool declarations
 ```
 
 If no MCP tools are used, leave the table empty or omit the section entirely.
+
+## Use this skill when
+
+- The project declares MCP tools in `project/project-manifest.md`
+- Starting a task that may rely on external MCP tool servers
+- A tool call fails unexpectedly mid-task and revalidation is needed
+
+## Conformance self-check
+
+Before completing a task where this skill applies, verify:
+
+- [ ] All declared MCP tools were probed at task start
+- [ ] Unavailable tools have fallback substitutions logged (or gap reported to user)
+- [ ] No tool failure was silently skipped
+- [ ] Revalidation was triggered on role transitions or unexpected mid-task failures
+- [ ] Tool substitutions are recorded in the handoff artifact or task summary

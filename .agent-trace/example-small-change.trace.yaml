@@ -1,0 +1,25 @@
+task: "document starter governance automation"
+date: "2026-04-19"
+scale: Small
+trust_level: "semi-auto"
+roles_invoked:
+  - application-implementer
+skills_loaded:
+  - demand-triage
+  - repo-exploration
+  - test-and-fix-loop
+  - error-recovery
+  - memory-and-state
+files_changed:
+  - README.md
+  - scripts/agent-review.sh
+decisions_made:
+  - "2026-04-19: Template repo ships starter governance automation"
+validation_outcome: "pass"
+reflection_summary:
+  correctness: "pass"
+  consistency: "pass"
+  adherence: "pass"
+  completeness: "pass"
+isolation_status: "clean"
+risks_accepted: []

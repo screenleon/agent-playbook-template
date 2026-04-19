@@ -1,14 +1,33 @@
 name: Rule Governance
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "project/**"
+      - "docs/**"
+      - "examples/**"
+      - ".github/copilot-instructions.md"
+      - ".github/workflows/*.yml"
+      - "prompt-budget.yml"
+      - "CHANGELOG.md"
+      - "scripts/adoption-audit.sh"
+      - "scripts/agent-review.sh"
+      - "scripts/lint-layered-rules.sh"
+      - "scripts/lint-doc-consistency.sh"
   pull_request:
     paths:
       - "rules/**"
       - "project/**"
       - "docs/**"
       - "examples/**"
+      - ".github/copilot-instructions.md"
+      - ".github/workflows/*.yml"
       - "prompt-budget.yml"
       - "CHANGELOG.md"
+      - "scripts/adoption-audit.sh"
+      - "scripts/agent-review.sh"
       - "scripts/lint-layered-rules.sh"
       - "scripts/lint-doc-consistency.sh"
   workflow_dispatch:
@@ -31,3 +50,12 @@ jobs:
 
       - name: Run documentation consistency linter
         run: bash scripts/lint-doc-consistency.sh
+
+  adoption-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run template adoption audit
+        run: bash scripts/adoption-audit.sh --template-mode
