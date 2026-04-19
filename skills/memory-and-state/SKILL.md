@@ -220,7 +220,7 @@ STOP and wait for user decision. Do not resolve contradictions autonomously.
 |-------|--------|
 | Architectural decision made | Append to `DECISIONS.md` |
 | New module or structural change | Update `ARCHITECTURE.md` |
-| Constraint discovered during work | Add to `Project-specific constraints` in `docs/operating-rules.md` |
+| Constraint discovered during work | Add to `project/project-manifest.md` |
 | Error pattern found | Note in session memory to avoid repeating |
 | Task partially complete | Write progress to session notes |
 | Technology or library introduced | Append to `DECISIONS.md` |
@@ -469,3 +469,14 @@ For Medium/Large tasks: the summary also feeds into documentation sync checks.
 - Resuming work after a break
 - Noticing that an agent is repeating a previously resolved mistake
 - Working on a task that spans more than one step or file
+
+## Conformance self-check
+
+Before completing a task where this skill applies, verify:
+
+- [ ] `DECISIONS.md` was read before planning or implementation started
+- [ ] New decisions are appended and do not contradict existing entries
+- [ ] `ARCHITECTURE.md` was updated if structural changes were made
+- [ ] Discovered constraints were added to `project/project-manifest.md`
+- [ ] Session memory was reviewed and promoted or discarded at task end
+- [ ] Context anchor was maintained for multi-step tasks

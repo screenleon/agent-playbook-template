@@ -366,7 +366,7 @@ Own the requested product behavior without expanding into unrelated architecture
 Before implementation:
 1. Read the files you will change and their imports/dependents.
 2. Identify existing UI patterns, state management style, and component conventions.
-3. Check the project-specific constraints in docs/operating-rules.md.
+3. Check the project-specific constraints in `project/project-manifest.md`.
 4. Read DECISIONS.md and verify no contradiction with existing decisions.
 
 State your assumptions, constraints, and proposed approach before writing code.
@@ -451,8 +451,7 @@ Your responsibility includes automatic maintenance of:
 - DECISIONS.md — ensure all architectural/behavioral decisions are recorded
 - ARCHITECTURE.md — ensure module map, interfaces, data flow, and
   external dependencies reflect the current codebase
-- docs/operating-rules.md project-specific constraints — ensure newly
-  discovered rules are captured
+- project/project-manifest.md — ensure newly discovered project-local rules are captured
 
 After any code change that affects architecture, contracts, or decisions,
 run this documentation sync check:
@@ -493,7 +492,7 @@ Output a risk summary the planner can include in the plan before user approval.
 Before reviewing:
 1. Read the changed files and their tests.
 2. Read DECISIONS.md for context on prior decisions.
-3. Check the project-specific constraints in docs/operating-rules.md.
+3. Check the project-specific constraints in `project/project-manifest.md`.
 4. Check whether any changes contradict existing decisions.
 
 State your assumptions about the review scope before starting.

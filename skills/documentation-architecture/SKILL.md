@@ -73,7 +73,7 @@ Action: update the relevant section of `ARCHITECTURE.md`. If the file does not e
 
 Trigger: during implementation, an agent discovers an unwritten rule that is enforced by the codebase (e.g., "all handlers use middleware X", "dates are always UTC").
 
-Action: add it to the `Project-specific constraints` section in `docs/operating-rules.md`.
+Action: add it to `project/project-manifest.md`.
 
 ### Documentation sync check
 
@@ -101,3 +101,14 @@ If any are stale, update them before marking the task complete.
 - generating ADRs, runbooks, or architecture notes
 - keeping agent-facing and human-facing docs aligned
 - code changes require documentation sync (structural changes, new decisions, new constraints)
+
+## Conformance self-check
+
+Before marking documentation work as complete, verify:
+
+- [ ] Audience and source of truth were identified before writing
+- [ ] Each doc focuses on one topic; no unbounded appending
+- [ ] `DECISIONS.md` has entries for all decisions made in this task
+- [ ] `ARCHITECTURE.md` reflects any structural changes
+- [ ] Tool-specific files (`.claude/agents/`, `.github/copilot-instructions.md`) are aligned with source-of-truth docs
+- [ ] Tables are used for structured data; examples are concrete, not abstract

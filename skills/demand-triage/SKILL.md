@@ -116,7 +116,7 @@ Include the scale classification in your output so humans reviewing the work can
 
 ## Project-specific overrides
 
-Teams may customize the Small/Medium/Large thresholds in `docs/operating-rules.md` → `Project-specific constraints`. For example:
+Teams may customize the Small/Medium/Large thresholds in `project/project-manifest.md`. For example:
 
 - A security-focused project might define: "All changes default to Medium minimum"
 - A documentation-only repo might define: "Single-file doc changes are always Small"
