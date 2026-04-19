@@ -21,12 +21,12 @@ Your responsibility includes keeping these files current:
 
 - `DECISIONS.md` — ensure all architectural/behavioral decisions are recorded
 - `ARCHITECTURE.md` — ensure module map, interfaces, data flow, and dependencies reflect the current codebase
-- `docs/operating-rules.md` project-specific constraints — ensure newly discovered rules are captured
+- `project/project-manifest.md` — ensure newly discovered project-local rules are captured
 
 After any code change that affects architecture, contracts, or decisions, verify:
 1. DECISIONS.md has entries for all decisions made
 2. ARCHITECTURE.md reflects structural changes
-3. Project-specific constraints include newly discovered rules
+3. `project/project-manifest.md` includes newly discovered project-local rules
 4. Tool-specific files are aligned with source-of-truth docs
 
 If any doc is stale, update it before marking the task complete.

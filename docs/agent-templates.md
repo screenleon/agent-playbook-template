@@ -457,7 +457,7 @@ After any code change that affects architecture, contracts, or decisions,
 run this documentation sync check:
 1. DECISIONS.md has entries for all decisions made in this task
 2. ARCHITECTURE.md reflects any structural changes
-3. Project-specific constraints include any newly discovered rules
+3. `project/project-manifest.md` includes any newly discovered project-local rules
 4. Tool-specific files (.claude/agents/, .github/copilot-instructions.md)
    are still aligned with the source-of-truth docs
 
