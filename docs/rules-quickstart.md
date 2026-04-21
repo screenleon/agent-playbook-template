@@ -62,7 +62,8 @@ If same-layer conflicts remain:
 6. If a task is ambiguous, reduce ambiguity through planning or clarification before guessing across modules
 7. Implement with minimal scope
 8. Validate (test -> lint/typecheck -> fix -> repeat). Never mark complete until verification passes. If no test suite exists, state that explicitly.
-9. Record decisions and ADR updates when architecture changes. **Exception**: if `prompt-budget.yml` → `decision_log.policy: example_only`, record in the task summary, handoff artifact, or trace file instead of appending to `DECISIONS.md`.
+9. For documentation or agent-framework work: validate referenced paths, files, commands, and modules against the live repository; keep normative rule text in one canonical owner, and sync other surfaces only when they explicitly expose the changed rule.
+10. Record decisions and ADR updates when architecture changes. **Exception**: if `prompt-budget.yml` → `decision_log.policy: example_only`, record in the task summary, handoff artifact, or trace file instead of appending to `DECISIONS.md`.
 
 ## Pre-emit checks (auditable)
 

@@ -49,4 +49,4 @@ Source of truth:
 - `docs/operating-rules.md` is the source of truth for safety, scope, validation, and review rules.
 - `docs/agent-playbook.md` is the source of truth for role routing and role ownership.
 - `docs/agent-templates.md`, `.claude/agents/`, `skills/`, and `.github/copilot-instructions.md` must stay aligned with those two files.
-- `prompt-budget.yml` (at repo root) declares execution mode (`supervised`, `semi-auto`, or `autonomous`), enabled roles, and token budget. See `docs/adoption-guide.md` → Autonomous execution mode for when and how to use autonomous mode.
+- `prompt-budget.yml` (at repo root) declares execution mode (`supervised`, `semi-auto`, or `autonomous`), enabled roles, token budget, and optional abstract model-tier routing policy. Keep concrete provider/model mapping in adapter or local runtime config. See `docs/adoption-guide.md` → Autonomous execution mode for when and how to use autonomous mode.

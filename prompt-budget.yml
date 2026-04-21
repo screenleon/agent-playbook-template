@@ -86,6 +86,43 @@ autonomous_mode:
   # Only set false if the codebase is sandboxed and risk findings are pre-acknowledged.
   halt_on_high_severity_risk: true
 
+# ── Optional abstract model routing ────────────────────────────────────────────
+# Use this section only when your runtime or orchestration layer controls model
+# selection. Keep concrete provider/model IDs in prompt-budget.local.yml,
+# adapter config, or runtime settings — not in tracked source-of-truth docs.
+#
+# "Tier escalation" means retrying the same role/task at a deeper model tier.
+# It does NOT replace trust-level checkpoints, role handoffs, or the default
+# stuck-escalation stop after 3 failed attempts.
+#
+model_routing:
+  enabled: false
+
+  tiers:
+    fast:
+      intent: Low-latency, structured, reversible work.
+    balanced:
+      intent: Default tier for most work that needs solid reasoning and responsiveness.
+    deep:
+      intent: Slower, higher-cost analysis for ambiguous, high-risk, or root-cause work.
+
+  policy:
+    default_tier: balanced
+    escalation_tier: deep
+    max_attempts_at_current_tier: 2
+    direct_deep_triggers:
+      - root_cause_unknown
+      - repeated_failed_fix_loop
+      - security_sensitive
+      - public_contract_change
+      - high_blast_radius_change
+    never_escalate_for:
+      - formatting_only
+      - docs_sync_only
+      - deterministic_transform
+      - narrow_known_fix
+      - simple_copy_edit
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 budget:
