@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-playbook-template.local/docs/schemas/context-pack.schema.json",
+  "title": "Context Pack Schema",
+  "description": "Machine-readable, tool-agnostic context envelope for dispatching one bounded task across different agent runtimes while preserving references back to canonical repository context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pack_id",
+    "generated_at",
+    "objective",
+    "role",
+    "intent_mode",
+    "task_scale",
+    "execution_mode",
+    "budget_profile",
+    "approved_scope",
+    "constraints",
+    "source_of_truth",
+    "artifacts",
+    "expected_output",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the context-pack contract.",
+      "const": "1.0.0"
+    },
+    "pack_id": {
+      "type": "string",
+      "description": "Stable identifier for this context pack instance.",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp at which the pack was assembled."
+    },
+    "objective": {
+      "type": "string",
+      "description": "One-sentence description of the task goal.",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "description": "Conceptual role that owns this unit of work.",
+      "enum": [
+        "feature-planner",
+        "backend-architect",
+        "application-implementer",
+        "ui-image-implementer",
+        "integration-engineer",
+        "documentation-architect",
+        "risk-reviewer",
+        "critic"
+      ]
+    },
+    "intent_mode": {
+      "type": "string",
+      "description": "Current phase of work for the selected role.",
+      "enum": [
+        "analyze",
+        "implement",
+        "review",
+        "document"
+      ]
+    },
+    "task_scale": {
+      "type": "string",
+      "description": "Scale classification of the task.",
+      "enum": [
+        "Small",
+        "Medium",
+        "Large"
+      ]
+    },
+    "execution_mode": {
+      "type": "string",
+      "description": "Autonomy level applied to this run.",
+      "enum": [
+        "supervised",
+        "semi-auto",
+        "autonomous"
+      ]
+    },
+    "budget_profile": {
+      "type": "string",
+      "description": "Instruction loading profile used when assembling the pack.",
+      "enum": [
+        "nano",
+        "minimal",
+        "standard",
+        "full"
+      ]
+    },
+    "approved_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Explicit scope boundaries for the receiving runtime.",
+      "required": [
+        "summary",
+        "allowed_paths",
+        "non_goals",
+        "acceptance_criteria"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Short natural-language summary of what is in scope.",
+          "minLength": 1
+        },
+        "allowed_paths": {
+          "type": "array",
+          "description": "Files, directories, or logical modules allowed for this task.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_paths": {
+          "type": "array",
+          "description": "Paths that should not be modified unless the task is re-approved.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "non_goals": {
+          "type": "array",
+          "description": "Explicitly excluded work.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "description": "Observable outcomes that define success.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Active rules, approvals, and safety boundaries the run must respect.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_of_truth": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Canonical repository references that outrank session memory or adapter-specific instructions.",
+      "required": [
+        "entrypoint_refs",
+        "rules_refs",
+        "playbook_refs",
+        "decision_refs"
+      ],
+      "properties": {
+        "entrypoint_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Root entrypoint files such as AGENTS.md."
+        },
+        "rules_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Safety and workflow rule references."
+        },
+        "playbook_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Role routing and workflow references."
+        },
+        "decision_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DECISIONS.md entries or equivalent durable decision refs."
+        },
+        "contract_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "API, schema, or architecture references that are relevant to the task."
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Task-scoped context material supplied with the pack.",
+      "required": [
+        "context_files",
+        "critical_context"
+      ],
+      "properties": {
+        "context_files": {
+          "type": "array",
+          "description": "Relevant files or generated artifacts for this task.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "kind",
+              "reason",
+              "required"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "doc",
+                  "code",
+                  "config",
+                  "schema",
+                  "test",
+                  "decision",
+                  "output",
+                  "example",
+                  "other"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "critical_context": {
+          "type": "array",
+          "description": "Facts that must not be dropped during compaction or adapter translation.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "handoff_artifact_ref": {
+          "type": "string",
+          "description": "Reference to a prior handoff artifact, if this pack was generated from one."
+        },
+        "context_anchor": {
+          "type": "string",
+          "description": "Current context-anchor summary for long tasks."
+        },
+        "summaries": {
+          "type": "array",
+          "description": "Operational summaries included for continuity. These are informative, not canonical.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "text"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "session_compaction",
+                  "review_summary",
+                  "execution_summary",
+                  "error_summary",
+                  "other"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "project_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional live state facts captured at pack assembly time.",
+      "properties": {
+        "current_branch": {
+          "type": "string"
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation_commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "relevant_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "expected_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Required response contract for the receiving runtime.",
+      "required": [
+        "format",
+        "success_definition",
+        "validation_required"
+      ],
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": [
+            "plan",
+            "patch",
+            "review",
+            "summary",
+            "json",
+            "markdown",
+            "other"
+          ]
+        },
+        "machine_schema_ref": {
+          "type": "string",
+          "description": "Optional schema reference when machine-readable output is required."
+        },
+        "success_definition": {
+          "type": "string",
+          "description": "What the adapter should treat as successful completion."
+        },
+        "validation_required": {
+          "type": "boolean",
+          "description": "Whether the runtime is expected to run validation before completion."
+        },
+        "response_sections": {
+          "type": "array",
+          "description": "Recommended sections for human-readable responses.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Audit and trace metadata.",
+      "required": [
+        "source_marker",
+        "trace_id",
+        "generated_by"
+      ],
+      "properties": {
+        "source_marker": {
+          "type": "string",
+          "description": "Agent or workflow source marker."
+        },
+        "trace_id": {
+          "type": "string",
+          "description": "Trace identifier shared across adapters and handoffs."
+        },
+        "parent_pack_id": {
+          "type": "string",
+          "description": "Pack ID of the immediate predecessor when chaining packs."
+        },
+        "context_version": {
+          "type": "string",
+          "description": "Version of the canonical context set used to assemble this pack."
+        },
+        "freshness_cutoff": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional timestamp limiting how stale referenced live state may be."
+        },
+        "generated_by": {
+          "type": "string",
+          "description": "Human or agent identity that assembled the pack."
+        }
+      }
+    }
+  }
+}
