@@ -23,7 +23,7 @@ Architecture for this repository. Replace with your own module map and data flow
 Primary flow for repository usage:
 
 1. User request enters through agent runtime.
-2. Agent reads `AGENTS.md` and resolves profile from `prompt-budget.yml`.
+2. Agent reads `AGENTS.md` and resolves profile, execution mode, and any optional abstract model-tier policy from `prompt-budget.yml`.
 3. Agent loads rules from `docs/rules-quickstart.md` or `docs/rules-nano.md`, then expands into `docs/operating-rules.md` and `docs/agent-playbook.md` when profile requires it.
 4. Agent loads applicable `skills/*/SKILL.md` files for discovery, triage, implementation, and validation.
 5. Agent performs repository changes and records durable decisions in `DECISIONS.md`.
@@ -34,7 +34,7 @@ Primary flow for repository usage:
 
 - `docs/operating-rules.md` — canonical safety/scope/validation contract.
 - `docs/agent-playbook.md` — canonical role ownership and routing contract.
-- `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, and enabled roles/skills.
+- `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, enabled roles/skills, and optional abstract model-tier routing policy.
 - `docs/schemas/handoff-artifact.schema.yaml` — structured handoff artifact contract between roles.
 - `DECISIONS.md` format — contradiction-check contract used before planning and implementation.
 
