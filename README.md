@@ -1,34 +1,58 @@
 # Agent Playbook Template
 
-## 30-Second TL;DR
+## Quick-start onboarding paths
 
-This repository gives your team a reusable AI delivery workflow: clear agent roles, stable operating rules, reusable skills, and decision logging.
+Choose the path that fits your situation — all three lead to the same governance model.
 
-Use four concepts to orient quickly:
+### Day 0 — First 5 minutes (bootstrap)
+
+1. Open `prompt-budget.yml`. Set `budget.profile` and `execution_mode`.
+2. If `budget.profile` is `nano`: read `docs/rules-nano.md` and stop — that is your complete rule surface.
+3. Otherwise: read `AGENTS.md` (loading order) → `docs/rules-quickstart.md` (minimal Layer 1).
+4. Run `bash scripts/adoption-audit.sh --strict` to confirm the template is intact.
+
+### Day 1 — First real task
+
+1. Run the on-project-start skill (`skills/on-project-start/SKILL.md`) if `budget.profile` is `standard` or `full`.
+2. Triage the task scale (`skills/demand-triage/SKILL.md`): Small / Medium / Large.
+3. Small → implement directly, run targeted tests, done.
+4. Medium/Large → read `DECISIONS.md` for contradictions → plan → critic → approve → implement → validate.
+5. Record any architecture/behavior decisions in `DECISIONS.md`.
+
+### Day 7 — Ongoing operations
+
+| Concern | Where to look |
+|---------|--------------|
+| Changing agent trust level | `prompt-budget.yml` → `execution_mode` |
+| Adding or removing roles | `docs/agent-playbook.md` + `.github/copilot-instructions.md` |
+| Budget / token cost | `bash scripts/budget-report.sh` |
+| Reviewing past traces | `bash scripts/agent-review.sh` |
+| Upgrading the template | `MIGRATION.md` |
+| Contradiction check before planning | `bash scripts/decisions-context.sh` |
+
+---
+
+## Five core concepts
 
 - `role` = who owns the work
 - `intent mode` = what phase the work is in (`analyze`, `implement`, `review`, `document`)
 - `execution_mode` = how much autonomy the agent has (`supervised`, `semi-auto`, `autonomous`)
 - `budget.profile` = how much instruction surface loads (`nano`, `minimal`, `standard`, `full`)
+- `model_routing` = optional abstract model-tier policy (`fast`, `balanced`, `deep`) — keep provider IDs in adapter/local config, not source docs
 
-Start here in order:
-0. `prompt-budget.yml` (choose `budget.profile` / `execution_mode`)
-1. If `budget.profile` is `nano`, read `docs/rules-nano.md` and stop there unless a specific lookup is needed.
-2. Otherwise read `AGENTS.md` (entrypoint and loading order).
-3. `docs/rules-quickstart.md` is the complete Layer 1 for `minimal`.
-4. If `budget.profile` is `standard` or `full`, continue into `docs/operating-rules.md` and `docs/agent-playbook.md`.
+## Checkpoint gate behavior by execution mode
 
-Best for teams looking for: AI coding agent playbook, multi-agent software workflow, and documentation-driven engineering.
+The table below shows how each governance gate behaves across the three trust levels.
 
-Reusable repository assets for AI-assisted software delivery:
+| Gate | `supervised` | `semi-auto` | `autonomous` |
+|------|-------------|-------------|--------------|
+| **Plan approval** (Medium/Large) | STOP — wait for user | STOP — wait for user | Advisory by default; STOP when `auto_proceed_on_plan: false` |
+| **Destructive actions** | STOP — always | STOP — always | STOP unless `halt_on_destructive_actions: false` |
+| **Scope expansion** | STOP — present new scope | STOP when gate is active | Log ADVISORY and continue if expansion stays within original intent and `auto_proceed_on_scope_expansion: true`; STOP if it adds an unrelated module |
+| **Stuck escalation** (3 failed attempts) | STOP — escalate to user | STOP — escalate to user | STOP unless `halt_on_stuck_escalation: false` |
+| **Critic review** (Medium/Large) | Runs; user sees output | Runs; user sees output | Runs by default; skip when `skip_critic_role: true` |
 
-- repo-wide agent rules
-- project-level subagents
-- reusable prompt templates
-- reusable skills
-- external-practice notes
-
-This template is intentionally project-agnostic. Copy, adapt, and version it in any repository where you want stable agent behavior across planning, implementation, integration, review, and documentation.
+Legend: **STOP** = agent pauses and waits for human input. **Advisory** = agent logs the event and continues. Gate behavior is defined in `docs/operating-rules.md` → Trust level.
 
 ## Quick Start (3 steps)
 
@@ -49,6 +73,7 @@ Read it in this order:
 1. `docs/operating-rules.md` defines safety, scope, checkpoints, and intent-mode rules.
 2. `docs/agent-playbook.md` defines role ownership, capability ceilings, routing, and workflow paths.
 3. `docs/agent-templates.md` defines the required output contracts such as handoffs, checkpoints, and rule-entry format.
+4. `docs/schemas/context-pack.schema.json` defines a portable machine-readable task envelope when the same work may move across tools or runtimes.
 
 Practical interpretation:
 
@@ -56,6 +81,7 @@ Practical interpretation:
 - choose an `intent mode` for the current phase
 - use `execution_mode` to decide whether human approval gates stop or auto-proceed
 - use `budget.profile` to decide how much of the framework loads
+- if your runtime exposes model selection, use `model_routing` for vendor-neutral tier policy and keep concrete provider/model IDs in adapter or local config
 
 ## Example: Complete Use Case
 
@@ -158,6 +184,7 @@ If you maintain a fork, keep these phrases in your repository description and RE
 - reusable operating rules and routing rules
 - project-level subagents for Claude-compatible tooling
 - reusable prompt templates for any chat-based coding tool
+- a machine-readable context-pack contract for multi-tool orchestration
 - reusable skills you can adapt into your own agent ecosystem
 - repo-wide Copilot instructions
 
