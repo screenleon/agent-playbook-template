@@ -1,6 +1,14 @@
 ---
 name: feature-planning
 description: Use when a request needs system-level planning before implementation, especially for cross-module, high-risk, or ambiguous work.
+depends_on:
+  - demand-triage    # scale must be Medium or Large before full planning is warranted
+  - repo-exploration # codebase structure required before producing impacted-modules list
+  - memory-and-state # DECISIONS.md contradiction check is mandatory before planning
+commonly_followed_by:
+  - backend-change-planning  # when plan includes schema, contract, or permission changes
+  - application-implementation # implementer receives plan as handoff artifact
+  - critic                   # critic reviews plan before user approval
 ---
 
 # Feature Planning
@@ -165,6 +173,14 @@ Before presenting the plan to the user, verify:
 - [ ] All 12 output checklist items are addressed (N/A with reason if not applicable)
 - [ ] `DECISIONS.md` was read and no contradictions exist
 - [ ] Assumptions, constraints, and proposed approach are explicitly stated
+
+## Common misuses
+
+- **Producing a plan without reading DECISIONS.md** — the contradiction check is mandatory. A plan that conflicts with a prior decision will be rejected, wasting the planning effort.
+- **Marking items as N/A without a reason** — `N/A` is only valid with a documented reason. "N/A" alone makes the plan unauditable and is not accepted by the conformance check.
+- **Bundling multiple features into one plan** — a single plan for a compound request creates compound risk. If the request contains two separate features, produce two separate plans.
+- **Understating the risk section** — omitting a risk because it feels embarrassing to name it is the most common way risks end up in production. Every plan must have at least one risk entry with likelihood, impact, and mitigation.
+- **Presenting a plan before the critic reviews it** — for Medium and Large tasks, the critic must review the plan before it is presented to the user for approval. Skipping this step removes a key quality gate.
 - [ ] The test plan covers happy path, edge cases, error paths, and permission boundaries
 - [ ] Risks include likelihood, impact, and mitigation for each
 - [ ] Implementation order follows the canonical sequence (schema → contracts → logic → wiring → tests)

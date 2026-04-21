@@ -1,6 +1,11 @@
 ---
 name: error-recovery
 description: Use when encountering compile errors, test failures, runtime exceptions, or unexpected behavior during implementation.
+depends_on:
+  - test-and-fix-loop  # error-recovery is invoked when test-and-fix-loop cannot self-resolve
+commonly_followed_by:
+  - test-and-fix-loop  # re-enter the fix loop after applying the recovery step
+  - observability      # record escalation in trace if escalating to user
 ---
 
 # Error Recovery
@@ -89,3 +94,11 @@ All conditions below must be verifiable from task artifacts:
 - [ ] The fix was minimal (no unrelated changes bundled)
 - [ ] Re-verification was run and passed
 - [ ] If escalated: the escalation report includes error message, attempts, hypothesis, and suggested next step
+
+## Common misuses
+
+- **Retrying the same fix without changing the approach** — if attempt 1 failed, attempt 2 must be meaningfully different. Identical retries are not counted toward the 3-attempt limit.
+- **Treating a workaround as a fix** — suppressing an error (e.g., adding `// nolint`, catching and ignoring an exception) without resolving the root cause is a workaround, not a fix. Document it as such.
+- **Fixing symptoms instead of root cause** — e.g., adding a null check to suppress a NullPointerException without understanding why the value is null. The symptom fix may pass tests while the real bug remains.
+- **Over-fixing during recovery** — changing unrelated code during a fix attempt introduces new risk and makes it harder to isolate what caused the original error.
+- **Escalating before 3 attempts on genuinely recoverable errors** — not every error needs a human. Escalate only when the pattern is stuck (same failure family, no material reduction).

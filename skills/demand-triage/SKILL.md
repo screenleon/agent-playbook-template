@@ -1,6 +1,12 @@
 ---
 name: demand-triage
 description: Use immediately after codebase discovery to classify task scale and determine which workflow steps are required vs. optional.
+depends_on:
+  - repo-exploration  # codebase evidence is required before classification
+commonly_followed_by:
+  - feature-planning          # Medium/Large tasks require a plan
+  - application-implementation # Small tasks may go directly to implementation
+  - memory-and-state          # DECISIONS.md check always follows triage
 ---
 
 # Demand Triage
@@ -139,3 +145,10 @@ If during implementation you discover the task is larger than initially classifi
 - [ ] Classification is based on codebase evidence (files read), not request text alone; uncertain → Medium
 - [ ] Hard blockers checked: auth/security/schema/breaking changes force non-Small
 - [ ] Output includes `[SCALE: ...]`, reason, files affected; scope growth triggers reclassification
+
+## Common misuses
+
+- **Classifying by request text instead of codebase evidence** — a request that sounds simple may touch a security-critical module. Always read the affected files before classifying.
+- **Defaulting every ambiguous task to Small** — when in doubt, classify as Medium. The cost of unnecessary planning is lower than the cost of missing required checkpoints.
+- **Not reclassifying when scope grows** — if implementation reveals the change requires touching 6 files instead of 1, the task must be reclassified and the checkpoint gate triggered.
+- **Skipping triage for repeated similar tasks** — a task that looks identical to a previous one may have different risk in the current codebase state (e.g., a function was made security-critical since the last similar task). Always triage independently.
