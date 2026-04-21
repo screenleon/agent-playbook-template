@@ -7,6 +7,45 @@ See `skills/prompt-cache-optimization/SKILL.md` → Profile-aware Layer 1 loadin
 
 Profiles from tightest to most capable: `nano` → `minimal` → `standard` → `full`.
 
+Optional add-on: if your runtime controls model selection, you may also include a vendor-neutral `model_routing` block in `prompt-budget.yml`. Keep concrete provider/model IDs in local overrides or adapter config, not in tracked source-of-truth docs.
+
+Recommended defaults for automation-heavy workflows:
+
+- `balanced` stays the default for most sub-tasks
+- escalate only after two unsuccessful repair attempts
+- route straight to `deep` for unclear root cause, security-sensitive work, public contract changes, or high-blast-radius changes
+- keep deterministic transforms and docs-only work off the `deep` tier
+
+```yaml
+model_routing:
+  enabled: true
+  tiers:
+    fast:
+      intent: Low-latency, structured, reversible work.
+    balanced:
+      intent: Default tier for most tasks.
+    deep:
+      intent: Slower, higher-cost analysis for ambiguous or high-risk work.
+  policy:
+    default_tier: balanced
+    escalation_tier: deep
+    max_attempts_at_current_tier: 2
+    direct_deep_triggers:
+      - root_cause_unknown
+      - repeated_failed_fix_loop
+      - security_sensitive
+      - public_contract_change
+      - high_blast_radius_change
+    never_escalate_for:
+      - formatting_only
+      - docs_sync_only
+      - deterministic_transform
+      - narrow_known_fix
+      - simple_copy_edit
+```
+
+For a concrete local-only provider mapping example, see `prompt-budget.local.example.yml`.
+
 ---
 
 ## Nano profile (< 3,000 total tokens)

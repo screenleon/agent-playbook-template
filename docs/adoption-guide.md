@@ -18,7 +18,10 @@ Then choose any of the following that match your toolchain:
 - `.claude/agents/` for Claude-compatible project subagents
 - `.github/copilot-instructions.md` for GitHub Copilot repository instructions
 - `docs/agent-templates.md` for generic reusable prompts
+- `docs/schemas/context-pack.schema.json` when you want a machine-readable task envelope across tools
+- `docs/context-pack-adapters.md` when you need one portable mapping across CLI, API, and managed-agent runtimes
 - `skills/` for reusable workflow packaging
+- `harness/` for executable governance hooks (gate-check, trace validation, decision capture) — see below
 
 ## Critical first customization (do not skip)
 
@@ -276,6 +279,86 @@ trimming:
 
 This file is informational — agents use it as guidance to select which skills and role templates to load. It does not enforce hard limits but makes the intended execution mode, budget profile, and workflow surface visible and auditable.
 
+### Optional: add vendor-agnostic model tier routing
+
+If your runtime or orchestration layer lets you choose models explicitly, add an abstract `model_routing` block to `prompt-budget.yml`. Keep the tracked file vendor-neutral and describe tiers by intent instead of provider model names.
+
+Recommended workflow-oriented defaults:
+
+- keep most implementation and review loops on `balanced`
+- allow one or two repair attempts before escalating
+- jump straight to `deep` only when the root cause is unclear or the blast radius is high
+- never burn the deep tier on deterministic or documentation-only work
+
+```yaml
+model_routing:
+  enabled: true
+  tiers:
+    fast:
+      intent: Low-latency, structured, reversible work.
+    balanced:
+      intent: Default tier for most tasks.
+    deep:
+      intent: Slower, higher-cost analysis for ambiguous or high-risk work.
+  policy:
+    default_tier: balanced
+    escalation_tier: deep
+    max_attempts_at_current_tier: 2
+    direct_deep_triggers:
+      - root_cause_unknown
+      - repeated_failed_fix_loop
+      - security_sensitive
+      - public_contract_change
+      - high_blast_radius_change
+    never_escalate_for:
+      - formatting_only
+      - docs_sync_only
+      - deterministic_transform
+      - narrow_known_fix
+      - simple_copy_edit
+```
+
+This policy is optional. If your tool hides model selection or picks models automatically, omit it and let the runtime decide.
+
+Keep concrete provider/model mapping outside tracked source-of-truth docs. Good locations are:
+
+- `prompt-budget.local.yml` for local overrides
+- adapter-specific runtime config
+- orchestration service settings
+
+This repository now includes a tracked example you can copy and adapt:
+
+- `prompt-budget.local.example.yml`
+
+Illustrative only — not canonical rule text:
+
+```yaml
+# local runtime config or adapter mapping, not source-of-truth docs
+provider_model_map:
+  claude:
+    fast: provider-fast-model
+    balanced: provider-default-work-model
+    deep: provider-deep-analysis-model
+  openai:
+    fast: provider-fast-model
+    balanced: provider-default-work-model
+    deep: provider-deep-analysis-model
+  generic_api:
+    fast: worker-fast-tier
+    balanced: worker-default-tier
+    deep: worker-deep-tier
+```
+
+Boundary rule: `model_routing` escalation is a runtime-local retry policy for the same role/task. It does not replace plan approval, human checkpoints, role handoffs, or the default stuck-escalation stop after 3 failed attempts.
+
+Adapter-side recommendation for `repeated_failed_fix_loop`:
+
+- trigger it only after the same role and task have used the current tier for `max_attempts_at_current_tier` repair attempts against the same dominant failure family
+- require that those attempts ended with unresolved validation or execution failure, not external blockers or approval waits
+- reset the counter if the failure family changes, the task objective changes, or a human supplies new diagnostic context
+
+Use `docs/context-pack-adapters.md` as the canonical definition when implementing the runtime detector.
+
 ### Trimming impact estimate
 
 | Action | Estimated savings per request |
@@ -365,6 +448,33 @@ autonomous_mode:
 - Any task that will be run unreviewed in a production environment
 - First run on a new codebase (discover patterns in supervised mode first)
 
+## Harness initialization (optional)
+
+The `harness/` layer adds executable governance on top of the document-based rules: gate-checking before always-dangerous operations, trace validation after task completion, and decision capture from git diffs.
+
+```bash
+bash harness/install.sh   # detect tool, make scripts executable, print adoption steps
+```
+
+The install script never modifies files outside `harness/` automatically — it prints the exact copy/paste commands for your tool. Adapter files in `harness/adapters/<tool>/` are ready-to-copy templates:
+
+| Tool | Template file | Target location |
+|------|--------------|----------------|
+| Claude Code | `settings.hooks.json` | merge into `.claude/settings.json` |
+| Copilot | `governance-block.md` | append to `.github/copilot-instructions.md` |
+| Cursor | `harness.mdc` | copy to `.cursor/rules/harness.mdc` |
+| Windsurf | `harness-rules.md` | copy to `.windsurfrules` |
+| OpenCode | `harness.md` | copy to `.opencode/commands/harness.md` |
+
+Verify with:
+
+```bash
+bash harness/core/gate-check.sh Bash 'git push --force'  # should block
+bash harness/core/gate-check.sh Bash 'git status'        # should approve
+```
+
+See each `harness/adapters/<tool>/ADAPTER.md` for full details and enforcement gap notes.
+
 ## Tool adapter reference
 
 The role model in this template is conceptual. Use the table below to find the right integration surface for each tool.
@@ -377,6 +487,10 @@ The role model in this template is conceptual. Use the table below to find the r
 | **Windsurf** | `.windsurfrules` | Referenced files | No native subagents; use rules file per role |
 | **Custom OpenAI API** | `system` message (Layer 1+2) | `user` message prefix (Layer 3+4) | No native subagents; spawn separate API calls per role |
 | **Codex CLI** | `AGENTS.md` + `docs/operating-rules.md` via repo context | Role templates from `docs/agent-templates.md` | No native subagents; use prompt templates |
+| **OpenCode** | `AGENTS.md` plus project config / project agents | command body, prompt preamble, or `@agent` invocation | Primary agents plus subagents; keep durable role behavior in project agents |
+| **Multica / managed agents** | agent profile, skill library, task template | issue body, dispatch payload, or run metadata | Managed worker isolation outside the repo; use context packs for portable task transport |
+
+For any tool family that may hand work across multiple runtimes, prefer a structured task envelope instead of replaying raw chat history. Use `docs/schemas/context-pack.schema.json` for the machine-readable contract and `docs/context-pack-adapters.md` for tool mapping guidance.
 
 ## Intent mode mapping
 

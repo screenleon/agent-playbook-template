@@ -7,7 +7,7 @@
 - Treat named roles such as `feature-planner` or `risk-reviewer` as conceptual roles. If the tool cannot spawn named subagents, use the matching prompt template or local docs instead.
 - Follow `docs/operating-rules.md` for safety, scope, and validation rules.
 - Keep outputs concise by default. Expand only when risk, ambiguity, or the user request requires more detail.
-- Check `prompt-budget.yml` at the repo root for `execution_mode` (`supervised`, `semi-auto`, or `autonomous`) before acting on checkpoint gates. See `docs/operating-rules.md` → Autonomous execution mode for gate behavior per mode.
+- Check `prompt-budget.yml` at the repo root for `execution_mode` (`supervised`, `semi-auto`, or `autonomous`) before acting on checkpoint gates, and for optional abstract `model_routing` policy when the runtime exposes model selection. Keep concrete provider/model IDs out of source-of-truth docs. See `docs/operating-rules.md` → Autonomous execution mode for gate behavior per mode.
 - Use `feature-planner` for cross-module, ambiguous, high-risk, contract-changing, database, auth, security, or image-led flow changes. Bounded application changes may go directly to implementation when `docs/agent-playbook.md` routes them that way.
 - Use `backend-architect` for backend contract and domain work.
 - Use `application-implementer` for general product or frontend implementation work.

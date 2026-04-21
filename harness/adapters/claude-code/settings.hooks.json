@@ -1,0 +1,46 @@
+{
+  "_comment": "Merge this snippet into .claude/settings.json — see ADAPTER.md for instructions.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/core/gate-check.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/core/decision-capture.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/core/trace-validate.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(bash harness/core/gate-check.sh:*)",
+      "Bash(bash harness/core/trace-validate.sh:*)",
+      "Bash(bash harness/core/decision-capture.sh:*)",
+      "Bash(bash harness/bootstrap.sh:*)",
+      "Bash(bash harness/detect-tool.sh:*)"
+    ]
+  }
+}

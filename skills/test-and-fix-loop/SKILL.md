@@ -1,6 +1,12 @@
 ---
 name: test-and-fix-loop
 description: Use after writing or modifying code to enforce the mandatory write → test → fix → repeat validation cycle.
+depends_on:
+  - demand-triage   # scale determines testing intensity
+  - repo-exploration # need to know which test commands exist
+commonly_followed_by:
+  - error-recovery   # invoked when the fix loop reaches 3 failed attempts
+  - observability    # emit trace after loop converges
 ---
 
 # Test and Fix Loop
@@ -142,3 +148,11 @@ All conditions below must be verifiable from task artifacts:
 - [ ] All failures were addressed (fixed or escalated), not silently ignored
 - [ ] The final test state is reported (tests run, pass count, warnings)
 - [ ] No tests were deleted or disabled to achieve a passing state
+
+## Common misuses
+
+- **Running too broad a test suite for Small tasks** — running the full CI suite for a one-line change wastes time and obscures signal. Use the narrowest scope first.
+- **Accepting a passing test after deleting the failing test** — a passing green bar is not evidence of correctness if tests were removed to achieve it.
+- **Stopping after the first passing run** — always run lint after tests pass, and confirm neither introduces new warnings.
+- **Treating `not-run` as `pass`** — if no test command is found, the skip must be explicitly noted in the trace. It does not count as a passing validation.
+- **Counting a no-op re-run as a fix attempt** — if the second attempt is identical to the first, it is not a new attempt; it is wasted time. Change the approach before re-running.

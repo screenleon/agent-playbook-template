@@ -1,0 +1,46 @@
+# prompt-budget.local.example.yml
+#
+# Copy this file to prompt-budget.local.yml for local or runtime-specific model
+# mapping. Keep provider/model IDs and adapter-owned fields out of the tracked
+# source-of-truth docs.
+#
+# These fields are illustrative. Your runtime, adapter, or orchestration layer
+# may use different names.
+
+model_routing:
+  enabled: true
+
+  # Local-only runtime hint. The canonical prompt-budget.yml should not assume
+  # which provider is active.
+  active_provider: claude
+
+  # Abstract tiers stay stable across providers.
+  provider_model_map:
+    claude:
+      fast: claude-fast-model
+      balanced: claude-default-work-model
+      deep: claude-deep-analysis-model
+    openai:
+      fast: openai-fast-model
+      balanced: openai-default-work-model
+      deep: openai-deep-analysis-model
+    google:
+      fast: google-fast-model
+      balanced: google-default-work-model
+      deep: google-deep-analysis-model
+    generic_api:
+      fast: worker-fast-tier
+      balanced: worker-default-tier
+      deep: worker-deep-tier
+
+  # Optional local hints for an orchestration layer.
+  runtime_hints:
+    prefer_balanced_for_roles:
+      - application-implementer
+      - integration-engineer
+      - documentation-architect
+    allow_direct_deep_for_roles:
+      - feature-planner
+      - risk-reviewer
+
+# Example only. Do not treat this file as a canonical schema.

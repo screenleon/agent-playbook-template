@@ -165,6 +165,18 @@ The role names in this template are conceptual. Different tools expose them diff
 
 Do not assume every tool supports named subagents. Keep the role model stable even when the implementation surface changes.
 
+## Abstract model-tier routing
+
+`prompt-budget.yml` is the runtime control plane for execution mode, budget profile, enabled roles/skills, and optional abstract model-tier routing.
+
+When a team controls model selection, use `prompt-budget.yml` → `model_routing` to define vendor-neutral tiers such as `fast`, `balanced`, and `deep`. These tiers describe intent and escalation policy only.
+
+Keep concrete provider/model IDs in adapter config, `prompt-budget.local.yml`, or runtime settings. They are not part of the canonical repository rules.
+
+`model_routing` is optional. Repositories using tools that choose models automatically should omit it entirely.
+
+Boundary rule: tier escalation means retrying the same role/task at a deeper model tier. It does not replace trust-level checkpoints, role handoffs, or the default stop after 3 failed attempts.
+
 ## Default routing
 
 ### Use the planning agent first when
@@ -229,6 +241,7 @@ This matrix defines the default capability ceiling for each role. Intent mode ma
 
 - owns repository instructions, onboarding docs, ADRs, runbooks, process docs, and architecture explanations
 - optimizes for long-term maintainability and future agent readability
+- owns repository-instruction realignment and cross-surface rule maintenance when the primary task is documentation or framework guidance
 - responsible for automatic maintenance of `DECISIONS.md`, `ARCHITECTURE.md`, and project-specific constraints as a side effect of code changes — unless `prompt-budget.yml` → `decision_log.policy: example_only`, in which case decision capture goes to the task summary, handoff artifact, or trace file instead of `DECISIONS.md`
 
 ### `risk-reviewer`
@@ -285,6 +298,11 @@ Every workflow below implicitly includes these steps:
 16. **Feedback loop** — include a mini retrospective and quality-signal update as defined in `docs/operating-rules.md` → Feedback loop and quality signals
 
 For long-running tasks, also compact earlier turns using `docs/agent-templates.md` → Compaction summary template so the current session can continue from a canonical summary instead of raw history.
+
+### Documentation and framework maintenance
+
+- Treat live-repository validation as mandatory discovery work for documentation or agent-framework changes. Referenced files, commands, modules, and paths must be checked against the current repository before wording is reused.
+- Keep normative rule text in a canonical owner document. Update other surfaces only when they explicitly expose the changed rule, workflow term, command, or file path.
 
 ### Step phase classification
 

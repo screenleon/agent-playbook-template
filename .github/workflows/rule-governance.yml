@@ -8,28 +8,32 @@ on:
       - "project/**"
       - "docs/**"
       - "examples/**"
+      - "skills/**"
+      - "harness/**"
       - ".github/copilot-instructions.md"
       - ".github/workflows/*.yml"
       - "prompt-budget.yml"
+      - "prompt-budget.local.example.yml"
       - "CHANGELOG.md"
-      - "scripts/adoption-audit.sh"
-      - "scripts/agent-review.sh"
-      - "scripts/lint-layered-rules.sh"
-      - "scripts/lint-doc-consistency.sh"
+      - "MIGRATION.md"
+      - "scripts/*.sh"
+      - "scripts/*.py"
   pull_request:
     paths:
       - "rules/**"
       - "project/**"
       - "docs/**"
       - "examples/**"
+      - "skills/**"
+      - "harness/**"
       - ".github/copilot-instructions.md"
       - ".github/workflows/*.yml"
       - "prompt-budget.yml"
+      - "prompt-budget.local.example.yml"
       - "CHANGELOG.md"
-      - "scripts/adoption-audit.sh"
-      - "scripts/agent-review.sh"
-      - "scripts/lint-layered-rules.sh"
-      - "scripts/lint-doc-consistency.sh"
+      - "MIGRATION.md"
+      - "scripts/*.sh"
+      - "scripts/*.py"
   workflow_dispatch:
 
 jobs:
@@ -59,3 +63,26 @@ jobs:
 
       - name: Run template adoption audit
         run: bash scripts/adoption-audit.sh --template-mode
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on all shell scripts
+        run: |
+          find scripts harness -name "*.sh" -print0 \
+            | xargs -0 shellcheck --severity=warning
+
+  validate-prompt-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate prompt-budget.yml (and local example if present)
+        run: python3 scripts/validate-prompt-budget.py --all

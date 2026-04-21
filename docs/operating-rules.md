@@ -14,6 +14,7 @@ Examples of behaviors typically handled by the agent tool (do not re-specify):
 - File-read and search tool selection (the agent's own toolchain handles this)
 - Basic code-style formatting (handled by linters and the agent's native conventions)
 - Token management and context-window limits (handled by the agent runtime)
+- Concrete provider/model selection mechanics and model IDs (keep them in the tool runtime, adapter config, or local overrides)
 
 Examples of behaviors this template adds because agents lack them:
 
@@ -22,6 +23,7 @@ Examples of behaviors this template adds because agents lack them:
 - Scale-based workflow adaptation (demand triage)
 - Repository-specific conventions and architectural constraints
 - Structured handoff artifacts between agent invocations
+- Optional abstract model-tier routing intent when a project needs vendor-neutral policy across runtimes
 
 When adopting this template, review each rule section and mark items already covered by your agent tool as `[AGENT-NATIVE]`. Those items can be trimmed from the project-level instructions to reduce token overhead. See `docs/adoption-guide.md` for the full trimming process.
 
@@ -74,6 +76,16 @@ Changing these flags reduces human stops in autonomous mode, but does not overri
 - The scope of the task is well-defined and bounded
 
 These flags have no effect unless `execution_mode` is `autonomous`. They do not override security rules (no secrets in code, no credential exposure).
+
+## Abstract model-tier routing (optional)
+
+Some teams control model selection in their runtime or orchestration layer; others do not. To keep this template portable, any model-routing policy in tracked repository files must stay **abstract and vendor-neutral**.
+
+Use `prompt-budget.yml` → `model_routing` only when your runtime actually exposes model selection. That section may define abstract tiers such as `fast`, `balanced`, and `deep`, along with escalation triggers and non-goals. Keep concrete provider/model IDs in adapter config, `prompt-budget.local.yml`, or runtime settings instead of source-of-truth docs.
+
+Important boundary: **tier escalation is runtime-local retry policy for the same role/task**. It does not replace trust-level checkpoints, role handoffs, or the default stuck-escalation stop after 3 failed attempts.
+
+If your tool chooses models automatically or hides model selection completely, omit `model_routing` and rely on the tool's native behavior.
 
 ## Constitutional principles
 
@@ -262,6 +274,12 @@ Incomplete rule entries are not considered stable source-of-truth material. At m
 - Do not expand the task beyond the requested outcome without stating why.
 - If a task is ambiguous, reduce ambiguity first through planning instead of guessing across multiple modules.
 - Keep fixes local unless the broader change is necessary for correctness.
+
+## Documentation and framework maintenance
+
+- Keep normative rule text in one canonical owner document. Other surfaces should summarize, point to, or restate it only when they explicitly surface the same rule.
+- When the same fact is owned in more than one documentation layer, update each owning document in the same change.
+- Sync only the surfaces that explicitly mention the changed rule, workflow term, file path, or command. Do not expand minor wording changes into a repo-wide sweep by default.
 
 ## Intent mode
 
@@ -489,8 +507,11 @@ Before writing or modifying any code, perform these steps:
 5. **Read project-specific constraints** — check `project/project-manifest.md` and any `CONVENTIONS.md`, `ARCHITECTURE.md`, or similar files at the repo root.
 6. **Apply workspace boundaries** — if `project/project-manifest.md` defines a `Workspace boundaries` section, determine the active boundary before loading domain rules. See *Workspace boundary masking* above.
 7. **Use retrieval when configured** — if RAG-augmented or selective retrieval is set up (see `skills/memory-and-state/SKILL.md`), use it to identify relevant `DECISIONS.md` and `ARCHITECTURE.md` entries at task start. When a rule below requires a contradiction-critical read, retrieval may be used as the discovery step, but the final decision must still be checked against the relevant full entry text before proceeding.
+8. **Validate documentation targets against reality** — for documentation or agent-framework work, verify that referenced files, directories, modules, commands, and scripts exist in the live repository before editing or reusing prior wording.
 
 If you skip discovery, state what you skipped and why.
+
+For documentation or agent-framework work, repository reality checks are part of scope, not optional polish. If a referenced artifact no longer exists or has moved, update the guidance to match the live repository instead of copying stale instructions forward.
 
 ## Validation loop (write → test → fix → repeat)
 

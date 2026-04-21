@@ -8,6 +8,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-04-21
+
+### Added
+
+- **`scripts/validate-prompt-budget.py`** — zero-dependency Python schema validator for `prompt-budget.yml` (and local override examples). Validates `execution_mode`, `budget.profile`, `model_routing` tiers/policy/trigger IDs, role and skill overlap, and `autonomous_mode` safety flags. Supports `--all` to also validate `prompt-budget.local.example.yml`. Now runs in CI via the `validate-prompt-budget` job.
+- **`harness/core/failure-family-detect.sh`** — reference implementation for `repeated_failed_fix_loop` failure-family detection. Normalizes line numbers, addresses, and timestamps before comparison; classifies errors into 7 families (test_failure, lint, build_error, exception, schema_error, auth_error, infra_error); returns exit 0 (same family), 1 (different), or 2 (unknown/missing). Adapters call this to decide when to escalate.
+- **`scripts/decisions-context.sh`** — compact pre-planning context extractor for `DECISIONS.md`. Flags: `--full-recent N` (full text of N most recent entries), `--headings-only`, `--file PATH`. Enables agents to perform contradiction checks without loading the entire file.
+- **`scripts/budget-report.sh`** — token cost estimator (word count × 1.35). Prints per-layer OK/WARN/OVER status table against targets in `prompt-budget.yml`. Flags: `--warn-only`, `--json`. Override via `BUDGET_TOKEN_MULTIPLIER` env var.
+- **`docs/adapter-capability-matrix.md`** — comparison table across all 6 adapters (claude-code, copilot, cursor, opencode, windsurf, generic) covering: native hook API, gate enforcement, trace validation, subagent isolation, model routing, CI enforcement, failure-family-detect usability. Includes decision tree for choosing an adapter.
+- **`examples/anti-patterns.md`** — 13 concrete anti-patterns (AP-C1–C4 configuration, AP-M1–M2 manifest, AP-W1–W4 workflow, AP-S1–S2 security) with symptom, problem, and correct approach for each.
+- **`MIGRATION.md`** — version upgrade guide for adopters. Covers 0.17.x (all new files and required manual steps), 0.15.x→0.16.x (manifest constraint source), 0.14.x→0.15.x (ARCHITECTURE.md/DECISIONS.md), 0.13.x→0.14.x (compaction template). Includes a general upgrade checklist.
+- **`rules/global/prompt-injection.md`** — GSEC-PI-001: prompt injection defense rule (OWASP LLM01). Includes detection signals table and a 4-step response protocol (alert → stop → propose safe path → record in trace).
+- **`harness/adapters/*/conformance.sh`** (6 files) — per-adapter conformance scripts for claude-code, copilot, cursor, opencode, windsurf, and generic. Each verifies the adapter can read `execution_mode`, `budget.profile`, and `model_routing.enabled` from `prompt-budget.yml`, and checks adapter-specific required files (governance-block.md, harness.mdc, harness.md, harness-rules.md, pre/post-invoke hooks).
+
+### Changed
+
+- **`rules/global/security-baseline.md`** — expanded from 3 rules to 7. Added GSEC-004 (dependency pinning / supply chain, OWASP A06), GSEC-005 (input validation at system boundaries, OWASP A03/A01), GSEC-006 (secure defaults / deny-by-default, OWASP A05), GSEC-007 (security logging, no secrets in logs, OWASP A09).
+- **`skills/test-and-fix-loop/SKILL.md`**, **`skills/error-recovery/SKILL.md`**, **`skills/feature-planning/SKILL.md`**, **`skills/demand-triage/SKILL.md`** — added YAML frontmatter with `depends_on` and `commonly_followed_by` fields to make skill dependency chains explicit. Added `## Common misuses` section to each with 4–5 concrete pitfalls and correct approaches.
+- **`scripts/agent-review.sh`** — added skill hit rate analytics: parses `skills_loaded:` field from trace files, accumulates per-skill load count and fail-outcome co-occurrence, prints `skill_analytics:` YAML block in report output. Also added a check: `scale>=Medium` traces missing `task_summary` field now produce a `low`-severity finding.
+- **`.github/workflows/rule-governance.yml`** — added two new CI jobs: `shellcheck` (runs shellcheck --severity=warning on all `scripts/` and `harness/` shell scripts) and `validate-prompt-budget` (runs `python3 scripts/validate-prompt-budget.py --all`). Expanded `on.push.paths` and `on.pull_request.paths` to cover `skills/**`, `harness/**`, `MIGRATION.md`, `scripts/*.py`, and `prompt-budget.local.example.yml`.
+- **`README.md`** — replaced the "30-Second TL;DR" section with structured Day 0 / Day 1 / Day 7 onboarding paths and a checkpoint gate × execution mode matrix showing STOP / Advisory / auto-proceed behavior per gate.
+
+### Fixed
+
+- **`scripts/validate-prompt-budget.py`** — fixed three bugs: (1) `parse_yaml_scalars` now strips inline comments from unquoted scalar values; (2) `_extract_block` now uses indent-level tracking so the `tiers:` block does not bleed into the sibling `policy:` block; (3) `--all` mode no longer fails on `prompt-budget.local.example.yml` for missing `execution_mode`/`budget.profile` (override files legitimately omit those fields).
+
 ## [0.16.0] - 2026-04-19
 
 ### Added
