@@ -44,12 +44,51 @@ def grep_value(content, key, default=''):
     m = re.search(rf'^{re.escape(key)}:\s*([^\n#]+)', content, re.MULTILINE)
     return m.group(1).strip().strip('"\'') if m else default
 
+def grep_nested_value(content, parent_key, child_key, default=''):
+    """Extract a scalar nested under a parent block (e.g. budget.profile)."""
+    in_block = False
+    for line in content.splitlines():
+        stripped = line.strip()
+        if re.match(rf'^{re.escape(parent_key)}:\s*$', stripped):
+            in_block = True
+            continue
+        if in_block:
+            if stripped and re.match(r'^[A-Za-z_]', line):
+                break  # back to top-level
+            m = re.match(rf'^\s+{re.escape(child_key)}:\s*([^\n#]+)', line)
+            if m:
+                return m.group(1).strip().strip('\'"')
+    return default
+
 def grep_list(content, key):
     # Extract YAML sequence items under a given key
     m = re.search(rf'^{re.escape(key)}:\s*\n((?:[ \t]+-[^\n]+\n?)*)', content, re.MULTILINE)
     if not m:
         return []
     return [re.sub(r'^\s*-\s*', '', l).strip() for l in m.group(1).splitlines() if l.strip().startswith('-')]
+
+def grep_nested_list(content, parent_key, child_key):
+    """Extract a YAML list nested under a parent block (e.g. roles.enabled)."""
+    in_block = False
+    in_list = False
+    items = []
+    for line in content.splitlines():
+        stripped = line.strip()
+        if re.match(rf'^{re.escape(parent_key)}:\s*$', stripped):
+            in_block = True
+            continue
+        if in_block:
+            if stripped and re.match(r'^[A-Za-z_]', line):
+                break  # back to top-level
+            if re.match(rf'^\s+{re.escape(child_key)}:\s*$', stripped):
+                in_list = True
+                continue
+            if in_list:
+                if stripped.startswith('- '):
+                    items.append(stripped[2:].strip().strip('\'"'))
+                elif stripped and not stripped.startswith('#'):
+                    in_list = False
+    return items
 
 try:
     import yaml
@@ -68,9 +107,9 @@ except ImportError:
         content = f.read()
     out = {
         'execution_mode':   grep_value(content, 'execution_mode', 'semi-auto'),
-        'budget_profile':   grep_value(content, 'profile', 'standard'),
-        'decision_policy':  grep_value(content, 'policy', 'normal'),
-        'enabled_roles':    ' '.join(grep_list(content, 'enabled')),
+        'budget_profile':   grep_nested_value(content, 'budget', 'profile', 'standard'),
+        'decision_policy':  grep_nested_value(content, 'decision_log', 'policy', 'normal'),
+        'enabled_roles':    ' '.join(grep_nested_list(content, 'roles', 'enabled')),
         'always_load':      ' '.join(grep_list(content, 'always_load')),
         'halt_destructive': 'true',
     }

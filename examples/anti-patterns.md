@@ -13,6 +13,7 @@ Use this as a pre-flight checklist before your first production task.
 ### AP-C1: Provider model IDs in tracked canonical docs
 
 **Symptom**: `prompt-budget.yml` contains entries like:
+
 ```yaml
 model_routing:
   provider_model_map:
@@ -25,6 +26,7 @@ change, and it leaks provider preference into the framework contract.
 
 **Correct approach**: Keep canonical docs vendor-neutral. Put concrete model IDs in
 `prompt-budget.local.yml` (git-ignored) or adapter runtime config:
+
 ```yaml
 # prompt-budget.local.yml (not tracked)
 model_routing:
@@ -60,6 +62,7 @@ corresponding `<name>.md` file still exists in `.claude/agents/` (or equivalent)
 the playbook's disabled list. Governance intent is not enforced.
 
 **Correct approach**: When disabling a role, also remove or rename its agent definition file:
+
 ```bash
 # For Claude Code
 rm .claude/agents/backend-architect.md
@@ -81,6 +84,7 @@ rm .opencode/agents/backend-architect.md
 
 **Correct approach**: Always declare the `autonomous_mode` block explicitly when
 using `autonomous` mode so every gate is a conscious decision:
+
 ```yaml
 execution_mode: autonomous
 autonomous_mode:
@@ -99,6 +103,7 @@ autonomous_mode:
 ### AP-M1: Vague constraints in project-manifest.md
 
 **Symptom**: `project/project-manifest.md` contains entries like:
+
 ```markdown
 - Follow best practices
 - Write clean code
@@ -111,6 +116,7 @@ and often make wrong assumptions.
 
 **Correct approach**: Be concrete and verifiable. A good constraint names a specific
 technology, file, command, or behavior:
+
 ```markdown
 - Use raw SQL with sqlc; no ORM
 - Do not modify db/schema/ without a migration file in db/migrations/

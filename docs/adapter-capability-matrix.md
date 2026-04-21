@@ -29,6 +29,7 @@ For full adoption steps, see `harness/adapters/<name>/ADAPTER.md`.
 ## Notes per adapter
 
 ### claude-code
+
 Full harness support. Uses `PreToolUse` / `PostToolUse` / `Stop` hooks from
 `harness/adapters/claude-code/settings.hooks.json`. The only adapter where gate
 checks are **programmatic** (non-advisory). Preferred when you need strict
@@ -38,6 +39,7 @@ enforcement of destructive-action gates.
 tiers in `prompt-budget.local.yml` → `provider_model_map.claude.*`.
 
 ### copilot
+
 No runtime hook API. Governance delivered via instruction injection in
 `.github/copilot-instructions.md` and enforced via CI workflows (`agent-review.yml`,
 `rule-governance.yml`). Gate checks are self-reported only — use
@@ -48,6 +50,7 @@ IDE or via the API `model` parameter. Map abstract tiers in `prompt-budget.local
 → `provider_model_map.copilot.*`.
 
 ### cursor
+
 No hook API. Instructions injected via `.cursor/rules/harness.mdc` with `alwaysApply: true`.
 POST-phase validation runs as a CI step or manual `post-invoke.sh`. Gate checks are advisory.
 
@@ -55,18 +58,21 @@ POST-phase validation runs as a CI step or manual `post-invoke.sh`. Gate checks 
 `prompt-budget.local.yml` → `provider_model_map.cursor.*` or set via Cursor API.
 
 ### opencode
+
 AGENTS.md loaded natively. Supports `.opencode/agents/` for role definitions (copy from
 `.claude/agents/`). No hook API; `/harness` command bootstraps at session start.
 
 **model routing**: set via OpenCode config; map tiers in `prompt-budget.local.yml`.
 
 ### windsurf
+
 Instructions injected via `.windsurfrules`. No hook API. POST phase is manual or CI.
 Gate checks are advisory.
 
 **model routing**: set via Windsurf model selector; map tiers in `prompt-budget.local.yml`.
 
 ### generic
+
 Fallback for any unsupported tool. Replaces hooks with explicit `pre-invoke.sh` /
 `post-invoke.sh` wrapper scripts. Works with any CLI agent tool. Requires the most
 manual discipline — best paired with `execution_mode: supervised`.
@@ -78,7 +84,7 @@ in `prompt-budget.local.yml` → `provider_model_map.generic_api.*`.
 
 ## Choosing an adapter
 
-```
+```text
 Does your runtime support PreToolUse/Stop hooks?
    └─ Yes → claude-code
    └─ No

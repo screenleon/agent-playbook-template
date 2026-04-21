@@ -22,7 +22,7 @@ Load all files in `HARNESS_LAYER1_FILES` before reading task context.
 
 Before executing any always-dangerous operation, output:
 
-```
+```text
 [HARNESS GATE] Awaiting approval for: <operation>
 Reason: <why needed>
 ```

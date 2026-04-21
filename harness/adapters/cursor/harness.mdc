@@ -28,7 +28,7 @@ Stop and output `[HARNESS GATE] Awaiting approval for: <operation>` before execu
 
 At `execution_mode: supervised` — stop for ALL listed operations.
 At `execution_mode: semi-auto` — stop for irreversible operations (force-push, drop, publish).
-At `execution_mode: autonomous` with `halt_on_destructive_actions: true` — stop for ALL listed.
+At `execution_mode: autonomous` with `autonomous_mode.halt_on_destructive_actions: true` — stop for ALL listed.
 
 ## POST phase (after task completion)
 

@@ -72,29 +72,36 @@ def extract_nested_scalar(text: str, path: str) -> str | None:
 
 def extract_list_items(text: str, key: str) -> list[str]:
     """
-    Extract items from a YAML list under a given top-level key.
+    Extract items from a YAML list under a given key at any indentation level.
     Handles both inline [ ] and block - syntax.
+    Tracks the key's own indentation depth and stops when a subsequent non-blank,
+    non-comment line appears at the same or lesser indent (sibling or parent key).
     """
     items: list[str] = []
-    # Inline: key: [a, b, c]
-    m = re.search(rf'^{re.escape(key)}:\s*\[([^\]]*)\]', text, re.MULTILINE)
+    # Inline: key: [a, b, c] (at any indent level)
+    m = re.search(rf'^\s*{re.escape(key)}:\s*\[([^\]]*)\]', text, re.MULTILINE)
     if m:
         for item in m.group(1).split(","):
             v = item.strip().strip('"').strip("'")
             if v:
                 items.append(v)
         return items
-    # Block list
+    # Block list — track indentation depth to stop at sibling keys
     in_block = False
+    key_indent = 0
     for line in text.splitlines():
         stripped = line.strip()
-        if re.match(rf'^{re.escape(key)}:\s*$', stripped):
+        km = re.match(rf'^(\s*){re.escape(key)}:\s*$', line)
+        if km:
             in_block = True
+            key_indent = len(km.group(1))
             continue
         if in_block:
-            if stripped and not stripped.startswith("-") and not stripped.startswith("#"):
-                if re.match(r'^[A-Za-z_]', line):
-                    break  # new top-level key
+            if not stripped or stripped.startswith("#"):
+                continue
+            current_indent = len(line) - len(line.lstrip())
+            if current_indent <= key_indent:
+                break  # sibling or parent key — block is done
             if stripped.startswith("-"):
                 v = stripped.lstrip("-").strip().strip('"').strip("'")
                 if v:

@@ -7,6 +7,12 @@
 
 default: true
 
+# MD007 — Unordered list indentation.
+# Disabled because unordered sub-items nested inside numbered list items are a
+# common documentation pattern (e.g., "3. Examples:\n  - item") and markdownlint
+# does not account for the ordered list parent when computing expected indent.
+MD007: false
+
 # MD013 — Line length. Disabled because long prose and tables are common in docs.
 MD013: false
 

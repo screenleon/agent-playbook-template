@@ -33,14 +33,15 @@ The following scripts were added and can be copied into your repository:
 
 **Action required**: None — informational docs, no breaking changes.
 
-### New adapter conformance scripts
+### Adapter conformance checker
 
-Each adapter directory now includes a `conformance.sh` script. Copy them if you want
-local verification that your adapter correctly reads `execution_mode`, `budget.profile`,
-and `model_routing`:
+A single unified conformance script at `harness/core/conformance.sh` replaces the
+previous per-adapter `conformance.sh` files. It auto-detects the active adapter via
+`detect-tool.sh` or accepts an explicit `--adapter <name>` flag:
 
 ```bash
-bash harness/adapters/<name>/conformance.sh
+bash harness/core/conformance.sh                    # auto-detect
+bash harness/core/conformance.sh --adapter cursor   # explicit
 ```
 
 ### Security baseline expanded

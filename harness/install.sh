@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # install.sh — Make harness scripts executable and print adoption steps for your tool.
 #
-# This script does two safe things:
+# This script does two things:
 #   1. chmod +x all harness/*.sh files
-#   2. Add .harness/ to .gitignore
+#   2. Add .harness/ to .gitignore (mutates the repo root .gitignore)
 #   3. Print the exact copy/paste commands to adopt for your detected tool
 #
-# No files outside harness/ are modified automatically.
+# Note: step 2 modifies .gitignore at the repo root.
 # Adapter adoption is copy-based — see harness/adapters/<tool>/ADAPTER.md.
 #
 # Usage:

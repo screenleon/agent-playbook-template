@@ -23,7 +23,8 @@ Since there is no runtime hook injection point, the generic adapter replaces hoo
 eval "$(bash harness/bootstrap.sh)"
 
 # 2. PRE phase — gate check + context pack assembly
-bash harness/adapters/generic/pre-invoke.sh
+#    Eval so generated HARNESS_* variables persist in the current shell.
+eval "$(bash harness/adapters/generic/pre-invoke.sh)"
 
 # 3. Invoke your agent tool
 your-agent-cli --task "..."

@@ -48,6 +48,7 @@ done
 _section "Script executability"
 
 for script in bootstrap.sh detect-tool.sh install.sh test.sh \
+    core/conformance.sh \
     core/gate-check.sh core/trace-validate.sh core/pack-validate.sh core/decision-capture.sh \
     adapters/generic/pre-invoke.sh adapters/generic/post-invoke.sh; do
   path="$REPO_ROOT/harness/$script"
