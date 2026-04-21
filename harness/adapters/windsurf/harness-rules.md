@@ -1,0 +1,40 @@
+# Harness governance
+
+## Bootstrap (run before any task)
+
+Run `eval "$(bash harness/bootstrap.sh)"` to load:
+
+- `HARNESS_EXECUTION_MODE` — supervised | semi-auto | autonomous
+- `HARNESS_BUDGET_PROFILE` — nano | minimal | standard | full
+- `HARNESS_LAYER1_FILES` — docs to load for Layer 1
+
+Load all files in `HARNESS_LAYER1_FILES` before reading task context.
+
+## Gate rules
+
+Stop and output `[HARNESS GATE] Awaiting approval for: <operation>` before executing any of the following. Do not proceed without explicit user confirmation:
+
+- `git push --force`, `git reset --hard`, amending published commits, `git branch -D`
+- Deleting files or directories (`rm -rf`, `rm -r`, file deletion tools)
+- Dropping database tables or running destructive migrations
+- Modifying `.github/workflows/`, CI/CD pipelines, deployment configs, or infrastructure
+- Publishing packages, pushing to `main`/`production` branches, creating releases
+- Modifying auth, permissions, or security configuration
+
+At `execution_mode: supervised` — stop for ALL listed operations.
+At `execution_mode: semi-auto` — stop for irreversible operations (force-push, drop, publish).
+At `execution_mode: autonomous` with `halt_on_destructive_actions: true` — stop for ALL listed.
+
+## POST phase (after task completion)
+
+1. Emit a trace record per `docs/agent-playbook.md` → Mandatory steps (step 14).
+2. Run `bash harness/adapters/generic/post-invoke.sh` to validate trace and capture decisions.
+
+## Layer 1 loading order
+
+Follow the four-layer loading order from `skills/prompt-cache-optimization/SKILL.md`:
+
+1. Static rules (`HARNESS_LAYER1_FILES`)
+2. Stable skills (always_load from `prompt-budget.yml`)
+3. Project state (`DECISIONS.md`, `ARCHITECTURE.md`)
+4. Volatile context (task files, diffs)
