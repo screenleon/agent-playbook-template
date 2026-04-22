@@ -8,7 +8,7 @@ For full release notes, see `CHANGELOG.md`.
 
 ---
 
-## Upgrading past 0.17.x — adapter-neutral observability and evals
+## Upgrading to 0.18.x — adapter-neutral observability and evals
 
 This release group adds measurement and governance-evaluation primitives
 that work across ALL adapters (not just claude-code). No breaking changes;
