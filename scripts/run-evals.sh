@@ -51,7 +51,14 @@ SELECTED=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
-    --format) REPORT_FORMAT="$2"; shift ;;
+    --format)
+      if [ $# -lt 2 ] || [ -z "${2:-}" ]; then
+        echo "ERROR: --format requires an argument (table|json)" >&2
+        exit 2
+      fi
+      REPORT_FORMAT="$2"
+      shift
+      ;;
     --format=*) REPORT_FORMAT="${1#*=}" ;;
     -h|--help)
       sed -n '2,30p' "$0"

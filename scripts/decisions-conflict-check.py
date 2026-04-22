@@ -201,7 +201,15 @@ def read_proposal(args: argparse.Namespace) -> str:
     if args.text is not None:
         return args.text
     if args.file is not None:
-        return Path(args.file).read_text(encoding="utf-8")
+        try:
+            return Path(args.file).read_text(encoding="utf-8")
+        except FileNotFoundError:
+            print(f"ERROR: input file not found: {args.file}", file=sys.stderr)
+            raise SystemExit(2)
+        except OSError as exc:
+            print(f"ERROR: could not read input file {args.file}: {exc}",
+                  file=sys.stderr)
+            raise SystemExit(2)
     if sys.stdin.isatty():
         return ""
     return sys.stdin.read()

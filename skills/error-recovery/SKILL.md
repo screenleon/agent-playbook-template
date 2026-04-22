@@ -77,9 +77,15 @@ escalation decision:
 
 ```yaml
 failure_families:
-  - { attempt: 1, family: test_failure, same_as_previous: false }
-  - { attempt: 2, family: test_failure, same_as_previous: true }
-  - { attempt: 3, family: test_failure, same_as_previous: true }  # escalate
+  - attempt: 1
+    family: test_failure
+    same_as_previous: false
+  - attempt: 2
+    family: test_failure
+    same_as_previous: true
+  - attempt: 3
+    family: test_failure
+    same_as_previous: true  # escalate
 ```
 
 ### Step 6: Escalate if stuck

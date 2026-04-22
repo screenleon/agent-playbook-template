@@ -42,7 +42,7 @@ def _coerce_scalar(raw: str) -> Any:
         return []
     if s == "{}":
         return {}
-    # Inline flow-style list `[a, b, c]` — strings only, no nested structures.
+    # Inline flow-style list `[a, b, c]` — scalars only, no nested structures.
     m = re.fullmatch(r"\[\s*(.*?)\s*\]", s)
     if m:
         body = m.group(1)
@@ -50,6 +50,23 @@ def _coerce_scalar(raw: str) -> Any:
             return []
         parts = [p.strip() for p in body.split(",")]
         return [_coerce_scalar(p) for p in parts]
+    # Inline flow-style mapping `{k: v, k2: v2}` — scalars only, no nesting.
+    m = re.fullmatch(r"\{\s*(.*?)\s*\}", s)
+    if m:
+        body = m.group(1)
+        if body == "":
+            return {}
+        out: dict = {}
+        for part in body.split(","):
+            kv = part.strip()
+            if not kv:
+                continue
+            if ":" not in kv:
+                # Not a well-formed k:v pair — fall back to raw string.
+                return s
+            k, v = kv.split(":", 1)
+            out[k.strip()] = _coerce_scalar(v.strip())
+        return out
     # Strip block-scalar indicators so multi-line strings don't confuse callers.
     if s in ("|", ">", "|-", ">-", "|+", ">+"):
         return ""

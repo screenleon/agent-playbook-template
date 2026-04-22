@@ -217,7 +217,8 @@ def isolation_signal(traces: list[tuple[str, dict]]) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Budget target loader (reads prompt-budget.yml → layer{1,2,3}_target_tokens)
+# Budget target loader — reads prompt-budget.yml:
+#   layer1_target_tokens, layer2_max_tokens, layer3_max_tokens
 # ---------------------------------------------------------------------------
 
 def _find_repo_root(start: Path) -> Path | None:
