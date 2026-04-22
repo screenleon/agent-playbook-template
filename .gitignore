@@ -6,3 +6,10 @@ prompt-budget.local.yml
 
 # Harness runtime artifacts
 .harness/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Agent trace output
+.agent-trace/

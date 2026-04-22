@@ -8,6 +8,59 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/schemas/trace.schema.yaml`** — canonical, adapter-neutral schema for
+  `.agent-trace/*.trace.yaml`. Formalizes the previously implicit format so any
+  runtime (claude-code, copilot, cursor, opencode, windsurf, generic) emits
+  traces that downstream tooling can consume. Adds optional `budget`,
+  `failure_families`, `runtime`, `eval_id`, and `task_summary` blocks for
+  advanced diagnostics without breaking the existing minimal/standard/full
+  depths.
+- **`scripts/trace-query.py`** — zero-dep Python analytics over
+  `.agent-trace/*.trace.yaml`. Flags: `--skill-hit-rate`, `--gate-activations`,
+  `--failure-families`, `--budget-usage`, `--role-transitions`, `--isolation`,
+  `--summary`, `--format table|json`. Uses a shared parser so adapters that
+  cannot load PyYAML still work. Enables the self-evolution protocol
+  (previously "on paper") to be triggered by measurable signals.
+- **`scripts/trace_query_impl.py`** — shared zero-dep YAML parser module for
+  trace/expected-behavior files. Used by `trace-query.py` and `score-eval.py`
+  to keep the tooling surface consistent and dependency-free.
+- **`scripts/decisions-conflict-check.py`** — zero-dep pre-plan contradiction
+  detector. Keyword-overlap with heading weighting + negation/antonym boosting.
+  Flags: `--text`, `--file`, `--decisions`, `--top`, `--warn-threshold`,
+  `--format table|json`. Emits verdicts `likely_conflict` (exit 1),
+  `possible_conflict`, or `no_likely_conflict` (exit 0). Any agent, any
+  adapter, can shell out to it before planning.
+- **`evals/` framework** — adapter-neutral governance evaluation suite with
+  6 seed fixtures: `small-typo-fix`, `medium-add-endpoint`,
+  `large-schema-migration`, `trap-scope-expansion`, `trap-decisions-conflict`,
+  `trap-destructive-action`. Each fixture pairs a `task.md` prompt with an
+  `expected-behavior.yaml` contract. `evals/README.md` and
+  `evals/schema/expected-behavior.schema.yaml` document the interface.
+- **`scripts/run-evals.sh`** — adapter-neutral eval runner. Does not hardcode
+  any runtime; shells out to the user-provided `$AGENT_INVOKE` command with a
+  stable three-argument contract (`task.md`, `eval_id`, `trace_output_path`).
+  Aggregates per-fixture results and exits non-zero on any failure.
+- **`scripts/score-eval.py`** — compares a trace YAML against an
+  `expected-behavior.yaml` contract. Checks scale, required/forbidden roles,
+  required skills, required gates, file-count bounds, reflection dimensions,
+  decisions-made policy, and trap-specific responses. Missing expectations are
+  skipped (not failed), so fixtures can declare only what matters.
+- **`evals/adapters/manual.sh`** — works with any tool; prints the prompt and
+  waits for the user to save the trace by hand. No automation required.
+- **`evals/adapters/generic-cli.sh`** — template wrapper for any CLI-based
+  agent runtime. Copy, set `AGENT_CMD`, done. Prompt includes a directive
+  telling the agent where to write the trace.
+
+### Changed
+
+- **`skills/error-recovery/SKILL.md`** — the "3 attempts then escalate" rule
+  is now *same-family*. New **Step 5a: Failure-family check** instructs all
+  adapters to run `harness/core/failure-family-detect.sh` (or emulate it) and
+  record per-attempt family in the trace's `failure_families[]` block.
+  Conformance self-check and auditable indicators updated accordingly.
+
 ## [0.17.0] - 2026-04-21
 
 ### Added
