@@ -17,7 +17,8 @@ Architecture for this repository. Replace with your own module map and data flow
 | `DECISIONS.md` / `DECISIONS_ARCHIVE.md` | Active and archived architectural/behavioral decisions |
 | `prompt-budget.yml` | Execution mode, budget profile, and role/skill enablement controls |
 | `examples/` | Reference operating profiles and usage patterns |
-| `evals/` | Adapter-neutral governance evaluation suite — canonical fixtures + runner |
+| `evals/tasks/` | Agent-behavior fixtures for the governance evaluation suite |
+| `evals/tooling/` | Tooling output fixtures (e.g., deterministic context-pack builds) |
 
 ## Data flow
 
@@ -38,6 +39,7 @@ Primary flow for repository usage:
 - `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, enabled roles/skills, and optional abstract model-tier routing policy.
 - `docs/schemas/handoff-artifact.schema.yaml` — structured handoff artifact contract between roles.
 - `docs/schemas/trace.schema.yaml` — adapter-neutral trace contract consumed by `scripts/trace-query.py`, `scripts/score-eval.py`, `scripts/agent-review.sh`, and CI workflows.
+- `docs/schemas/context-pack.schema.json` — adapter-neutral context-pack contract (schema 1.1.0). Emitted by `scripts/build-context-pack.py`, verified by `evals/tooling/context-pack-determinism/`.
 - `evals/schema/expected-behavior.schema.yaml` — per-fixture eval contract used by `scripts/score-eval.py`.
 - `DECISIONS.md` format — contradiction-check contract used before planning and implementation.
 

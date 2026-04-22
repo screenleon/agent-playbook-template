@@ -32,6 +32,8 @@ Choose the path that fits your situation — all three lead to the same governan
 | Upgrading the template | `MIGRATION.md` |
 | Contradiction check before planning | `python3 scripts/decisions-conflict-check.py --text "..."` |
 | Governance regression tests | `bash scripts/run-evals.sh` (see `evals/README.md`) |
+| Deterministic context pack for cross-tool handoff | `python3 scripts/build-context-pack.py ...` |
+| Tooling output regression tests | `bash scripts/test-tooling.sh` (see `evals/tooling/README.md`) |
 
 ---
 

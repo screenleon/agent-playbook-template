@@ -8,6 +8,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/schemas/context-pack.schema.json`** — schema bumped to 1.1.0 (both
+  1.0.0 and 1.1.0 validate) with a new optional `orchestration` block that
+  records `budget`, `selection`, `dropped`, and `determinism` metadata for
+  budget-aware context orchestration. Adapter-neutral by construction: the
+  block describes pack-assembly decisions using canonical repo refs only,
+  with no IDE/session state.
+- **`scripts/build-context-pack.py`** — zero-dep (stdlib only) deterministic
+  context-pack builder. Reads `AGENTS.md`, `rules/global/`, `rules/domain/`,
+  `project/project-manifest.md`, `DECISIONS.md`, and `docs/schemas/` to
+  assemble a pack conforming to schema 1.1.0. Ranks candidate refs by
+  priority, fills within a profile-aware token budget, and emits
+  `orchestration.determinism.{input_hash,output_hash}` so identical inputs
+  produce byte-identical packs.
+- **`evals/tooling/`** — new fixture namespace for tooling output checks.
+  `evals/tooling/context-pack-determinism/` verifies the builder is
+  byte-deterministic and matches a checked-in golden `expected.json`.
+- **`scripts/test-tooling.sh`** — runner for `evals/tooling/` fixtures.
+  Exits non-zero on any mismatch so it can gate CI.
+
 ## [0.18.0] - 2026-04-22
 
 ### Added

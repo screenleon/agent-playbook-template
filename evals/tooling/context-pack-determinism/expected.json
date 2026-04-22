@@ -1,0 +1,196 @@
+{
+  "approved_scope": {
+    "acceptance_criteria": [
+      "Greeting reads correctly."
+    ],
+    "allowed_paths": [
+      "src/"
+    ],
+    "non_goals": [],
+    "summary": "Edit the greeting constant; run the targeted test."
+  },
+  "artifacts": {
+    "context_files": [],
+    "critical_context": []
+  },
+  "audit": {
+    "generated_by": "tooling-eval",
+    "source_marker": "tooling-eval",
+    "trace_id": "trace-fixture-0001"
+  },
+  "budget_profile": "standard",
+  "constraints": [
+    "Constraint 1: Source of truth for project-local constraints is `project/project-manifest.md`; do not duplicate active repo-specific constraints in `docs/operating-rules.md`.",
+    "Constraint 2: Workflow wording changes must keep `AGENTS.md`, `docs/agent-playbook.md`, `.github/copilot-instructions.md`, and affected skills aligned in the same change, including the `DECISIONS.md` example-only guard when `decision_log.policy: example_only` applies.",
+    "Constraint 3: Governance automation should stay shell-first and runnable in CI without extra language runtimes.",
+    "Constraint 4: `DECISIONS.md` is **example-only** in this template repo. See [DECISIONS.md policy](#decisionsmd-policy) below."
+  ],
+  "execution_mode": "semi-auto",
+  "expected_output": {
+    "format": "patch",
+    "response_sections": [],
+    "success_definition": "Patch applies and test passes.",
+    "validation_required": false
+  },
+  "generated_at": "2026-04-22T00:00:00Z",
+  "intent_mode": "implement",
+  "objective": "Fix typo in greeting string.",
+  "orchestration": {
+    "budget": {
+      "allocated": {
+        "entrypoint": 3739,
+        "reserve": 1200,
+        "rules": 7061
+      },
+      "estimate_method": "word_count*1.35",
+      "profile": "standard",
+      "target_total_tokens": 12000
+    },
+    "determinism": {
+      "builder_version": "1.0.0",
+      "input_hash": "sha256:e2a77c1ea0bbf0922c522059be4b06842ee0baae8b29980f6ae85ff99e27b5ec",
+      "output_hash": "sha256:4f8f47131a644b2842be9315aee8d139b68804daf4806a44d52a12c983b6c196"
+    },
+    "dropped": [
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/rules-nano.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/rules-quickstart.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "project/project-manifest.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/domain/README.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/domain/backend-api.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/domain/cloud-infra.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/domain/frontend-components.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/global/README.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/global/prompt-injection.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/global/security-baseline.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/agent-templates.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "DECISIONS.md#2026-04-19: Project-local constraints live in the manifest"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "DECISIONS.md#2026-04-19: Template repo ships starter governance automation"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/schemas/context-pack.schema.json"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/schemas/handoff-artifact.schema.yaml"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/schemas/trace.schema.yaml"
+      }
+    ],
+    "selection": [
+      {
+        "priority": 1,
+        "reason": "root entrypoint file",
+        "ref": "AGENTS.md",
+        "truncated": false,
+        "truncation_method": "none"
+      },
+      {
+        "priority": 1,
+        "reason": "root entrypoint file",
+        "ref": "ARCHITECTURE.md",
+        "truncated": false,
+        "truncation_method": "none"
+      },
+      {
+        "priority": 1,
+        "reason": "root entrypoint file",
+        "ref": "README.md",
+        "truncated": false,
+        "truncation_method": "none"
+      },
+      {
+        "priority": 2,
+        "reason": "rule surface for profile=standard",
+        "ref": "docs/agent-playbook.md",
+        "truncated": false,
+        "truncation_method": "none"
+      },
+      {
+        "priority": 2,
+        "reason": "rule surface for profile=standard",
+        "ref": "docs/operating-rules.md",
+        "truncated": true,
+        "truncation_method": "headings-only"
+      }
+    ]
+  },
+  "pack_id": "pk-fixture-0001",
+  "role": "application-implementer",
+  "schema_version": "1.1.0",
+  "source_of_truth": {
+    "contract_refs": [
+      "docs/schemas/context-pack.schema.json",
+      "docs/schemas/handoff-artifact.schema.yaml",
+      "docs/schemas/trace.schema.yaml"
+    ],
+    "decision_refs": [
+      "DECISIONS.md#2026-04-19: Project-local constraints live in the manifest",
+      "DECISIONS.md#2026-04-19: Template repo ships starter governance automation"
+    ],
+    "entrypoint_refs": [
+      "AGENTS.md",
+      "README.md",
+      "ARCHITECTURE.md"
+    ],
+    "playbook_refs": [
+      "docs/agent-playbook.md",
+      "docs/agent-templates.md"
+    ],
+    "rules_refs": [
+      "docs/rules-nano.md",
+      "docs/rules-quickstart.md",
+      "docs/operating-rules.md",
+      "docs/agent-playbook.md",
+      "rules/domain/README.md",
+      "rules/domain/backend-api.md",
+      "rules/domain/cloud-infra.md",
+      "rules/domain/frontend-components.md",
+      "rules/global/README.md",
+      "rules/global/prompt-injection.md",
+      "rules/global/security-baseline.md",
+      "project/project-manifest.md"
+    ]
+  },
+  "task_scale": "Small"
+}
