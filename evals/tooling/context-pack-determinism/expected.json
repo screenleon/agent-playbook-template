@@ -38,10 +38,9 @@
   "orchestration": {
     "budget": {
       "allocated": {
-        "entrypoint": 3677,
-        "playbook": 6762,
+        "entrypoint": 3739,
         "reserve": 1200,
-        "rules": 16789
+        "rules": 7061
       },
       "estimate_method": "word_count*1.35",
       "profile": "standard",
@@ -49,8 +48,8 @@
     },
     "determinism": {
       "builder_version": "1.0.0",
-      "input_hash": "sha256:b2db19685053bd0a62227e767d7197b757d58951adffe0237fab09346011ce34",
-      "output_hash": "sha256:89322709bf155f44ffa87b901d490943931464fed20b230cce330b4b0dbdea8b"
+      "input_hash": "sha256:e2a77c1ea0bbf0922c522059be4b06842ee0baae8b29980f6ae85ff99e27b5ec",
+      "output_hash": "sha256:4f8f47131a644b2842be9315aee8d139b68804daf4806a44d52a12c983b6c196"
     },
     "dropped": [
       {
@@ -95,15 +94,7 @@
       },
       {
         "reason": "budget exhausted",
-        "ref": "docs/agent-playbook.md"
-      },
-      {
-        "reason": "budget exhausted",
         "ref": "docs/agent-templates.md"
-      },
-      {
-        "reason": "budget exhausted",
-        "ref": "project/project-manifest.md"
       },
       {
         "reason": "budget exhausted",

@@ -112,6 +112,7 @@ class BuilderInput:
     parent_pack_id: str | None
     context_version: str | None
     max_decisions: int
+    target_tokens: int
     extra_constraints: list[str] = field(default_factory=list)
 
 
@@ -228,29 +229,6 @@ def _non_negotiables(repo: Path) -> list[str]:
     return out
 
 
-def _read_budget_targets(repo: Path) -> dict[str, int]:
-    # Minimal YAML reader for just the integer keys we care about.
-    pb = repo / "prompt-budget.yml"
-    if not pb.is_file():
-        return {}
-    out: dict[str, int] = {}
-    for line in pb.read_text(encoding="utf-8").splitlines():
-        s = line.strip()
-        for key in (
-            "layer1_target_tokens",
-            "layer2_max_tokens",
-            "layer3_max_tokens",
-            "layer4_target_tokens",
-        ):
-            if s.startswith(key + ":"):
-                rhs = s.split(":", 1)[1].split("#", 1)[0].strip()
-                try:
-                    out[key] = int(rhs)
-                except ValueError:
-                    pass
-    return out
-
-
 # ---------------------------------------------------------------------------
 # Token estimation
 # ---------------------------------------------------------------------------
@@ -285,6 +263,83 @@ def _priority_for_kind(kind: str) -> int:
     }.get(kind, 9)
 
 
+def _gather_candidates(
+    repo: Path,
+    inp: BuilderInput,
+    multiplier: float,
+) -> list[dict]:
+    """Build the raw (possibly duplicate) candidate list.
+
+    Each entry is a dict with stable keys: ref, priority, label, reason, tokens.
+    """
+    entrypoints = _list_entrypoints(repo)
+    rules = _list_rules(repo, inp.budget_profile)
+    playbook = _list_playbook_refs(repo)
+    contracts = _list_contract_refs(repo)
+    decisions = _recent_decisions(repo, inp.max_decisions)
+
+    raw: list[dict] = []
+
+    def _add(priority: int, ref: str, label: str, reason: str, tokens: int) -> None:
+        raw.append({
+            "ref": ref,
+            "priority": priority,
+            "label": label,
+            "reason": reason,
+            "tokens": tokens,
+        })
+
+    for ref in entrypoints:
+        _add(_priority_for_kind("entrypoint"), ref, "entrypoint",
+             "root entrypoint file",
+             _estimate_tokens_from_path(repo, ref, multiplier))
+    for ref in rules:
+        _add(_priority_for_kind("rules"), ref, "rules",
+             f"rule surface for profile={inp.budget_profile}",
+             _estimate_tokens_from_path(repo, ref, multiplier))
+    for ref in playbook:
+        _add(_priority_for_kind("playbook"), ref, "playbook",
+             "role routing / workflow reference",
+             _estimate_tokens_from_path(repo, ref, multiplier))
+    manifest_ref = "project/project-manifest.md"
+    if (repo / manifest_ref).is_file():
+        _add(_priority_for_kind("manifest"), manifest_ref, "manifest",
+             "project-local constraints",
+             _estimate_tokens_from_path(repo, manifest_ref, multiplier))
+    for idx, (heading, body) in enumerate(decisions):
+        ref = f"DECISIONS.md#{heading}"
+        _add(_priority_for_kind("decisions") + idx, ref, "decisions",
+             f"recent decision #{idx + 1}",
+             _estimate_tokens_from_text(heading + "\n" + body, multiplier))
+    for (path, _kind, reason, _required) in inp.context_files:
+        _add(_priority_for_kind("context_file"), path, "context_file", reason,
+             _estimate_tokens_from_path(repo, path, multiplier))
+    for ref in contracts:
+        _add(_priority_for_kind("contract"), ref, "contract",
+             "machine-readable contract",
+             _estimate_tokens_from_path(repo, ref, multiplier))
+    return raw
+
+
+def _dedupe_candidates(raw: list[dict]) -> list[dict]:
+    """Merge duplicates by `ref`, keeping the entry with the lowest priority.
+
+    Deterministic: ties on priority break on the existing entry's label
+    alphabetical order so identical inputs always pick the same winner.
+    """
+    best: dict[str, dict] = {}
+    for c in raw:
+        ref = c["ref"]
+        existing = best.get(ref)
+        if existing is None:
+            best[ref] = c
+            continue
+        # Lower priority wins; tie-break: stable label ordering.
+        if (c["priority"], c["label"]) < (existing["priority"], existing["label"]):
+            best[ref] = c
+    return sorted(best.values(), key=lambda x: (x["priority"], x["ref"]))
+
+
 def _build_selection_and_dropped(
     repo: Path,
     inp: BuilderInput,
@@ -293,76 +348,30 @@ def _build_selection_and_dropped(
 ) -> tuple[list[dict], list[dict], dict[str, int]]:
     """Rank candidates and greedily fill within the target token budget.
 
-    Deterministic: candidates are generated and sorted by (priority, ref) so
-    two identical invocations produce the same selection.
+    Deterministic: candidates are deduped by ref, then sorted by (priority,
+    ref) so two identical invocations produce the same selection.
     """
-    entrypoints = _list_entrypoints(repo)
-    rules = _list_rules(repo, inp.budget_profile)
-    playbook = _list_playbook_refs(repo)
-    contracts = _list_contract_refs(repo)
-    decisions = _recent_decisions(repo, inp.max_decisions)
-
-    candidates: list[tuple[int, str, str, str, int]] = []
-    # (priority, ref, kind_label_for_reason, reason, token_estimate)
-
-    for ref in entrypoints:
-        candidates.append((
-            _priority_for_kind("entrypoint"), ref, "entrypoint",
-            "root entrypoint file",
-            _estimate_tokens_from_path(repo, ref, multiplier),
-        ))
-    for ref in rules:
-        candidates.append((
-            _priority_for_kind("rules"), ref, "rules",
-            f"rule surface for profile={inp.budget_profile}",
-            _estimate_tokens_from_path(repo, ref, multiplier),
-        ))
-    for ref in playbook:
-        candidates.append((
-            _priority_for_kind("playbook"), ref, "playbook",
-            "role routing / workflow reference",
-            _estimate_tokens_from_path(repo, ref, multiplier),
-        ))
-    manifest_ref = "project/project-manifest.md"
-    if (repo / manifest_ref).is_file():
-        candidates.append((
-            _priority_for_kind("manifest"), manifest_ref, "manifest",
-            "project-local constraints",
-            _estimate_tokens_from_path(repo, manifest_ref, multiplier),
-        ))
-    for idx, (heading, body) in enumerate(decisions):
-        ref = f"DECISIONS.md#{heading}"
-        candidates.append((
-            _priority_for_kind("decisions") + idx, ref, "decisions",
-            f"recent decision #{idx + 1}",
-            _estimate_tokens_from_text(heading + "\n" + body, multiplier),
-        ))
-    for (path, kind, reason, _required) in inp.context_files:
-        candidates.append((
-            _priority_for_kind("context_file"), path, "context_file", reason,
-            _estimate_tokens_from_path(repo, path, multiplier),
-        ))
-    for ref in contracts:
-        candidates.append((
-            _priority_for_kind("contract"), ref, "contract",
-            "machine-readable contract",
-            _estimate_tokens_from_path(repo, ref, multiplier),
-        ))
-
-    # Deterministic tie-break: (priority, ref).
-    candidates.sort(key=lambda t: (t[0], t[1]))
+    candidates = _dedupe_candidates(_gather_candidates(repo, inp, multiplier))
 
     selected: list[dict] = []
     dropped: list[dict] = []
     consumed = 0
     # Reserve 10% of target for critical context + output framing.
     working_target = int(target_tokens * 0.90) if target_tokens > 0 else 0
+    # Track actual tokens included (post-truncation) per selected ref so
+    # the rollup below reflects what the pack actually spent.
+    label_by_ref: dict[str, str] = {c["ref"]: c["label"] for c in candidates}
+    tokens_included: dict[str, int] = {}
 
-    for priority, ref, _label, reason, tokens in candidates:
+    for cand in candidates:
+        ref = cand["ref"]
+        priority = cand["priority"]
+        reason = cand["reason"]
+        tokens = cand["tokens"]
+
         if working_target and consumed + tokens > working_target:
-            # Try a truncated variant before dropping outright.
             remaining = max(0, working_target - consumed)
-            if remaining >= 50:  # enough room for a headings-only shim
+            if remaining >= 50:
                 selected.append({
                     "ref": ref,
                     "priority": priority,
@@ -370,29 +379,29 @@ def _build_selection_and_dropped(
                     "truncated": True,
                     "truncation_method": "headings-only",
                 })
+                tokens_included[ref] = remaining
                 consumed += remaining
             else:
                 dropped.append({"ref": ref, "reason": "budget exhausted"})
             continue
-        entry: dict[str, Any] = {
+
+        selected.append({
             "ref": ref,
             "priority": priority,
             "reason": reason,
             "truncated": False,
             "truncation_method": "none",
-        }
-        selected.append(entry)
+        })
+        tokens_included[ref] = tokens
         consumed += tokens
 
-    allocation: dict[str, int] = {}
-    # Roll up allocation by kind for the budget block.
+    # Roll up by label using ONLY selected refs + their actual included tokens.
     by_kind: dict[str, int] = {}
-    for priority, ref, label, _reason, tokens in candidates:
-        if any(s["ref"] == ref for s in selected):
-            by_kind[label] = by_kind.get(label, 0) + tokens
-    # Preserve deterministic ordering in allocation dict by sorting keys.
-    for k in sorted(by_kind.keys()):
-        allocation[k] = by_kind[k]
+    for ref, tokens in tokens_included.items():
+        label = label_by_ref.get(ref, "other")
+        by_kind[label] = by_kind.get(label, 0) + tokens
+
+    allocation: dict[str, int] = {k: by_kind[k] for k in sorted(by_kind.keys())}
     allocation["reserve"] = max(0, target_tokens - consumed)
 
     return selected, dropped, allocation
@@ -410,10 +419,36 @@ def _sha256(s: str) -> str:
     return "sha256:" + hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 
+def _normalized_input_for_hash(inp: BuilderInput) -> dict[str, Any]:
+    """Return a canonical, order-independent view of the builder inputs.
+
+    Sort every list whose order is NOT semantically meaningful so that
+    two CLI invocations that pass the same args in different orders
+    produce the same input_hash. Lists where order IS semantic
+    (response_sections, context_files which carry per-entry metadata)
+    are kept as-is.
+    """
+    d = dict(inp.__dict__)
+    for k in (
+        "allowed_paths",
+        "blocked_paths",
+        "non_goals",
+        "acceptance",
+        "critical_context",
+        "extra_constraints",
+    ):
+        if isinstance(d.get(k), list):
+            d[k] = sorted(d[k])
+    # context_files is a list of tuples; sort by path for stable ordering.
+    if isinstance(d.get("context_files"), list):
+        d["context_files"] = sorted(d["context_files"], key=lambda t: t[0])
+    return d
+
+
 def _compute_input_hash(inp: BuilderInput, repo_reads: dict[str, str]) -> str:
-    # Hash the full normalized input + every repo file the builder actually read.
+    # Hash a normalized view of the input + every repo file actually read.
     payload = {
-        "input": inp.__dict__,
+        "input": _normalized_input_for_hash(inp),
         "reads": {k: hashlib.sha256(v.encode("utf-8")).hexdigest()
                   for k, v in sorted(repo_reads.items())},
         "builder_version": BUILDER_VERSION,
@@ -425,11 +460,11 @@ def _assemble_pack(
     repo: Path,
     inp: BuilderInput,
 ) -> dict[str, Any]:
-    budget_targets = _read_budget_targets(repo)
-    # Resolve the total target for this profile.
-    target = budget_targets.get(f"layer{'1' if inp.budget_profile == 'nano' else '3'}_target_tokens", 0)
-    if not target:
-        target = DEFAULT_PROFILE_BUDGETS[inp.budget_profile]
+    # Total target: explicit --target-tokens wins, else the profile default.
+    # Note: prompt-budget.yml defines PER-LAYER targets (layer1_target_tokens
+    # etc.); mapping those onto a single context-pack total is ambiguous, so
+    # we keep the pack's total as an explicit builder decision.
+    target = inp.target_tokens if inp.target_tokens > 0 else DEFAULT_PROFILE_BUDGETS[inp.budget_profile]
 
     # Collect selected refs + token allocation.
     selected, dropped, allocation = _build_selection_and_dropped(
@@ -472,8 +507,11 @@ def _assemble_pack(
             "summary": inp.scope_summary or inp.objective,
             "allowed_paths": sorted(inp.allowed_paths),
             "blocked_paths": sorted(inp.blocked_paths),
-            "non_goals": list(inp.non_goals),
-            "acceptance_criteria": list(inp.acceptance),
+            # Sort these so order-independent CLI invocations produce
+            # byte-identical packs. `response_sections` below keeps user
+            # order because its order IS semantic (render order).
+            "non_goals": sorted(inp.non_goals),
+            "acceptance_criteria": sorted(inp.acceptance),
         },
         "constraints": all_constraints,
         "source_of_truth": {
@@ -495,7 +533,7 @@ def _assemble_pack(
                     inp.context_files, key=lambda x: x[0]
                 )
             ],
-            "critical_context": list(inp.critical_context),
+            "critical_context": sorted(inp.critical_context),
         },
         "expected_output": {
             "format": inp.output_format,
@@ -621,6 +659,7 @@ def _build_input(args: argparse.Namespace) -> BuilderInput:
         parent_pack_id=args.parent_pack_id,
         context_version=args.context_version,
         max_decisions=args.max_decisions,
+        target_tokens=int(args.target_tokens) if args.target_tokens else 0,
         extra_constraints=list(args.constraint),
     )
 
@@ -661,6 +700,11 @@ def main() -> int:
     ap.add_argument("--parent-pack-id", default=None)
     ap.add_argument("--context-version", default=None)
     ap.add_argument("--max-decisions", type=int, default=5)
+    ap.add_argument("--target-tokens", type=int, default=0,
+                    help="Override total token target for the pack. "
+                         "Default: DEFAULT_PROFILE_BUDGETS[profile]. "
+                         "prompt-budget.yml holds per-layer targets, not a "
+                         "pack total, so it is not auto-read.")
     ap.add_argument("--output", default="-",
                     help="Output file path (default: stdout).")
     ap.add_argument("--pretty", action="store_true",

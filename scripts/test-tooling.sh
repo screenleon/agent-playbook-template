@@ -25,6 +25,14 @@ if [ ! -d "$FIXTURES_DIR" ]; then
   exit 2
 fi
 
+# Script-level tempdir + EXIT trap so cleanup runs on all exit paths
+# (including `set -e` aborts, SIGINT, and fixture-runner failures).
+TOOLING_TMPDIR="$(mktemp -d -t test-tooling.XXXXXX)"
+cleanup_tooling_tmpdir() {
+  rm -rf "$TOOLING_TMPDIR"
+}
+trap cleanup_tooling_tmpdir EXIT
+
 run_context_pack_determinism() {
   local fixture_dir="$1"
   local name
@@ -32,16 +40,16 @@ run_context_pack_determinism() {
   local input_env="$fixture_dir/input.env"
   local expected="$fixture_dir/expected.json"
   if [ ! -f "$input_env" ] || [ ! -f "$expected" ]; then
-    echo "[$name] SKIP — fixture missing input.env or expected.json" >&2
-    return 2
+    echo "[$name] FAIL — fixture missing input.env or expected.json" >&2
+    return 1
   fi
 
   # shellcheck disable=SC1090
   source "$input_env"
 
   local out1 out2 rc=0
-  out1="$(mktemp)"
-  out2="$(mktemp)"
+  out1="$TOOLING_TMPDIR/$name.1.json"
+  out2="$TOOLING_TMPDIR/$name.2.json"
 
   for target in "$out1" "$out2"; do
     python3 "$REPO_ROOT/scripts/build-context-pack.py" \
@@ -79,7 +87,6 @@ run_context_pack_determinism() {
     echo "[$name] PASS"
   fi
 
-  rm -f "$out1" "$out2"
   return $rc
 }
 
@@ -90,8 +97,10 @@ dispatch() {
   case "$name" in
     context-pack-determinism) run_context_pack_determinism "$fixture_dir" ;;
     *)
-      echo "[$name] SKIP — no runner registered for this fixture" >&2
-      return 2
+      # An unwired fixture is a failure, not a skip: silently skipping
+      # hides regressions where someone adds a fixture without wiring it.
+      echo "[$name] FAIL — no runner registered for this fixture. Add a branch in dispatch()." >&2
+      return 1
       ;;
   esac
 }
