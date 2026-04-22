@@ -25,8 +25,11 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "description": "Version of the context-pack contract.",
-      "const": "1.0.0"
+      "description": "Version of the context-pack contract. 1.1.0 adds the optional `orchestration` block (budget/selection/dropped/determinism); packs that omit `orchestration` remain valid at 1.0.0.",
+      "enum": [
+        "1.0.0",
+        "1.1.0"
+      ]
     },
     "pack_id": {
       "type": "string",
@@ -393,6 +396,144 @@
         "generated_by": {
           "type": "string",
           "description": "Human or agent identity that assembled the pack."
+        }
+      }
+    },
+    "orchestration": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (schema 1.1.0+) budget-aware orchestration metadata. Records how the pack was selected, ranked, truncated, and made reproducible. Adapter-neutral: the builder reads canonical repo context only (AGENTS.md, rules, project manifest, DECISIONS.md, task-declared files) and does NOT consume IDE or session state.",
+      "properties": {
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Token budget bookkeeping for this pack.",
+          "required": [
+            "profile",
+            "target_total_tokens",
+            "allocated"
+          ],
+          "properties": {
+            "profile": {
+              "type": "string",
+              "enum": [
+                "nano",
+                "minimal",
+                "standard",
+                "full"
+              ]
+            },
+            "target_total_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "allocated": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "description": "Token allocation per logical section (e.g., rules, decisions, context_files, critical, reserve). Keys are free-form but should be stable across runs."
+            },
+            "estimate_method": {
+              "type": "string",
+              "description": "How the token counts were estimated (e.g., 'word_count*1.35'). Present when the builder estimates tokens itself."
+            }
+          }
+        },
+        "selection": {
+          "type": "array",
+          "description": "Ranked set of refs the builder chose to include. Ordered by priority ascending (1 = most important). Output ordering MUST be deterministic for identical inputs.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "priority",
+              "reason"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "description": "Path or logical ref that was included."
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Lower integers are more important. Ties broken deterministically by ref."
+              },
+              "score": {
+                "type": "number",
+                "description": "Optional raw relevance score. Present when the builder used a scoring function."
+              },
+              "reason": {
+                "type": "string",
+                "description": "Short rationale so humans can audit selection."
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True if the ref's content was summarized or cropped before inclusion."
+              },
+              "truncation_method": {
+                "type": "string",
+                "enum": [
+                  "headings-only",
+                  "head-tail",
+                  "summary",
+                  "dropped-body",
+                  "none"
+                ]
+              }
+            }
+          }
+        },
+        "dropped": {
+          "type": "array",
+          "description": "Refs the builder considered but excluded. Empty when no candidates were evaluated.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "reason"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Why the ref was not included (e.g., 'below threshold', 'budget exhausted', 'not in approved scope')."
+              },
+              "score": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "determinism": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Reproducibility markers. Given the same inputs, a conforming builder MUST produce identical output_hash values.",
+          "required": [
+            "builder_version",
+            "input_hash",
+            "output_hash"
+          ],
+          "properties": {
+            "builder_version": {
+              "type": "string",
+              "description": "Semver of the builder that produced this pack."
+            },
+            "input_hash": {
+              "type": "string",
+              "description": "sha256 hex digest of the normalized builder inputs (args + canonical repo files read)."
+            },
+            "output_hash": {
+              "type": "string",
+              "description": "sha256 hex digest of the canonical-JSON serialization of this pack with the `output_hash` field itself replaced by an empty string."
+            }
+          }
         }
       }
     }
