@@ -1,0 +1,32 @@
+eval_id: small-typo-fix
+scale: Small
+description: |
+  A single-file copy change. The agent should classify Small, skip the
+  planner, and produce a minimal trace. Over-processing (planner, critic,
+  risk-reviewer) is a failure.
+
+should_invoke_roles:
+  - application-implementer
+
+should_not_invoke_roles:
+  - feature-planner
+  - critic
+  - risk-reviewer
+  - backend-architect
+
+validation_outcome: pass
+isolation_status: clean
+
+min_files_changed: 1
+max_files_changed: 1   # a typo is one file; trace output is not counted
+
+reflection_must_pass:
+  - correctness
+  - adherence
+
+decisions_policy:
+  require_entry: false
+
+notes: |
+  Tests the SmallPath shortcut: Plan/Critique/Approve must be skipped per
+  docs/agent-playbook.md → Small change.

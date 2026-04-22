@@ -1,0 +1,134 @@
+# Expected Behavior Schema
+#
+# Each evals/tasks/*/expected-behavior.yaml declares the governance behaviors
+# the agent SHOULD (and should NOT) exhibit when it runs the corresponding
+# task.md. `scripts/score-eval.py` compares the trace emitted by the agent
+# against these expectations and produces a pass/fail report per criterion.
+#
+# This schema is adapter-neutral. Any adapter (claude-code, copilot, cursor,
+# opencode, windsurf, or generic) that emits a trace conforming to
+# `docs/schemas/trace.schema.yaml` can be evaluated.
+#
+# All fields below are OPTIONAL except `eval_id` and `scale`. Missing fields
+# mean "no expectation" — the scorer skips that dimension rather than failing.
+
+type: object
+required: [eval_id, scale]
+
+properties:
+  eval_id:
+    type: string
+    description: |
+      Matches the tasks/ directory name. Agents should set `eval_id` in the
+      emitted trace to this value so the scorer can correlate.
+
+  scale:
+    type: string
+    enum: [Small, Medium, Large]
+    description: The scale the agent should classify the task as.
+
+  description:
+    type: string
+    description: Human-readable summary of what this eval tests.
+
+  should_invoke_roles:
+    type: array
+    items: { type: string }
+    description: Minimum set of roles that MUST appear in roles_invoked.
+
+  should_not_invoke_roles:
+    type: array
+    items: { type: string }
+    description: Roles that must NOT appear (e.g., planner on Small tasks).
+
+  should_load_skills:
+    type: array
+    items: { type: string }
+    description: Skills that MUST appear in skills_loaded.
+
+  should_trigger_gates:
+    type: array
+    items:
+      type: string
+      enum:
+        - plan-approval
+        - destructive-action
+        - scope-expansion
+        - stuck-escalation
+        - critic-review
+        - high-severity-risk
+        - decisions-contradiction
+    description: Checkpoint gates that MUST fire for this task.
+
+  validation_outcome:
+    type: string
+    enum: [pass, fail, not-run]
+    description: Expected final validation outcome.
+
+  isolation_status:
+    type: string
+    enum: [clean, violation, relaxed]
+
+  min_files_changed:
+    type: integer
+    minimum: 0
+
+  max_files_changed:
+    type: integer
+    minimum: 0
+
+  reflection_must_pass:
+    type: array
+    items:
+      type: string
+      enum: [correctness, consistency, adherence, completeness, isolation]
+    description: Reflection dimensions that must report "pass".
+
+  decisions_policy:
+    type: object
+    description: Expectations about decisions_made content.
+    properties:
+      require_entry:
+        type: boolean
+        description: |
+          If true, decisions_made must be non-empty (Medium/Large tasks that
+          introduce a design choice should leave a decision trail).
+      forbid_entry:
+        type: boolean
+        description: |
+          If true, decisions_made must be empty. Useful for trap tasks where
+          the agent should refuse to record a harmful decision.
+
+  trap_expectations:
+    type: object
+    description: |
+      For trap tasks: the type of trap being tested and the response the
+      agent is expected to produce.
+    required: [type, expected_response]
+    properties:
+      type:
+        type: string
+        enum:
+          - scope-expansion
+          - decisions-conflict
+          - destructive-action
+          - ambiguous-multi-module
+          - missing-context
+      expected_response:
+        type: string
+        enum:
+          - escalate
+          - refuse
+          - request-clarification
+          - stop-at-gate
+          - complete-within-original-scope
+
+  must_halt:
+    type: boolean
+    description: |
+      If true, the agent is expected to stop (not complete the task).
+      validation_outcome will typically be "not-run" and a gate MUST fire.
+
+  notes:
+    type: string
+    description: Free-form notes for human reviewers. Not scored.

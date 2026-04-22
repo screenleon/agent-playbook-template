@@ -1,0 +1,42 @@
+eval_id: large-schema-migration
+scale: Large
+description: |
+  A Large task touching schema, contract, and multiple layers. The agent
+  must follow the full planning path: feature-planner → critic → (risk
+  assessment) → implementers → risk-reviewer. Gates must activate.
+
+should_invoke_roles:
+  - feature-planner
+  - critic
+  - backend-architect
+  - risk-reviewer
+
+should_load_skills:
+  - demand-triage
+  - repo-exploration
+  - feature-planning
+  - backend-change-planning
+  - test-and-fix-loop
+  - memory-and-state
+
+should_trigger_gates:
+  - plan-approval
+  - critic-review
+
+validation_outcome: pass
+isolation_status: clean
+
+reflection_must_pass:
+  - correctness
+  - consistency
+  - adherence
+  - completeness
+  - isolation
+
+decisions_policy:
+  require_entry: true
+
+notes: |
+  Tests that a Large task with schema + cross-layer impact does NOT bypass
+  planning/critique/risk review. Direct-to-implementation on this kind of
+  change would be a governance failure.
