@@ -1,0 +1,237 @@
+# Trace Schema (Adapter-Neutral)
+#
+# Canonical schema for `.agent-trace/*.trace.yaml` files.
+#
+# This schema formalizes the format used by agents running under ANY adapter
+# (claude-code, copilot, cursor, opencode, windsurf, or generic). Any tooling
+# that consumes traces — `scripts/agent-review.sh`, `scripts/trace-query.py`,
+# `scripts/score-eval.py`, CI workflows, external dashboards — reads this
+# schema as the single source of truth.
+#
+# Three depth levels correspond to task scale:
+#   - minimal  — inline in task summary (Small tasks)
+#   - standard — structured file (Medium tasks)
+#   - full     — structured file with per-role steps (Large tasks)
+#
+# Field presence rules:
+#   - Required fields are present in ALL depths.
+#   - Standard-tier fields are present in Medium and Large traces.
+#   - Full-tier fields are present only in Large traces.
+#   - Optional fields may be omitted; consumers must tolerate absence.
+
+type: object
+required:
+  - task
+  - date
+  - scale
+  - files_changed
+  - decisions_made
+  - validation_outcome
+
+properties:
+  # ── Required in all depths ─────────────────────────────────────────────────
+  task:
+    type: string
+    description: One-sentence objective of the task.
+
+  date:
+    type: string
+    description: ISO-8601 date (YYYY-MM-DD) when the trace was emitted.
+
+  scale:
+    type: string
+    enum: [Small, Medium, Large]
+
+  files_changed:
+    type: array
+    items: { type: string }
+    description: File paths modified during the task. Empty list if none.
+
+  decisions_made:
+    type: array
+    items: { type: string }
+    description: |
+      References to DECISIONS.md entries OR inline decision summaries
+      (when decision_log.policy = example_only). Empty list if none.
+
+  validation_outcome:
+    type: string
+    enum: [pass, fail, not-run]
+
+  # ── Required at standard and full depths (Medium/Large) ───────────────────
+  trust_level:
+    type: string
+    enum: [supervised, semi-auto, autonomous]
+    description: Active trust level for this task.
+
+  roles_invoked:
+    type: array
+    items: { type: string }
+    description: Roles that participated. Multiple entries at Large scale.
+
+  skills_loaded:
+    type: array
+    items: { type: string }
+    description: Skills loaded or natively emulated (at minimal/nano profile).
+
+  reflection_summary:
+    type: object
+    description: Self-reflection rubric results.
+    properties:
+      correctness:   { type: string, enum: [pass, fail] }
+      consistency:   { type: string, enum: [pass, fail] }
+      adherence:     { type: string, enum: [pass, fail] }
+      completeness:  { type: string, enum: [pass, fail] }
+      isolation:
+        type: string
+        enum: [pass, fail, skipped]
+        description: Skipped is valid only for Small tasks.
+
+  isolation_status:
+    type: string
+    enum: [clean, violation, relaxed]
+    description: Context-isolation compliance outcome.
+
+  risks_accepted:
+    type: array
+    items: { type: string }
+    description: Risks acknowledged but not mitigated. Empty list if none.
+
+  # ── Required at full depth (Large only) ───────────────────────────────────
+  steps:
+    type: array
+    description: Per-role breakdown. Present for Large traces.
+    items:
+      type: object
+      required: [role, action]
+      properties:
+        role: { type: string }
+        action:
+          type: string
+          enum: [plan, critique, implement, review, document, coordinate]
+        decisions_made:
+          type: array
+          items: { type: string }
+        files_changed:
+          type: array
+          items: { type: string }
+        reflection_summary:
+          type: object
+          properties:
+            correctness:  { type: string, enum: [pass, fail] }
+            consistency:  { type: string, enum: [pass, fail] }
+            adherence:    { type: string, enum: [pass, fail] }
+            completeness: { type: string, enum: [pass, fail] }
+        handoff_target:
+          type: string
+          description: Next role or "user".
+
+  checkpoint_gates_hit:
+    type: array
+    description: Gates triggered during the task and their outcome.
+    items:
+      type: object
+      required: [gate, action]
+      properties:
+        gate:
+          type: string
+          enum:
+            - plan-approval
+            - destructive-action
+            - scope-expansion
+            - stuck-escalation
+            - critic-review
+            - high-severity-risk
+            - decisions-contradiction
+        action:
+          type: string
+          enum: [approved, auto-proceeded, advisory, blocked]
+
+  # ── Optional: budget feedback (any depth) ─────────────────────────────────
+  budget:
+    type: object
+    description: |
+      Actual token usage reported by the adapter, measured against the
+      targets in prompt-budget.yml. Enables the budget feedback loop.
+      Adapters that cannot measure token counts should omit this block.
+    properties:
+      profile:
+        type: string
+        enum: [nano, minimal, standard, full]
+      tokens_actual_layer1: { type: integer, minimum: 0 }
+      tokens_actual_layer2: { type: integer, minimum: 0 }
+      tokens_actual_layer3: { type: integer, minimum: 0 }
+      tokens_actual_layer4: { type: integer, minimum: 0 }
+      tokens_total:         { type: integer, minimum: 0 }
+
+  # ── Optional: failure-family diagnostics (any depth) ──────────────────────
+  failure_families:
+    type: array
+    description: |
+      Results from `harness/core/failure-family-detect.sh` across retry
+      attempts. Populated by the error-recovery skill when any retry occurs.
+    items:
+      type: object
+      required: [attempt, family]
+      properties:
+        attempt: { type: integer, minimum: 1 }
+        family:
+          type: string
+          enum:
+            - test_failure
+            - lint
+            - build_error
+            - exception
+            - schema_error
+            - auth_error
+            - infra_error
+            - unknown
+        same_as_previous: { type: boolean }
+
+  # ── Optional: runtime / adapter metadata ──────────────────────────────────
+  runtime:
+    type: object
+    description: |
+      Identifies the adapter and (optionally) model tier that produced this
+      trace. Present only when the adapter reports it. Consumers must not
+      require this field — traces from any adapter should remain readable.
+    properties:
+      adapter:
+        type: string
+        enum: [claude-code, copilot, cursor, opencode, windsurf, generic]
+      model_tier:
+        type: string
+        enum: [fast, balanced, deep]
+        description: Abstract tier, not provider/model id.
+      tier_escalations:
+        type: integer
+        minimum: 0
+        description: Number of times the task was retried at a deeper tier.
+
+  # ── Optional: evaluation correlation ──────────────────────────────────────
+  eval_id:
+    type: string
+    description: |
+      When this trace was produced by running an evals/tasks/* fixture,
+      set to the fixture directory name (e.g., "small-typo-fix"). Enables
+      scripts/score-eval.py to correlate trace with expected-behavior.yaml.
+
+  task_summary:
+    type: string
+    description: |
+      Final summary line for the task. Agents at decision_log.policy =
+      example_only record decisions here instead of DECISIONS.md.
+
+  # ── Optional: trap response label (used by evals scoring) ─────────────────
+  response_classification:
+    type: string
+    enum:
+      - complete-within-original-scope
+      - stop-at-gate
+      - escalate
+      - retry-with-correction
+    description: |
+      Coarse label describing how the agent resolved the task. Populated
+      when the trace is produced for a trap fixture (evals/tasks/trap-*).
+      `scripts/score-eval.py` matches this against
+      `expected-behavior.yaml → trap_expectations.expected_response`.
