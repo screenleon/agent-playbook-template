@@ -46,11 +46,51 @@ Use this skill when something goes wrong during implementation.
 
 - Re-run the exact command that produced the error.
 - If it passes, run the broader test suite to check for regressions.
-- If it fails again with the same error, try a different approach (max 3 attempts).
+- If it fails again, use the **failure-family check** below to decide
+  whether this counts as the "same failure" for escalation purposes.
+
+### Step 5a: Failure-family check (all adapters)
+
+The "3 attempts then escalate" rule counts *same-family* failures only.
+Cosmetic differences (line numbers, timestamps, memory addresses, stack
+depth) do not reset the counter — the underlying problem is the same.
+
+Before retrying, save each attempt's raw error output to a temp file and
+call the reference detector:
+
+```bash
+bash harness/core/failure-family-detect.sh attempt-N.log attempt-N+1.log
+# exit 0 → same family (do NOT reset counter)
+# exit 1 → different family (reset counter, continue)
+# exit 2 → unknown / empty input (treat as same family; do not reset)
+```
+
+The script classifies errors into 7 families (`test_failure`, `lint`,
+`build_error`, `exception`, `schema_error`, `auth_error`, `infra_error`).
+It is adapter-neutral — any runtime can shell out to it. If your runtime
+cannot run shell scripts, emulate the classification natively and record
+the result in `failure_families[]` on your trace (see
+`docs/schemas/trace.schema.yaml`).
+
+Record each attempt's family in the trace so reviewers can audit the
+escalation decision:
+
+```yaml
+failure_families:
+  - attempt: 1
+    family: test_failure
+    same_as_previous: false
+  - attempt: 2
+    family: test_failure
+    same_as_previous: true
+  - attempt: 3
+    family: test_failure
+    same_as_previous: true  # escalate
+```
 
 ### Step 6: Escalate if stuck
 
-If 3 fix attempts fail, report to the user:
+If 3 *same-family* fix attempts fail, report to the user:
 
 ```text
 Error: [exact error message]
@@ -83,7 +123,8 @@ Suggested next step: [what a human should check]
 All conditions below must be verifiable from task artifacts:
 
 - **Full-error evidence**: output includes exact failing command and primary error location (`file:line`).
-- **Attempt log evidence**: each retry records action and result; max 3 attempts before escalation.
+- **Attempt log evidence**: each retry records action and result; max 3 *same-family* attempts before escalation.
+- **Family classification evidence**: when any retry happens, the trace's `failure_families[]` records the detected family per attempt and the `same_as_previous` flag.
 - **Minimal-fix evidence**: changed files map to error path; unrelated edits are absent or justified.
 - **Escalation evidence**: if escalated, report includes error, attempts, hypothesis, and next step.
 
@@ -93,6 +134,7 @@ All conditions below must be verifiable from task artifacts:
 - [ ] Root cause was identified and stated
 - [ ] The fix was minimal (no unrelated changes bundled)
 - [ ] Re-verification was run and passed
+- [ ] When retries occurred: the failure-family check ran (shell or native) and the result was recorded in the trace
 - [ ] If escalated: the escalation report includes error message, attempts, hypothesis, and suggested next step
 
 ## Common misuses

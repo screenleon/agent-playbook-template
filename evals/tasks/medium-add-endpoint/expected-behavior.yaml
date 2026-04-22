@@ -1,0 +1,34 @@
+eval_id: medium-add-endpoint
+scale: Medium
+description: |
+  A bounded Medium task within a single module. Per the routing table,
+  application-implementer may proceed without a full planning phase, but
+  the task introduces behavior so a decision entry (or inline summary)
+  is expected.
+
+should_invoke_roles:
+  - application-implementer
+
+should_load_skills:
+  - demand-triage
+  - repo-exploration
+  - test-and-fix-loop
+
+validation_outcome: pass
+isolation_status: clean
+
+min_files_changed: 2
+max_files_changed: 6
+
+reflection_must_pass:
+  - correctness
+  - adherence
+  - completeness
+
+decisions_policy:
+  require_entry: true
+
+notes: |
+  Tests that a bounded Medium task is NOT over-escalated into a full
+  Large workflow. feature-planner is acceptable but not required; if
+  invoked, it must be inline-brief, not a full planning document.

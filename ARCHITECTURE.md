@@ -12,11 +12,12 @@ Architecture for this repository. Replace with your own module map and data flow
 | `rules/global/` | Cross-project rules layer (security baseline starter included) |
 | `rules/domain/` | Domain-specific rules layer |
 | `project/project-manifest.md` | Project-local constraints and boundary declarations |
-| `scripts/` | Documentation and layered-rule lint automation |
+| `scripts/` | Documentation lint, layered-rule lint, trace analytics, conflict-check, eval runner/scorer |
 | `.github/workflows/` | CI execution for governance and agent review checks |
 | `DECISIONS.md` / `DECISIONS_ARCHIVE.md` | Active and archived architectural/behavioral decisions |
 | `prompt-budget.yml` | Execution mode, budget profile, and role/skill enablement controls |
 | `examples/` | Reference operating profiles and usage patterns |
+| `evals/` | Adapter-neutral governance evaluation suite — canonical fixtures + runner |
 
 ## Data flow
 
@@ -36,6 +37,8 @@ Primary flow for repository usage:
 - `docs/agent-playbook.md` — canonical role ownership and routing contract.
 - `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, enabled roles/skills, and optional abstract model-tier routing policy.
 - `docs/schemas/handoff-artifact.schema.yaml` — structured handoff artifact contract between roles.
+- `docs/schemas/trace.schema.yaml` — adapter-neutral trace contract consumed by `scripts/trace-query.py`, `scripts/score-eval.py`, `scripts/agent-review.sh`, and CI workflows.
+- `evals/schema/expected-behavior.schema.yaml` — per-fixture eval contract used by `scripts/score-eval.py`.
 - `DECISIONS.md` format — contradiction-check contract used before planning and implementation.
 
 ## External service dependencies

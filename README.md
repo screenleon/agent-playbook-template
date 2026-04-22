@@ -25,10 +25,13 @@ Choose the path that fits your situation — all three lead to the same governan
 |---------|--------------|
 | Changing agent trust level | `prompt-budget.yml` → `execution_mode` |
 | Adding or removing roles | `docs/agent-playbook.md` + `.github/copilot-instructions.md` |
-| Budget / token cost | `bash scripts/budget-report.sh` |
-| Reviewing past traces | `bash scripts/agent-review.sh` |
+| Budget / token cost (targets) | `bash scripts/budget-report.sh` |
+| Budget / token cost (actuals) | `python3 scripts/trace-query.py --budget-usage` |
+| Reviewing past traces (analytics) | `python3 scripts/trace-query.py --summary` |
+| Reviewing past traces (quality) | `bash scripts/agent-review.sh` |
 | Upgrading the template | `MIGRATION.md` |
-| Contradiction check before planning | `bash scripts/decisions-context.sh` |
+| Contradiction check before planning | `python3 scripts/decisions-conflict-check.py --text "..."` |
+| Governance regression tests | `bash scripts/run-evals.sh` (see `evals/README.md`) |
 
 ---
 
@@ -185,6 +188,8 @@ If you maintain a fork, keep these phrases in your repository description and RE
 - project-level subagents for Claude-compatible tooling
 - reusable prompt templates for any chat-based coding tool
 - a machine-readable context-pack contract for multi-tool orchestration
+- a canonical trace schema (`docs/schemas/trace.schema.yaml`) usable by any adapter
+- an adapter-neutral evals framework (`evals/`) that verifies governance rules across tools
 - reusable skills you can adapt into your own agent ecosystem
 - repo-wide Copilot instructions
 

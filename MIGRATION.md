@@ -8,7 +8,56 @@ For full release notes, see `CHANGELOG.md`.
 
 ---
 
-## Upgrading to 0.17.x (this release)
+## Upgrading to 0.18.x — adapter-neutral observability and evals
+
+This release group adds measurement and governance-evaluation primitives
+that work across ALL adapters (not just claude-code). No breaking changes;
+everything is additive.
+
+### New files (all optional, all adapter-neutral)
+
+| File | Purpose |
+|------|---------|
+| `docs/schemas/trace.schema.yaml` | Canonical trace format — implicit before, explicit now |
+| `scripts/trace-query.py` | Analytics over `.agent-trace/*.trace.yaml` (skill hit rate, gate activations, failure families, budget usage, role transitions, isolation) |
+| `scripts/trace_query_impl.py` | Shared zero-dep YAML parser module (used by trace-query and score-eval) |
+| `scripts/decisions-conflict-check.py` | Pre-plan contradiction detector against `DECISIONS.md` |
+| `scripts/run-evals.sh` | Adapter-neutral eval runner (uses `$AGENT_INVOKE` contract) |
+| `scripts/score-eval.py` | Compares trace against `expected-behavior.yaml` |
+| `evals/README.md` | Framework documentation |
+| `evals/schema/expected-behavior.schema.yaml` | Schema for per-task expectations |
+| `evals/tasks/*/` | 6 seed fixtures (3 scales + 3 traps) |
+| `evals/adapters/manual.sh` | Works with any tool — prints prompt, waits for trace |
+| `evals/adapters/generic-cli.sh` | Template wrapper for any CLI-based runtime |
+
+### Action required
+
+- **None for safety** — all additions are opt-in.
+- **Recommended**: wire `scripts/decisions-conflict-check.py` into your
+  pre-plan routine (any tool, any adapter). It makes the contradiction
+  check genuinely verifiable instead of relying on the agent to remember.
+- **Recommended**: if your adapter emits traces, extend them to include
+  the new optional `budget`, `failure_families`, and `eval_id` fields
+  when the information is available. Downstream tooling degrades
+  gracefully if those fields are absent.
+- **Optional**: to use the evals framework, copy `evals/adapters/generic-cli.sh`,
+  edit the `AGENT_CMD` line for your tool, and run
+  `AGENT_INVOKE="bash evals/adapters/<yours>.sh" bash scripts/run-evals.sh`.
+
+### Behavior change: error-recovery "3 strikes" is now family-aware
+
+`skills/error-recovery/SKILL.md` now explicitly requires the failure-family
+check between retries. Cosmetic differences (line numbers, addresses) no
+longer accidentally "reset" the attempt counter. Adapters that cannot run
+shell should emulate the classification natively and record
+`failure_families[]` in the trace.
+
+This mirrors the conceptual rule that was already in `docs/operating-rules.md`
+— only the execution step became explicit.
+
+---
+
+## Upgrading to 0.17.x
 
 ### New scripts added
 
