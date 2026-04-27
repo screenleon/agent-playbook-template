@@ -17,5 +17,5 @@ Keep this layer stable and concise. Domain-specific or repository-specific const
 |---|---|
 | `security-baseline.md` | GSEC-001–007: secrets, injection, auth, supply chain, input validation, defaults, logging |
 | `prompt-injection.md` | GSEC-PI-001: prompt injection detection and response protocol |
-| `coding-discipline.md` | GCODE-001–006: assumption surfacing, minimum code, surgical changes, success criteria, autonomous loop, session hygiene |
+| `coding-discipline.md` | GCODE-001–007: assumption surfacing, minimum code, surgical changes, success criteria, autonomous loop, session hygiene, CI parity |
 | `communication-baseline.md` | GCOMM-001–003: no sycophancy, never fabricate, concise by default |

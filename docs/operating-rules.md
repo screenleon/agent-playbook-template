@@ -109,7 +109,7 @@ In addition to the constitutional principles above, follow these safety rails. U
 
 ## Coding discipline
 
-Individual agent coding behavior — when to ask, how much to write, what to touch, and how to define done — is governed by `rules/global/coding-discipline.md` (GCODE-001–006). These rules apply across all adapters and trust levels:
+Individual agent coding behavior — when to ask, how much to write, what to touch, and how to define done — is governed by `rules/global/coding-discipline.md` (GCODE-001–007). These rules apply across all adapters and trust levels:
 
 - **GCODE-001** — Surface assumptions before acting; never silently interpret an ambiguous request.
 - **GCODE-002** — Write the minimum code that solves the stated problem; no speculative features or premature abstractions.
@@ -117,6 +117,7 @@ Individual agent coding behavior — when to ask, how much to write, what to tou
 - **GCODE-004** — State verifiable success criteria before starting any multi-step task; use them as the loop termination condition.
 - **GCODE-005** — In autonomous loops, use an explicit advance/discard decision after each iteration with a single measurable metric; set a per-iteration timeout.
 - **GCODE-006** — After two consecutive failed correction attempts on the same issue, stop, summarize, and ask the user to reset the session with a sharper prompt.
+- **GCODE-007** — Before starting work, discover CI configuration; include CI checks in the success criteria; run CI-equivalent commands locally before claiming completion.
 
 These rules complement the safety rails above: safety rails govern *what not to do*; coding discipline governs *how to do the right thing well*.
 

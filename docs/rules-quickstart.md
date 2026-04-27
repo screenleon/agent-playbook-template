@@ -61,7 +61,7 @@ If same-layer conflicts remain:
 5. For behavior changes: define tests before implementation (TDAI)
 6. If a task is ambiguous, reduce ambiguity through planning or clarification before guessing across modules
 7. Implement with minimal scope
-8. Validate (test -> lint/typecheck -> fix -> repeat). Never mark complete until verification passes. If no test suite exists, state that explicitly.
+8. Validate (test -> lint/typecheck -> fix -> repeat). Never mark complete until verification passes. If no test suite exists, state that explicitly. If CI configuration exists (`.github/workflows/`, `Jenkinsfile`, etc.), discover what checks CI runs and include them in the validation step — do not push code that would fail CI checks you did not run locally (GCODE-007).
 9. For documentation or agent-framework work: validate referenced paths, files, commands, and modules against the live repository; keep normative rule text in one canonical owner, and sync other surfaces only when they explicitly expose the changed rule.
 10. Record decisions and ADR updates when architecture changes. **Exception**: if `prompt-budget.yml` → `decision_log.policy: example_only`, record in the task summary, handoff artifact, or trace file instead of appending to `DECISIONS.md`.
 
