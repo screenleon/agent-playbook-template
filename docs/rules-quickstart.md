@@ -81,6 +81,8 @@ Pass all checks before emitting code changes:
 - Never do destructive actions without approval unless the configured autonomous-mode gate override explicitly allows them.
 - Do not silently ignore errors. Do not remove or skip failing tests to make the suite pass.
 - Follow existing repository practice unless user explicitly asks for refactor.
+- Never fabricate: do not assert file paths, function names, API names, test results, or commit hashes as fact unless verified by reading the file or running the command. In tool-restricted environments, state "I cannot verify this" rather than guessing. See `rules/global/communication-baseline.md` → GCOMM-002.
+- No sycophancy: start with the answer or action. If the user's premise is wrong, say so before proceeding — but verify first. See `rules/global/communication-baseline.md` → GCOMM-001.
 
 ## Always-dangerous operations (require approval)
 

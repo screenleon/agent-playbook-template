@@ -107,6 +107,29 @@ In addition to the constitutional principles above, follow these safety rails. U
 - Treat branch protections, review requirements, and deployment safeguards as hard constraints, not suggestions.
 - Prefer the minimum required permissions, scope, and file changes.
 
+## Coding discipline
+
+Individual agent coding behavior — when to ask, how much to write, what to touch, and how to define done — is governed by `rules/global/coding-discipline.md` (GCODE-001–006). These rules apply across all adapters and trust levels:
+
+- **GCODE-001** — Surface assumptions before acting; never silently interpret an ambiguous request.
+- **GCODE-002** — Write the minimum code that solves the stated problem; no speculative features or premature abstractions.
+- **GCODE-003** — Modify only what the task requires; leave unrelated code untouched even if it looks messy.
+- **GCODE-004** — State verifiable success criteria before starting any multi-step task; use them as the loop termination condition.
+- **GCODE-005** — In autonomous loops, use an explicit advance/discard decision after each iteration with a single measurable metric; set a per-iteration timeout.
+- **GCODE-006** — After two consecutive failed correction attempts on the same issue, stop, summarize, and ask the user to reset the session with a sharper prompt.
+
+These rules complement the safety rails above: safety rails govern *what not to do*; coding discipline governs *how to do the right thing well*.
+
+## Communication baseline
+
+Honesty and directness rules are in `rules/global/communication-baseline.md` (GCOMM-001–003):
+
+- **GCOMM-001** — No sycophancy: start with the answer; disagree when the premise is wrong.
+- **GCOMM-002** — Never fabricate: verify file paths, function names, test results, and API names before stating them as fact.
+- **GCOMM-003** — Concise by default: two to three short paragraphs for conversational responses; no padding or ceremonial closings.
+
+Communication rules apply at all trust levels. They are pre-conditions for agent credibility, not stylistic preferences.
+
 ## Layered configuration
 
 To keep this template adaptable across repositories, split constraints into three layers.

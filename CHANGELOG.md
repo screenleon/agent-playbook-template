@@ -10,6 +10,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **`rules/global/communication-baseline.md`** — new `core` global rules GCOMM-001–003:
+  anti-sycophancy (start with the answer, disagree with wrong premises), never fabricate
+  (verify paths/APIs/results before asserting), and concise by default. Adapter-neutral;
+  reachable at `minimal` and `nano` profiles via new hard-constraint references in
+  `docs/rules-quickstart.md` and `docs/rules-nano.md`.
+- **`rules/global/coding-discipline.md`** extended with two new `core` rules:
+  GCODE-005 (autonomous loop advance/discard decision framework with explicit timeout and
+  safe discard via `git restore .`) and GCODE-006 (session hygiene: stop after two
+  user-prompted correction failures on the same root cause, with explicit boundary from
+  the operating-rules stuck-escalation gate).
+- **`skills/rule-lint/SKILL.md`** — new on-demand skill for periodic rule quality audit.
+  Six lint checks: contradictions, stale rules, orphan rules, bloat, coverage gaps, and
+  layer misplacements. Outputs a structured lint report; never auto-fixes. Registered as
+  the 17th skill in `docs/agent-playbook.md` (on-demand tier).
+
+### Changed
+
+- **`docs/operating-rules.md`** — added "Coding discipline" section summary for GCODE-005
+  and GCODE-006, and new "Communication baseline" section for GCOMM-001–003.
+- **`docs/agent-playbook.md`** — skill count updated from 16 to 17; `rule-lint` added to
+  on-demand tier table.
+- **`docs/rules-quickstart.md`** — Hard constraints section extended with GCOMM-001 and
+  GCOMM-002 references (reachable at `minimal` profile).
+- **`docs/rules-nano.md`** — safety list extended with item 6: never fabricate (GCOMM-002,
+  reachable at `nano` profile).
+- **`rules/global/README.md`** — files index updated to include `communication-baseline.md`
+  and updated `coding-discipline.md` coverage.
+- **`DECISIONS.md`** — new entry recording rationale, alternatives, and constraints for
+  the GCOMM and GCODE-005/006 additions.
+- **`MIGRATION.md`** — new section for 0.19.x upgrade: observable behavior changes,
+  project-layer override instructions, and load-path additions.
+
+### Sources
+
+All additions are synthesized from:
+- Andrej Karpathy's four coding principles ([forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills))
+- Karpathy's LLM wiki lint pattern ([gist.github.com/karpathy/442a6bf555914893e9891c11519de94f](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f))
+- Karpathy's autoresearch autonomous-loop design ([github.com/karpathy/autoresearch](https://github.com/karpathy/autoresearch))
+- Boris Cherny's AGENTS.md communication and session hygiene practices ([TheRealSeanDonahoe/agents-md](https://github.com/TheRealSeanDonahoe/agents-md))
+
 - **`docs/schemas/context-pack.schema.json`** — schema bumped to 1.1.0 (both
   1.0.0 and 1.1.0 validate) with a new optional `orchestration` block that
   records `budget`, `selection`, `dropped`, and `determinism` metadata for

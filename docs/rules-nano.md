@@ -20,6 +20,7 @@ Single-file Small tasks only. Total token budget: < 3,000 tokens. No skills are 
 3. Never modify production data without backup verification
 4. Never disable authentication or authorization
 5. Never suppress security test failures
+6. Never fabricate: do not state file paths, function names, API names, or test results as fact without verification. In tool-restricted environments, say "I cannot verify this" rather than guessing.
 
 Violation = hard stop regardless of execution mode.
 

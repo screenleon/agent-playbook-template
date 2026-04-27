@@ -22,7 +22,7 @@ Precedence follows `docs/operating-rules.md` → Layered configuration and Confl
 
 ## Skill activation tiers
 
-Not all 16 skills must execute on every task. Skills are classified into three activation tiers:
+Not all 17 skills must execute on every task. Skills are classified into three activation tiers:
 
 ### Always (minimum required)
 
@@ -60,6 +60,7 @@ These skills are loaded only when the task type matches. Projects that do not us
 | `design-to-code` | Screenshot-driven or mockup-driven UI work |
 | `documentation-architecture` | Documentation-as-deliverable tasks |
 | `skill-creator` | Self-evolution identifies a new skill need, or user requests a new reusable skill |
+| `rule-lint` | Periodic rule quality audit: triggered by explicit request, version bump, or when total rule-file line count exceeds 600 lines |
 
 ### Applying the tiers
 

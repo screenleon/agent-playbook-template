@@ -8,6 +8,52 @@ For full release notes, see `CHANGELOG.md`.
 
 ---
 
+## Upgrading to 0.19.x — Karpathy-derived behavioral rules and communication baseline
+
+This release adds new `core`-stability global rules. All rules are adapter-neutral
+(Markdown only, no tool-specific hooks required).
+
+### Observable behavior changes
+
+The following rules change how agents communicate and operate. Agents adopting this
+version will behave differently from 0.18.x in these areas:
+
+| Rule | Behavior change |
+|------|-----------------|
+| GCOMM-001 | Agents no longer open responses with affirmations ("Great question!", etc.). Responses start with the answer or action. |
+| GCOMM-001 | Agents will disagree with incorrect user premises before doing the work. |
+| GCOMM-002 | Agents explicitly state "I cannot verify this" rather than fabricating paths, function names, or test results in tool-restricted environments. |
+| GCOMM-003 | Conversational responses are shorter by default (2–3 paragraphs; no ceremonial closings). |
+| GCODE-005 | Autonomous loops now require an explicit advance/discard decision per iteration. |
+| GCODE-006 | After two user-prompted correction failures on the same root cause, the agent stops and requests a session reset rather than continuing. |
+
+### If you want to restore courtesy openers
+
+GCOMM-001 prohibits empty affirmation but does not prohibit polite phrasing attached
+to a specific point. If your team explicitly requires a greeting style, add a project-layer
+override in `project/project-manifest.md`:
+
+```markdown
+## Communication overrides
+- Override GCOMM-001: opening acknowledgment is permitted for customer-facing outputs.
+  Rationale: brand voice requires a warm opener.
+```
+
+### New files
+
+| File | Purpose |
+|------|---------|
+| `rules/global/communication-baseline.md` | GCOMM-001–003: anti-sycophancy, never fabricate, concise by default |
+| `rules/global/coding-discipline.md` | Extended with GCODE-005 (autonomous loop) and GCODE-006 (session hygiene) |
+| `skills/rule-lint/SKILL.md` | On-demand skill: periodic rule quality audit |
+
+### Load-path additions
+
+- `docs/rules-quickstart.md` now references GCOMM-001 and GCOMM-002 in Hard constraints (reachable at `minimal` profile).
+- `docs/rules-nano.md` now includes GCOMM-002 (never fabricate) as safety item 6 (reachable at `nano` profile).
+
+---
+
 ## Upgrading to 0.18.x — adapter-neutral observability and evals
 
 This release group adds measurement and governance-evaluation primitives

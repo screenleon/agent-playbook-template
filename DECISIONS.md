@@ -3,6 +3,13 @@
 This file records active architectural and behavioral decisions for this repository.
 Agents must read it before planning or implementation tasks.
 
+## 2026-04-27: Introduce GCOMM-001–003 and GCODE-005–006 as core global rules
+
+- **Context**: Research into Karpathy's coding principles, LLM wiki pattern, and autoresearch autonomous-loop design identified four gaps in the existing rule set: (1) no rule preventing sycophancy or fabrication, (2) no explicit advance/discard decision framework for autonomous loops, (3) no guidance for session reset after repeated correction failures, and (4) no periodic rule-quality audit mechanism.
+- **Decision**: Add `rules/global/communication-baseline.md` (GCOMM-001–003), extend `rules/global/coding-discipline.md` with GCODE-005–006, and add `skills/rule-lint/SKILL.md`. All rules are marked `core` stability and are adapter-neutral.
+- **Alternatives considered**: Mark as `behavior` stability instead of `core` — rejected because anti-fabrication (GCOMM-002) and the autonomous-loop gate (GCODE-005) are safety-adjacent and must not be silently overridden. Keep as agent-native behavior — rejected because these failure modes recur in production without explicit rules.
+- **Constraints introduced**: GCOMM-001 prohibits empty affirmation openers; project-layer overrides may restore courtesy phrasing for customer-facing outputs (see `MIGRATION.md`). GCODE-006's two-failure threshold governs user-prompted correction loops only; the operating-rules three-failure stuck-escalation gate governs autonomous validation loops — these are independent counters. GCODE-005's discard step using `git restore .` (uncommitted changes) does not require the destructive-action gate; `git reset --hard` (committed history) does.
+
 ## 2026-04-19: Project-local constraints live in the manifest
 
 - **Context**: Repo-local constraints were split between `project/project-manifest.md` and the placeholder `Project-specific constraints` section in `docs/operating-rules.md`. That made discovery and adoption less clear.
