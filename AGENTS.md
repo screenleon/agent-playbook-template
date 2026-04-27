@@ -23,7 +23,7 @@ Read `docs/rule-optimization-plan.md` for the staged simplification and automati
 See `docs/agent-playbook.md` → Three-layer architecture for the full definition. Summary:
 
 1. **Rules** — `docs/operating-rules.md` (safety, scope, validation, constraints)
-2. **Skills** — `skills/*/SKILL.md` (16 skills — see `docs/agent-playbook.md` → Skill activation tiers)
+2. **Skills** — `skills/*/SKILL.md` (17 skills — see `docs/agent-playbook.md` → Skill activation tiers)
 3. **Loop** — `Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`. `Approve` is the primary trust-level gate; routing into planning/review steps still depends on task shape and risk. See `docs/operating-rules.md` → Trust level.
 
 ## Configuration layering

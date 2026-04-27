@@ -20,8 +20,7 @@ version will behave differently from 0.18.x in these areas:
 
 | Rule | Behavior change |
 |------|-----------------|
-| GCOMM-001 | Agents no longer open responses with affirmations ("Great question!", etc.). Responses start with the answer or action. |
-| GCOMM-001 | Agents will disagree with incorrect user premises before doing the work. |
+| GCOMM-001 | Agents no longer open responses with affirmations ("Great question!", etc.); responses start with the answer or action; agents also disagree with incorrect user premises before doing the work. |
 | GCOMM-002 | Agents explicitly state "I cannot verify this" rather than fabricating paths, function names, or test results in tool-restricted environments. |
 | GCOMM-003 | Conversational responses are shorter by default (2–3 paragraphs; no ceremonial closings). |
 | GCODE-005 | Autonomous loops now require an explicit advance/discard decision per iteration. |

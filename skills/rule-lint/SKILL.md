@@ -132,7 +132,7 @@ If no issues are found in a section, write "None."
 
 After producing the lint report:
 
-1. **Do not auto-fix.** Present the report to the user and wait for approval before making changes. In `autonomous` execution mode, this step maps to a **scope-expansion STOP gate** — the agent must halt and emit the lint report as a deliverable, then wait for explicit instruction before applying any changes. This is not an advisory; it is an unconditional stop regardless of `autonomous_mode` settings, because rule changes affect all downstream tasks in the session.
+1. **Do not auto-fix by default.** Present the report to the user and wait for approval before making changes. In `autonomous` execution mode, treat the transition from linting to editing rule files as a **scope-expansion gate** and follow the standard semantics from `docs/operating-rules.md`: if the follow-up edits remain within the original user intent and `autonomous_mode.auto_proceed_on_scope_expansion` is enabled, emit an ADVISORY and continue; otherwise STOP, emit the lint report as the deliverable, and wait for explicit instruction before applying any changes.
 2. For approved fixes, apply them using GCODE-003 (surgical changes only — fix the specific rule, do not refactor surrounding rules).
 3. After applying fixes, re-run only the checks that were affected to confirm resolution.
 4. Record significant rule changes (deprecations, merges, new rules) in `DECISIONS.md`.
