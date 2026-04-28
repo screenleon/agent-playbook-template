@@ -6,7 +6,7 @@ All agent work follows three layers:
 
 1. **Rules** (`docs/operating-rules.md`) — hard constraints: safety, scope, agent-deference, trust level, codebase discovery, validation loop, error recovery, project-specific constraints, decision log.
 2. **Skills** (`skills/*/SKILL.md`) — reusable capabilities: repo exploration, test-and-fix loop, error recovery, memory management, prompt cache optimization, self-reflection, observability, MCP validation, plus domain skills (planning, backend, frontend, design, docs).
-3. **Loop** — every implementation follows: Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize. `Approve` is the primary trust-level-gated wait state; routing into planning, critique, and summary still depends on task shape, scale, and workflow. See `docs/operating-rules.md` → Trust level for activation rules.
+3. **Loop** — every implementation follows: Discover → Triage → [Align] → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize. `[Align]` runs `alignment-loop` on Medium/Large tasks before planning. `Approve` is the primary trust-level-gated wait state; routing into planning, critique, and summary still depends on task shape, scale, and workflow. See `docs/operating-rules.md` → Trust level for activation rules.
 
 > **Note:** The 11-stage loop above is a conceptual overview. The detailed expansion into 16 mandatory steps (below) adds initialization, structured preamble, test-first, cache-aware loading, isolation, self-reflection, delivery formatting, observability traces, and the feedback loop. Both views describe the same workflow at different levels of granularity.
 
@@ -22,7 +22,7 @@ Precedence follows `docs/operating-rules.md` → Layered configuration and Confl
 
 ## Skill activation tiers
 
-Not all 16 skills must execute on every task. Skills are classified into three activation tiers:
+Not all 18 skills must execute on every task. Skills are classified into three activation tiers:
 
 ### Always (minimum required)
 
@@ -46,6 +46,8 @@ These skills activate only when their trigger condition is met. If the condition
 | `self-reflection` | Before emitting any deliverable or handoff (all scales, but Small uses 2/5 dimensions) |
 | `observability` | After task completion (Small: inline trace; Medium/Large: structured file) |
 | `prompt-cache-optimization` | When loading instructions — controls Layer 1-4 ordering |
+| `alignment-loop` | Medium/Large tasks before entering feature-planning — surfaces design gaps and forces explicit decisions |
+| `ubiquitous-language` | First repo entry (via `on-project-start`), or when any new domain term appears that is not yet in the glossary |
 | `feature-planning` | Medium/Large tasks that need a plan-first approach |
 | `backend-change-planning` | Backend contract, schema, or permission changes |
 | `mcp-validation` | Only when `project/project-manifest.md` declares MCP tools |
@@ -411,11 +413,12 @@ stateDiagram-v2
     state Triage {
         direction LR
         classify --> SmallPath : scale=Small
-        classify --> PlanPath : scale=Medium/Large
+        classify --> AlignPath : scale=Medium/Large
     }
 
     SmallPath --> Implement : inline plan (1-2 sentences)
-    PlanPath --> Plan
+    AlignPath --> Align
+    Align --> Plan : alignment closed
 
     Plan --> Critique
     Critique --> RiskAssess : high-risk task?
@@ -452,7 +455,8 @@ stateDiagram-v2
 
 - **Solid edges** are unconditional steps that always execute.
 - **Labeled edges** show the condition that activates that path.
-- The **SmallPath** shortcut skips Plan, Critique, and Approve — the implementer uses a 1–2 sentence inline plan and proceeds directly to Implement.
+- The **SmallPath** shortcut skips Align, Plan, Critique, and Approve — the implementer uses a 1–2 sentence inline plan and proceeds directly to Implement.
+- **AlignPath** routes Medium/Large tasks through `alignment-loop` before planning. The loop must close (zero unresolved items) before proceeding to Plan.
 - **ScopeCheck** is triggered when the agent detects scope expansion during implementation. If expansion exceeds the original intent, the task re-enters Triage for reclassification.
 - **Escalate** is a hard stop by default; in autonomous mode it may be relaxed only via `autonomous_mode.halt_on_stuck_escalation: false`.
 - **SelfReflect** runs the `self-reflection` skill rubric after validation passes and before final recording/delivery. For Small tasks, only correctness + adherence are checked.

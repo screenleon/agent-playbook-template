@@ -10,6 +10,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **`skills/alignment-loop/SKILL.md`** — new Conditional skill that runs between
+  Triage and feature-planning on Medium/Large tasks. Forces structured
+  challenge → response → closure protocol before implementation begins,
+  surfacing design gaps and unstated decisions that would otherwise only
+  appear as wrong code. Includes autonomous mode escalation behavior and
+  respects `decision_log.policy` for where to record Patched decisions.
+
+- **`skills/ubiquitous-language/SKILL.md`** — new Conditional skill for building
+  and maintaining `UBIQUITOUS_LANGUAGE.md` as a shared semantic layer.
+  Prevents semantic drift across agents and sessions by defining canonical
+  domain terms loaded via `memory-and-state` context. Activates at
+  `on-project-start` or whenever a new domain term is introduced.
+
+- **`docs/external-practices-notes.md`** — two new sections: (1) APOSD Deep
+  Module principle (simple interface, powerful internals) as a design
+  quality criterion for agent-callable abstractions; (2) alignment-loop and
+  ubiquitous-language as first-party implementations of patterns from
+  `mattpocock/skills`.
+
+### Changed
+
+- **`AGENTS.md`** — updated skill count (16 → 18), added `[Align]` node to the
+  Loop definition, added Core rules for alignment-loop and ubiquitous-language
+  including conditional loading behavior when `UBIQUITOUS_LANGUAGE.md` does
+  not yet exist.
+
+- **`docs/agent-playbook.md`** — updated skill count (16 → 18), added
+  `alignment-loop` and `ubiquitous-language` to Conditional tier table,
+  updated Loop and stateDiagram to include the Align node between Triage
+  and Plan for Medium/Large paths.
+
+- **`prompt-budget.yml`** — added `alignment-loop` and `ubiquitous-language`
+  to `skills.on_demand` with trigger condition comments.
+
 - **`docs/schemas/context-pack.schema.json`** — schema bumped to 1.1.0 (both
   1.0.0 and 1.1.0 validate) with a new optional `orchestration` block that
   records `budget`, `selection`, `dropped`, and `determinism` metadata for
