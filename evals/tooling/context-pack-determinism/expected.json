@@ -38,9 +38,9 @@
   "orchestration": {
     "budget": {
       "allocated": {
-        "entrypoint": 3739,
-        "reserve": 1200,
-        "rules": 7061
+        "entrypoint": 3913,
+        "reserve": 1221,
+        "rules": 6866
       },
       "estimate_method": "word_count*1.35",
       "profile": "standard",
@@ -48,10 +48,14 @@
     },
     "determinism": {
       "builder_version": "1.0.0",
-      "input_hash": "sha256:e2a77c1ea0bbf0922c522059be4b06842ee0baae8b29980f6ae85ff99e27b5ec",
-      "output_hash": "sha256:4f8f47131a644b2842be9315aee8d139b68804daf4806a44d52a12c983b6c196"
+      "input_hash": "sha256:969f73ff3fd4e49c6e0a5064b08d25fdd4da24274397370fa0a09e992d0d9cf2",
+      "output_hash": "sha256:7512852650fcb05dd696a7b96272749fa7af2af038d57ec8a156eb4feea9b632"
     },
     "dropped": [
+      {
+        "reason": "budget exhausted",
+        "ref": "docs/operating-rules.md"
+      },
       {
         "reason": "budget exhausted",
         "ref": "docs/rules-nano.md"
@@ -78,11 +82,19 @@
       },
       {
         "reason": "budget exhausted",
+        "ref": "rules/domain/code-quality.md"
+      },
+      {
+        "reason": "budget exhausted",
         "ref": "rules/domain/frontend-components.md"
       },
       {
         "reason": "budget exhausted",
         "ref": "rules/global/README.md"
+      },
+      {
+        "reason": "budget exhausted",
+        "ref": "rules/global/code-quality-baseline.md"
       },
       {
         "reason": "budget exhausted",
@@ -145,13 +157,6 @@
         "ref": "docs/agent-playbook.md",
         "truncated": false,
         "truncation_method": "none"
-      },
-      {
-        "priority": 2,
-        "reason": "rule surface for profile=standard",
-        "ref": "docs/operating-rules.md",
-        "truncated": true,
-        "truncation_method": "headings-only"
       }
     ]
   },
@@ -185,8 +190,10 @@
       "rules/domain/README.md",
       "rules/domain/backend-api.md",
       "rules/domain/cloud-infra.md",
+      "rules/domain/code-quality.md",
       "rules/domain/frontend-components.md",
       "rules/global/README.md",
+      "rules/global/code-quality-baseline.md",
       "rules/global/prompt-injection.md",
       "rules/global/security-baseline.md",
       "project/project-manifest.md"
