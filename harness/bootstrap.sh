@@ -35,10 +35,10 @@ fi
 
 # Parse prompt-budget.yml — prefers PyYAML, falls back to regex extraction
 _parse() {
-  python3 - <<PYEOF
+  python3 - "$BUDGET_FILE" <<'PYEOF'
 import sys, json, os, re
 
-config_path = "$BUDGET_FILE"
+config_path = sys.argv[1]
 
 def grep_value(content, key, default=''):
     m = re.search(rf'^{re.escape(key)}:\s*([^\n#]+)', content, re.MULTILINE)
@@ -172,22 +172,37 @@ if [ "${HARNESS_WRITE_PACK:-0}" = "1" ]; then
   TASK_SCALE="${HARNESS_TASK_SCALE:-Small}"
   SCOPE_SUMMARY="${HARNESS_SCOPE_SUMMARY:-Full repository scope}"
 
-  python3 - <<PYEOF
-import json
+  python3 - \
+    "$PACK_ID" \
+    "$OBJECTIVE" \
+    "$ROLE" \
+    "$INTENT_MODE" \
+    "$TASK_SCALE" \
+    "$EXECUTION_MODE" \
+    "$BUDGET_PROFILE" \
+    "$SCOPE_SUMMARY" \
+    "$PACK_FILE" \
+    "$TRACE_ID" \
+    <<'PYEOF'
+import json, sys
 from datetime import datetime, timezone
+
+(pack_id, objective, role, intent_mode, task_scale,
+ execution_mode, budget_profile, scope_summary,
+ pack_file, trace_id) = sys.argv[1:11]
 
 pack = {
     "schema_version": "1.0.0",
-    "pack_id": "$PACK_ID",
+    "pack_id": pack_id,
     "generated_at": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-    "objective": "$OBJECTIVE",
-    "role": "$ROLE",
-    "intent_mode": "$INTENT_MODE",
-    "task_scale": "$TASK_SCALE",
-    "execution_mode": "$EXECUTION_MODE",
-    "budget_profile": "$BUDGET_PROFILE",
+    "objective": objective,
+    "role": role,
+    "intent_mode": intent_mode,
+    "task_scale": task_scale,
+    "execution_mode": execution_mode,
+    "budget_profile": budget_profile,
     "approved_scope": {
-        "summary": "$SCOPE_SUMMARY",
+        "summary": scope_summary,
         "allowed_paths": [],
         "non_goals": [],
         "acceptance_criteria": []
@@ -213,13 +228,12 @@ pack = {
     },
     "audit": {
         "source_marker": "[harness:bootstrap]",
-        "trace_id":      "$TRACE_ID",
+        "trace_id":      trace_id,
         "generated_by":  "harness/bootstrap.sh"
     }
 }
-with open("$PACK_FILE", "w") as f:
+with open(pack_file, "w") as f:
     json.dump(pack, f, indent=2)
-import sys
-print(f"Pack written to $PACK_FILE", file=sys.stderr)
+print(f"Pack written to {pack_file}", file=sys.stderr)
 PYEOF
 fi

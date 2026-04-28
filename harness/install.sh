@@ -34,9 +34,15 @@ echo "[HARNESS] ✓ Scripts made executable."
 
 # ── 2. Update .gitignore ──────────────────────────────────────────────────────
 GITIGNORE="$REPO_ROOT/.gitignore"
-if [ -f "$GITIGNORE" ] && ! grep -q "^\.harness/" "$GITIGNORE" 2>/dev/null; then
-  printf '\n# Harness runtime artifacts\n.harness/\n' >> "$GITIGNORE"
-  echo "[HARNESS] ✓ Added .harness/ to .gitignore."
+if [ -f "$GITIGNORE" ]; then
+  if ! grep -q "^\.harness/" "$GITIGNORE" 2>/dev/null; then
+    printf '\n# Harness runtime artifacts\n.harness/\n' >> "$GITIGNORE"
+    echo "[HARNESS] ✓ Added .harness/ to .gitignore."
+  fi
+  if ! grep -q "^\.agent-trace/" "$GITIGNORE" 2>/dev/null; then
+    printf '.agent-trace/\n' >> "$GITIGNORE"
+    echo "[HARNESS] ✓ Added .agent-trace/ to .gitignore."
+  fi
 fi
 
 # ── 3. Detect tools present in this repo ─────────────────────────────────────

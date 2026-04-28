@@ -27,7 +27,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 DANGEROUS_PATTERNS=(
   "git[[:space:]]+push[[:space:]]+.*--force"
   "git[[:space:]]+reset[[:space:]]+.*--hard"
-  "git[[:space:]]+checkout[[:space:]]+-[^-]"  # git checkout -- <file> (discard)
+  "git[[:space:]]+checkout[[:space:]]+--[[:space:]]"  # git checkout -- <file> (discard only; -b/-t branch ops are always-safe per operating-rules)
   "git[[:space:]]+branch[[:space:]]+-[Dd]"
   "rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*[[:space:]]"        # rm with -r flag (rm -r, rm -rf, rm -Rf)
   "DROP[[:space:]]+(TABLE|DATABASE|SCHEMA)"
@@ -58,13 +58,13 @@ _get_execution_mode() {
     return
   fi
   if command -v python3 &>/dev/null && [ -f "$REPO_ROOT/prompt-budget.yml" ]; then
-    python3 -c "
+    python3 - "$REPO_ROOT/prompt-budget.yml" 2>/dev/null <<'PYEOF' || echo "semi-auto"
 import re, sys
-with open('$REPO_ROOT/prompt-budget.yml') as f:
+with open(sys.argv[1]) as f:
     content = f.read()
 m = re.search(r'^execution_mode:\s*([^\n#]+)', content, re.MULTILINE)
-print(m.group(1).strip().strip('\"\'') if m else 'semi-auto')
-" 2>/dev/null || echo "semi-auto"
+print(m.group(1).strip().strip('"\'') if m else 'semi-auto')
+PYEOF
   else
     echo "semi-auto"
   fi
