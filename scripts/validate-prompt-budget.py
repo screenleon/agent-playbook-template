@@ -103,7 +103,10 @@ def extract_list_items(text: str, key: str) -> list[str]:
             if current_indent <= key_indent:
                 break  # sibling or parent key — block is done
             if stripped.startswith("-"):
-                v = stripped.lstrip("-").strip().strip('"').strip("'")
+                v = stripped.lstrip("-").strip()
+                if not (v.startswith('"') or v.startswith("'")):
+                    v = re.sub(r'\s+#.*$', '', v)
+                v = v.strip('"').strip("'")
                 if v:
                     items.append(v)
     return items
@@ -159,6 +162,8 @@ KNOWN_SKILL_IDS = {
     "design-to-code",
     "documentation-architecture",
     "skill-creator",
+    "alignment-loop",
+    "ubiquitous-language",
 }
 
 
@@ -360,7 +365,10 @@ class Validator:
                     continue
                 if in_list:
                     if stripped.startswith("- "):
-                        items.append(stripped[2:].strip().strip('"').strip("'"))
+                        v = stripped[2:].strip()
+                        if not (v.startswith('"') or v.startswith("'")):
+                            v = re.sub(r'\s+#.*$', '', v)
+                        items.append(v.strip('"').strip("'"))
                     elif stripped and not stripped.startswith("#"):
                         break
         return items

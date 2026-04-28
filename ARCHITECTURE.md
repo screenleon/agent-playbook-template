@@ -9,7 +9,7 @@ Architecture for this repository. Replace with your own module map and data flow
 | `AGENTS.md` | Root entrypoint and profile-aware loading order |
 | `docs/` | Source-of-truth governance docs, workflow rules, templates, and guides |
 | `skills/` | Reusable execution skills (planning, implementation, validation, recovery, memory) |
-| `rules/global/` | Cross-project rules layer (security baseline starter included) |
+| `rules/global/` | Cross-project rules layer: security baseline, prompt-injection defense, and code-quality baseline |
 | `rules/domain/` | Domain-specific rules layer |
 | `project/project-manifest.md` | Project-local constraints and boundary declarations |
 | `scripts/` | Documentation lint, layered-rule lint, trace analytics, conflict-check, eval runner/scorer |

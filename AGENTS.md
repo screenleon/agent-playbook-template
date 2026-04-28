@@ -11,6 +11,8 @@ Read these files before starting work:
    - At `minimal`, this is your complete Layer 1. Skip to step 3.
 2. `docs/operating-rules.md` — mandatory safety, scope, validation, error recovery, and project-specific constraint rules
    `docs/agent-playbook.md` — routing rules and role definitions
+   All `rules/global/*.md` files — cross-project code quality, security, and prompt-injection defense rules
+   Applicable `rules/domain/*.md` files — domain-specific rules for the current workspace (see `docs/operating-rules.md` → Workspace boundary masking for which files to load; default: load all when no boundary is declared)
 3. `docs/agent-templates.md` — reusable task and prompt templates as optional helpers
 
 Read `docs/adoption-guide.md` when adapting this template to a new repository.

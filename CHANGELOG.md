@@ -10,6 +10,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **`rules/global/code-quality-baseline.md`** — new global rule file encoding Andrej
+  Karpathy's LLM coding principles as formal rule entries: GCODE-001 (Simplicity
+  First — implement only what is requested), GCODE-002 (Think Before Coding — state
+  assumptions, stop on ambiguity), GCODE-004 (Goal-Driven Execution — define
+  verifiable success criteria). Complements `docs/operating-rules.md` scope-control,
+  structured-preamble, and validation-loop sections without duplicating them. Includes
+  a header note declaring the relationship so agents read both and apply them together.
+
+- **`rules/domain/code-quality.md`** — new domain rule file housing DCODE-001
+  (Surgical Changes): modify only required lines, preserve existing style even when
+  a different approach would be preferred, and remove only self-orphaned dead code.
+  Placed at Domain layer (not Global) because style preservation is inherently
+  repository-specific and appropriately overridable by per-project conventions.
+
 - **`skills/alignment-loop/SKILL.md`** — new Conditional skill that runs between
   Triage and feature-planning on Medium/Large tasks. Forces structured
   challenge → response → closure protocol before implementation begins,
@@ -29,12 +43,45 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   ubiquitous-language as first-party implementations of patterns from
   `mattpocock/skills`.
 
+### Security
+
+- **`harness/bootstrap.sh`** — fixed heredoc injection (HIGH): `_parse()` and the
+  context-pack assembly block both used unquoted heredocs that interpolated shell
+  variables directly into Python source. Both are now single-quoted heredocs
+  (`<<'PYEOF'`) with values passed safely as `sys.argv` positional arguments.
+  An `HARNESS_OBJECTIVE` containing `"quotes"` or `$(...)` is now stored as a
+  literal string rather than evaluated as Python or shell code.
+
+- **`harness/core/gate-check.sh`** — fixed path interpolation (MEDIUM): the
+  `_get_execution_mode()` inline Python `-c` expression interpolated
+  `$REPO_ROOT/prompt-budget.yml` directly into the Python source string. Replaced
+  with `python3 - "$REPO_ROOT/prompt-budget.yml" <<'PYEOF'` so the path is passed
+  as `sys.argv[1]`, preventing breakage on paths containing single-quotes or
+  backslashes.
+
+- **`harness/core/gate-check.sh`** — fixed `git checkout -b` false-positive
+  (HIGH): the dangerous-pattern regex `+-[^-]` matched any single-dash flag,
+  including always-safe branch-creation flags like `-b` and `-t`. Pattern narrowed
+  to `+--[[:space:]]` so only the discard form (`git checkout -- <file>`) triggers
+  the gate.
+
+- **`harness/install.sh`** — added `.agent-trace/` to the `.gitignore` update
+  step. Trace files may contain task descriptions and code excerpts that should not
+  be committed to version control.
+
+- **`scripts/validate-prompt-budget.py`** — added `alignment-loop` and
+  `ubiquitous-language` to `KNOWN_SKILL_IDS`, eliminating spurious warnings on the
+  template's own `prompt-budget.yml`.
+
 ### Changed
 
 - **`AGENTS.md`** — updated skill count (16 → 18), added `[Align]` node to the
   Loop definition, added Core rules for alignment-loop and ubiquitous-language
   including conditional loading behavior when `UBIQUITOUS_LANGUAGE.md` does
-  not yet exist.
+  not yet exist. Added explicit loading instructions for `rules/global/*.md` and
+  applicable `rules/domain/*.md` files at `standard` and `full` profiles, closing
+  the gap where GCODE and domain rules existed on disk but were not in any
+  agent's loading chain.
 
 - **`docs/agent-playbook.md`** — updated skill count (16 → 18), added
   `alignment-loop` and `ubiquitous-language` to Conditional tier table,
