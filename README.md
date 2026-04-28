@@ -149,8 +149,8 @@ flowchart LR
 
 This template supports layered constraint files so teams can adapt behavior without rewriting one large rules file.
 
-- `rules/global/` — core communication, coding, and security rules
-- `rules/domain/` — domain-specific constraints (backend, cloud, frontend, etc.)
+- `rules/global/` — cross-project security, prompt-injection defense, and code-quality rules (loaded at `standard` and `full` profiles)
+- `rules/domain/` — domain-specific constraints (backend, cloud, frontend, code-quality, etc.)
 - `project/project-manifest.md` — project-local context and boundaries
 
 When constraints conflict, follow precedence defined in `docs/operating-rules.md`: Project Context -> Domain Rules -> Global Rules.
