@@ -40,7 +40,7 @@ if [ -f "$GITIGNORE" ]; then
     echo "[HARNESS] ✓ Added .harness/ to .gitignore."
   fi
   if ! grep -q "^\.agent-trace/" "$GITIGNORE" 2>/dev/null; then
-    printf '.agent-trace/\n' >> "$GITIGNORE"
+    printf '\n.agent-trace/\n' >> "$GITIGNORE"
     echo "[HARNESS] ✓ Added .agent-trace/ to .gitignore."
   fi
 fi
