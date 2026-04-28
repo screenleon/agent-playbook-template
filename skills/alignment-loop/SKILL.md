@@ -102,7 +102,7 @@ After closure:
 ## How to know it's working (auditable)
 
 - Every challenge has a labeled response (Accept / Patch / Defer)
-- Every Patch adds an explicit, named decision recorded in `DECISIONS.md`
+- Every Patch adds an explicit, named decision recorded per policy: in `DECISIONS.md` (`normal`) or in the task summary / handoff artifact / trace (`example_only`)
 - Every Defer names an owner and a reason
 - Closure count is consistent (accepted + patched + deferred = total raised)
 - Zero unresolved items before proceeding to feature-planning
@@ -131,7 +131,7 @@ Before closing the alignment loop, verify:
 - [ ] Every challenge is categorized (Assumption / Boundary / Unstated / Contradiction / Scope)
 - [ ] Every challenge states a specific failure scenario, not a rhetorical question
 - [ ] Every challenge has a labeled response (Accept / Patch / Defer)
-- [ ] All Patches result in explicit decisions recorded in `DECISIONS.md`
+- [ ] All Patches result in explicit decisions recorded per policy: in `DECISIONS.md` when applicable, or in the task summary / handoff artifact / trace when `decision_log.policy: example_only`
 - [ ] All Defers name an owner and a reason
 - [ ] Closure summary counts are consistent with individual responses
 - [ ] Zero unresolved items before handing off to feature-planning
