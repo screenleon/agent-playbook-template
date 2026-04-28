@@ -194,6 +194,8 @@ skills:
   # project-specific additions or overrides.
   on_demand:
     - prompt-cache-optimization
+    - alignment-loop      # Conditional: Medium/Large tasks before feature-planning
+    - ubiquitous-language # Conditional: on-project-start or new domain term introduced
 
   # Skills that should never be loaded for this project.
   # Reduces per-request token cost for skills that do not match the workflow.

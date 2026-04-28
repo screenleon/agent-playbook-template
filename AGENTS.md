@@ -23,8 +23,8 @@ Read `docs/rule-optimization-plan.md` for the staged simplification and automati
 See `docs/agent-playbook.md` → Three-layer architecture for the full definition. Summary:
 
 1. **Rules** — `docs/operating-rules.md` (safety, scope, validation, constraints)
-2. **Skills** — `skills/*/SKILL.md` (16 skills — see `docs/agent-playbook.md` → Skill activation tiers)
-3. **Loop** — `Discover → Triage → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`. `Approve` is the primary trust-level gate; routing into planning/review steps still depends on task shape and risk. See `docs/operating-rules.md` → Trust level.
+2. **Skills** — `skills/*/SKILL.md` (18 skills — see `docs/agent-playbook.md` → Skill activation tiers)
+3. **Loop** — `Discover → Triage → [Align] → Plan → Critique → Approve → Implement → Test → Fix → Repeat → Record → Summarize`. `[Align]` runs `alignment-loop` before planning on Medium/Large tasks. `Approve` is the primary trust-level gate; routing into planning/review steps still depends on task shape and risk. See `docs/operating-rules.md` → Trust level.
 
 ## Configuration layering
 
@@ -34,6 +34,8 @@ Before implementation begins, follow the compliance-block rules in `docs/operati
 
 Core rules:
 
+- Run `alignment-loop` before feature-planning on Medium and Large tasks to surface design gaps and force explicit decisions before code starts.
+- Load `UBIQUITOUS_LANGUAGE.md` (via `ubiquitous-language` skill) as part of task context if the file exists; all agents must use canonical domain terms from the glossary. If the file does not yet exist, run `ubiquitous-language` at `on-project-start` or before the first task that introduces new domain terms.
 - Use a planning agent first for cross-module, ambiguous, high-risk, contract-changing, DB, auth, or security work. Bounded API/application changes may go directly to implementation when `docs/agent-playbook.md` routes them that way.
 - Use an application implementer for general product or frontend work that is not primarily backend architecture, pure integration, or image-led UI.
 - Use a design-focused agent first for image-led UI implementation.
