@@ -14,6 +14,10 @@ silent assumption-making, speculative over-building, and unintended side-effect 
 >
 > Cross-references: GCODE-001 ↔ Scope control; GCODE-002 ↔ Mandatory structured
 > preamble; GCODE-004 ↔ TDAI requirement and Validation loop.
+>
+> **Peer global rule**: `rules/global/test-coverage-spec.md` (GTCS-001/002/003) governs
+> test classification and coverage. Load it alongside this file for any task that involves
+> writing or reviewing tests.
 
 ## Rules
 
