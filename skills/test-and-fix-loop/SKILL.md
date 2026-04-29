@@ -7,6 +7,8 @@ depends_on:
 commonly_followed_by:
   - error-recovery   # invoked when the fix loop reaches 3 failed attempts
   - observability    # emit trace after loop converges
+rules:
+  - rules/global/test-coverage-spec.md  # MFT/INV/DIR category definitions
 ---
 
 # Test and Fix Loop
@@ -71,6 +73,49 @@ Adapt testing intensity based on the task scale from the `demand-triage` skill:
 - New tests are mandatory for all new behavior
 - Integration tests are expected if the change crosses module boundaries
 - Consider running performance-sensitive tests if the change affects hot paths
+
+## Test category classification
+
+Before writing any test, classify each planned test case into exactly one category.
+This step runs before the test-first guidance below. See `rules/global/test-coverage-spec.md`
+for full definitions and conflict-resolution rules.
+
+| Category | Primary assertion | Typical signal |
+|---|---|---|
+| **MFT** (Functional) | Correct output for valid input | Return value, side effect, state change |
+| **INV** (Stability) | A property holds regardless of input or repetition | No crash, no state corruption, idempotent result |
+| **DIR** (Decision Logic) | Correct decision at a branch point | Auth rejection, rate-limit, validation refusal, routing |
+
+### Classification workflow
+
+```text
+For each test case to write:
+  1. State the primary assertion in one sentence
+  2. Match to MFT / INV / DIR using the table above
+     - If unsure between INV and DIR: "Is the system enforcing a policy, or merely surviving?"
+       Policy enforcement → DIR. Survival → INV.
+  3. Label the test with its category before writing it
+  4. After all tests are written, list coverage per category
+     - Small tasks: one category is sufficient
+     - Medium tasks: at least two categories (MFT always; add INV or DIR as applicable)
+     - Large tasks: all three categories (waive one only with written justification)
+  5. For any absent category, state the reason in the structured preamble or as a
+     header comment block in the test file — not in the test name or silently omitted
+     Valid waiver: "INV absent — login is intentionally non-idempotent; repeated calls
+       create new sessions by design."
+     Invalid waiver: "INV: N/A" or leaving the category unlisted entirely
+```
+
+### Classification examples
+
+| Scenario | Category | Reason |
+|---|---|---|
+| `POST /users` returns `201` with `id` on valid payload | MFT | Correct output for valid input |
+| `POST /users` with `name: null` does not panic | INV | Survival, not policy |
+| Same payload sent twice does not create a duplicate | INV | Idempotency invariant |
+| Missing `Authorization` header returns `401` | DIR | Policy enforcement |
+| Expired token returns `403` | DIR | Auth boundary decision |
+| Payload over size limit returns `413` | DIR | Validation boundary decision |
 
 ## Test-first guidance
 
@@ -143,6 +188,10 @@ All conditions below must be verifiable from task artifacts:
 
 ## Conformance self-check
 
+- [ ] Each test case was assigned a category (MFT / INV / DIR) before being written
+- [ ] No test spans more than one category — single-category constraint satisfied
+- [ ] Coverage per category was listed after test generation (Medium: ≥ 2 categories; Large: ≥ 3)
+- [ ] Any absent category was stated with justification, not silently omitted
 - [ ] Tests were actually executed (not just planned)
 - [ ] The test scope matches the task scale (Small: targeted, Medium: module, Large: full suite)
 - [ ] All failures were addressed (fixed or escalated), not silently ignored

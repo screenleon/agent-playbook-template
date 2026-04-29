@@ -10,6 +10,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **`rules/global/test-coverage-spec.md`** — new global rule file introducing the
+  MFT/INV/DIR test category taxonomy. GTCS-001 mandates classify-before-generate with
+  single-category-per-test constraint. GTCS-002 defines precise category boundaries:
+  MFT (correct output for valid input), INV (property holds regardless of input/order),
+  DIR (correct decision at branch points, explicitly including boundary guards such as
+  auth rejection, rate-limit enforcement, and validation refusals). GTCS-003 sets
+  coverage floors by scale (Small ≥1, Medium ≥2, Large ≥3 categories) and requires
+  absent categories to be stated with a specific reason in the structured preamble or
+  test-file header, not silently omitted.
+
+### Changed
+
+- **`skills/test-and-fix-loop/SKILL.md`** — added "Test category classification" section
+  before test-first guidance: classification table, workflow with INV-vs-DIR decision
+  heuristic, and scenario examples. Updated conformance self-check with four new
+  classification items. Added `rules` field to YAML front matter referencing
+  `test-coverage-spec.md`.
+
+- **`rules/global/code-quality-baseline.md`** — added peer-rule cross-reference to
+  `test-coverage-spec.md` so agents loading this file discover the GTCS rules when
+  writing tests.
+
+- **`DECISIONS.md`** — added decision entry for the MFT/INV/DIR taxonomy: context,
+  decision, alternatives considered (implicit naming, multi-category tests, INV for
+  boundary guards — all rejected), and constraints introduced.
+
 - **`rules/global/code-quality-baseline.md`** — new global rule file encoding Andrej
   Karpathy's LLM coding principles as formal rule entries: GCODE-001 (Simplicity
   First — implement only what is requested), GCODE-002 (Think Before Coding — state
