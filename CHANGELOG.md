@@ -95,10 +95,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `test-coverage-spec.md` so agents loading this file discover the GTCS rules when
   writing tests.
 
-- **`DECISIONS.md`** — added decision entry for the MFT/INV/DIR taxonomy: context,
-  decision, alternatives considered (implicit naming, multi-category tests, INV for
-  boundary guards — all rejected), and constraints introduced.
-
 - **`AGENTS.md`** — updated skill count (16 → 18), added `[Align]` node to the
   Loop definition, added Core rules for alignment-loop and ubiquitous-language
   including conditional loading behavior when `UBIQUITOUS_LANGUAGE.md` does
