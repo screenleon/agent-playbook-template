@@ -16,6 +16,7 @@ on:
       - "prompt-budget.local.example.yml"
       - "CHANGELOG.md"
       - "MIGRATION.md"
+      - "VERSION"
       - "scripts/*.sh"
       - "scripts/*.py"
   pull_request:
@@ -32,6 +33,7 @@ on:
       - "prompt-budget.local.example.yml"
       - "CHANGELOG.md"
       - "MIGRATION.md"
+      - "VERSION"
       - "scripts/*.sh"
       - "scripts/*.py"
   workflow_dispatch:

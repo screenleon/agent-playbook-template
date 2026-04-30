@@ -38,9 +38,9 @@
   "orchestration": {
     "budget": {
       "allocated": {
-        "entrypoint": 3970,
+        "entrypoint": 4338,
         "reserve": 1200,
-        "rules": 6830
+        "rules": 6462
       },
       "estimate_method": "word_count*1.35",
       "profile": "standard",
@@ -48,8 +48,8 @@
     },
     "determinism": {
       "builder_version": "1.0.0",
-      "input_hash": "sha256:baf218e89141bbd6900ef6b09b12ccb6d14d7971ed8eb744d8eae8fb3cbf2565",
-      "output_hash": "sha256:8dad16c4d5d3113a98a3b45265f13a278a18d403599a001c283ffaf5cc304305"
+      "input_hash": "sha256:12c89274afa60281d42317847967718c1f27b5b26013d7430db17597f2ac43a2",
+      "output_hash": "sha256:ed00d4ccbd0dca37799cc214308e73e3e157d6b580606447a80f036738558c25"
     },
     "dropped": [
       {

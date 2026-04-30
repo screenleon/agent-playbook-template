@@ -1,5 +1,28 @@
 # Agent Playbook Template
 
+Agent Playbook Template is a portable governance framework for AI coding agents.
+It gives a repository a version-controlled source of truth for how agents load
+context, route work by role, handle approval gates, validate changes, record
+decisions, and hand off structured context across tools.
+
+Use this template when you want repeatable agent behavior across Codex, Claude,
+Copilot, Cursor, OpenCode, Windsurf, or a generic CLI workflow. It is not an app
+runtime or product framework; it is the operating layer around agent-assisted
+software work.
+
+## What This Repository Contains
+
+- Root agent instructions through `AGENTS.md`
+- Source-of-truth operating and routing docs in `docs/`
+- Layered reusable rules in `rules/global/`, `rules/domain/`, and `project/`
+- Reusable skills in `skills/*/SKILL.md`
+- Tool-specific agent surfaces for Claude and GitHub Copilot
+- Adapter harnesses for Claude Code, Copilot, Cursor, OpenCode, Windsurf, and generic CLI use
+- Governance scripts for linting, budget reporting, trace review, context-pack generation, and eval scoring
+- GitHub Actions workflows for markdown lint, rule governance, and trace review
+- Evals and deterministic tooling fixtures for checking governance behavior
+- Release metadata in `VERSION` and `CHANGELOG.md`
+
 ## Quick-start onboarding paths
 
 Choose the path that fits your situation — all three lead to the same governance model.
@@ -59,15 +82,15 @@ The table below shows how each governance gate behaves across the three trust le
 
 Legend: **STOP** = agent pauses and waits for human input. **Advisory** = agent logs the event and continues. Gate behavior is defined in `docs/operating-rules.md` → Trust level.
 
-## Quick Start (3 steps)
+## Adopter Quick Start
 
 1. Copy this template into your repository (or create a repo from this template).
 2. Edit the two source-of-truth docs first: `docs/operating-rules.md` and `docs/agent-playbook.md`. Update `AGENTS.md` after them as the root entrypoint.
-3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions.
+3. Run your first task with the required workflow: discover -> triage -> plan (if needed) -> implement -> validate -> record decisions according to `prompt-budget.yml` -> `decision_log.policy`.
 
 For first entry into a new repository, use the profile-aware initialization path: at `minimal`, follow the manual scan path in `docs/rules-quickstart.md`; at `standard`/`full`, run `skills/on-project-start/SKILL.md` before implementation.
 
-If you only do one thing on day one: keep `DECISIONS.md` updated so future agent runs can perform contradiction checks.
+If you only do one thing on day one after adopting this template: switch `decision_log.policy` to `normal` and keep `DECISIONS.md` updated so future agent runs can perform contradiction checks.
 
 ## Mental model
 
@@ -141,7 +164,7 @@ flowchart LR
     D --> E[Role Selection]
     E --> F[skills/*/SKILL.md]
     F --> G[Implementation + Validation Loop]
-    G --> H[DECISIONS.md Update]
+    G --> H[Decision Record<br/>per decision_log.policy]
     H --> I[Future Contradiction Checks]
 ```
 
@@ -167,7 +190,7 @@ For staged simplification and automation steps, see `docs/rule-optimization-plan
 4. Plan path: Small uses the simplified path; bounded Medium work may go directly to implementation; ambiguous, high-risk, or cross-module Medium/Large work uses the full planning path.
 5. Implement safely: keep scope tight and follow repository patterns.
 6. Validate: run targeted checks/tests, fix, and repeat until stable.
-7. Record durable state: update `DECISIONS.md` when behavior or architecture choices are made.
+7. Record durable state according to `prompt-budget.yml` -> `decision_log.policy`: adopted projects usually update `DECISIONS.md`; this template repo records task decisions in summaries, handoffs, or traces.
 
 This flow is what makes the template useful in real teams: predictable output quality, lower drift, and faster onboarding.
 
@@ -192,13 +215,19 @@ If you maintain a fork, keep these phrases in your repository description and RE
 - a machine-readable context-pack contract for multi-tool orchestration
 - a canonical trace schema (`docs/schemas/trace.schema.yaml`) usable by any adapter
 - an adapter-neutral evals framework (`evals/`) that verifies governance rules across tools
+- harness adapters and shell-first governance scripts for local and CI validation
 - reusable skills you can adapt into your own agent ecosystem
 - repo-wide Copilot instructions
 
 ## Current asset inventory
 
+- Version: 0.20.0 (`VERSION`)
 - Claude subagents: 8 (`.claude/agents/*.md`)
 - Reusable skills: 18 (`skills/*/SKILL.md`)
+- Governance scripts: 14 (`scripts/*`)
+- GitHub workflows: 3 (`.github/workflows/*.yml`)
+- Adapter harnesses: 6 (`harness/adapters/*`)
+- Example profiles and notes: 4 (`examples/*.md`)
 - Source-of-truth docs: `docs/operating-rules.md`, `docs/agent-playbook.md` (`AGENTS.md` is the root entrypoint that should stay aligned with them)
 
 ## Example gallery
@@ -208,6 +237,7 @@ Use `examples/` for ready-to-adapt constraint profiles:
 - `examples/high-security-mode.md`
 - `examples/mvp-rapid-mode.md`
 - `examples/legacy-maintenance.md`
+- `examples/anti-patterns.md`
 
 ## Required vs optional files
 
@@ -234,6 +264,8 @@ Use `examples/` for ready-to-adapt constraint profiles:
 - `docs/example-task-walkthrough.md` — reference for expected output formats
 - `docs/external-practices-notes.md`
 - `docs/adoption-guide.md`
+- `harness/` — adapter hooks and wrapper scripts for tools that support or emulate governance hooks
+- `evals/` — adapter-neutral behavior fixtures and scoring helpers
 
 ## Adoption path
 
