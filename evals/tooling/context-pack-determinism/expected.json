@@ -38,9 +38,9 @@
   "orchestration": {
     "budget": {
       "allocated": {
-        "entrypoint": 3913,
-        "reserve": 1221,
-        "rules": 6866
+        "entrypoint": 3970,
+        "reserve": 1200,
+        "rules": 6830
       },
       "estimate_method": "word_count*1.35",
       "profile": "standard",
@@ -48,8 +48,8 @@
     },
     "determinism": {
       "builder_version": "1.0.0",
-      "input_hash": "sha256:969f73ff3fd4e49c6e0a5064b08d25fdd4da24274397370fa0a09e992d0d9cf2",
-      "output_hash": "sha256:7512852650fcb05dd696a7b96272749fa7af2af038d57ec8a156eb4feea9b632"
+      "input_hash": "sha256:baf218e89141bbd6900ef6b09b12ccb6d14d7971ed8eb744d8eae8fb3cbf2565",
+      "output_hash": "sha256:8dad16c4d5d3113a98a3b45265f13a278a18d403599a001c283ffaf5cc304305"
     },
     "dropped": [
       {
@@ -106,15 +106,11 @@
       },
       {
         "reason": "budget exhausted",
+        "ref": "rules/global/test-coverage-spec.md"
+      },
+      {
+        "reason": "budget exhausted",
         "ref": "docs/agent-templates.md"
-      },
-      {
-        "reason": "budget exhausted",
-        "ref": "DECISIONS.md#2026-04-19: Project-local constraints live in the manifest"
-      },
-      {
-        "reason": "budget exhausted",
-        "ref": "DECISIONS.md#2026-04-19: Template repo ships starter governance automation"
       },
       {
         "reason": "budget exhausted",
@@ -155,8 +151,8 @@
         "priority": 2,
         "reason": "rule surface for profile=standard",
         "ref": "docs/agent-playbook.md",
-        "truncated": false,
-        "truncation_method": "none"
+        "truncated": true,
+        "truncation_method": "headings-only"
       }
     ]
   },
@@ -169,10 +165,7 @@
       "docs/schemas/handoff-artifact.schema.yaml",
       "docs/schemas/trace.schema.yaml"
     ],
-    "decision_refs": [
-      "DECISIONS.md#2026-04-19: Project-local constraints live in the manifest",
-      "DECISIONS.md#2026-04-19: Template repo ships starter governance automation"
-    ],
+    "decision_refs": [],
     "entrypoint_refs": [
       "AGENTS.md",
       "README.md",
@@ -196,6 +189,7 @@
       "rules/global/code-quality-baseline.md",
       "rules/global/prompt-injection.md",
       "rules/global/security-baseline.md",
+      "rules/global/test-coverage-spec.md",
       "project/project-manifest.md"
     ]
   },

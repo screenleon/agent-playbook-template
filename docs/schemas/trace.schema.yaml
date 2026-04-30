@@ -74,6 +74,14 @@ properties:
     items: { type: string }
     description: Skills loaded or natively emulated (at minimal/nano profile).
 
+  task_summary:
+    type: string
+    description: |
+      Required for Medium and Large traces. Concise completion summary used by
+      review and memory tooling. Agents at decision_log.policy = example_only
+      record decisions here instead of DECISIONS.md when no dedicated handoff or
+      trace decision field is available.
+
   reflection_summary:
     type: object
     description: Self-reflection rubric results.
@@ -215,12 +223,6 @@ properties:
       When this trace was produced by running an evals/tasks/* fixture,
       set to the fixture directory name (e.g., "small-typo-fix"). Enables
       scripts/score-eval.py to correlate trace with expected-behavior.yaml.
-
-  task_summary:
-    type: string
-    description: |
-      Final summary line for the task. Agents at decision_log.policy =
-      example_only record decisions here instead of DECISIONS.md.
 
   # ── Optional: trap response label (used by evals scoring) ─────────────────
   response_classification:

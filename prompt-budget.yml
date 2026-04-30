@@ -136,11 +136,11 @@ budget:
   # At `nano`, Layer 1 is `docs/rules-nano.md` only.
   # At `minimal`, Layer 1 is `docs/rules-quickstart.md` only unless a specific lookup is needed.
   # At `standard`/`full`, this target primarily covers `docs/operating-rules.md` + `docs/agent-playbook.md`.
-  layer1_target_tokens: 4000
+  layer1_target_tokens: 18000
 
   # Maximum for Layer 2 (AGENTS.md + selected skills per task type)
   # Demand-triage will load only skills.always_load if this is exceeded.
-  layer2_max_tokens: 8000
+  layer2_max_tokens: 11000
 
   # Maximum for Layer 3 (DECISIONS.md + ARCHITECTURE.md)
   # If DECISIONS.md approaches this limit, trigger the archive procedure.

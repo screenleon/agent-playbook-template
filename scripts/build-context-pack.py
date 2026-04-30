@@ -192,7 +192,7 @@ def _recent_decisions(repo: Path, max_n: int) -> list[tuple[str, str]]:
     dp = repo / "DECISIONS.md"
     if not dp.is_file():
         return []
-    text = dp.read_text(encoding="utf-8")
+    text = re.sub(r"<!--.*?-->", "", dp.read_text(encoding="utf-8"), flags=re.DOTALL)
     entries: list[tuple[str, list[str]]] = []
     cur_heading: str | None = None
     cur_body: list[str] = []

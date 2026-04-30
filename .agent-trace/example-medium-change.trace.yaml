@@ -13,6 +13,7 @@ skills_loaded:
   - memory-and-state
   - self-reflection
   - observability
+task_summary: "Strengthened governance scripts and skill conformance wording while preserving template-mode decision capture."
 files_changed:
   - scripts/agent-review.sh
   - scripts/lint-doc-consistency.sh
