@@ -32,6 +32,7 @@ Objective: keep rules clear for humans and cheap for agents to load.
    - detect duplicate rule text across layers
    - detect unresolved same-layer conflicts
    - ensure superseded markers are explicit
+   - ensure active rules use the canonical rule contract fields
 2. Add periodic maintenance task (weekly or every 10 tasks):
    - check layer drift
    - prune stale overrides
@@ -44,7 +45,9 @@ Objective: keep rules clear for humans and cheap for agents to load.
 
 1. ~~Add rule-id uniqueness checks across domain templates.~~ (completed)
 2. ~~Add unresolved conflict markers check (for example `Status: superseded` without replacement target).~~ (completed)
-3. Extend CI output with a short markdown summary artifact.
+3. ~~Validate active rule entries for required canonical fields.~~ (completed)
+4. Extend CI output with a short markdown summary artifact.
+5. Reduce the current standard-profile Layer 1/Layer 2 baseline after the contract and policy hardening work stabilizes.
 
 ## Success criteria
 
