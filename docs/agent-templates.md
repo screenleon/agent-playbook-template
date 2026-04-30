@@ -353,7 +353,7 @@ level: STOP when the gate is active; otherwise record the outcome and proceed.
 After implementation:
 - Run the validation loop: tests → static analysis → fix → repeat.
 - Do not mark work as done until tests pass.
-- Append any architectural decisions made to DECISIONS.md.
+- Record any architectural decisions according to `prompt-budget.yml` -> `decision_log.policy`.
 ```
 
 ## Application implementer
@@ -386,7 +386,7 @@ remains within original intent and the rules allow it.
 After implementation:
 - Run the validation loop: tests → lint → fix → repeat.
 - Do not mark work as done until tests pass.
-- Append any decisions made (new patterns, tradeoffs) to DECISIONS.md.
+- Record any decisions made (new patterns, tradeoffs) according to `prompt-budget.yml` -> `decision_log.policy`.
 ```
 
 ## UI image implementer
@@ -431,7 +431,7 @@ Focus on making the flow complete:
 After wiring:
 - Run end-to-end or integration tests if available.
 - Follow the validation loop: tests → fix → repeat.
-- Append any decisions made to DECISIONS.md.
+- Record any decisions made according to `prompt-budget.yml` -> `decision_log.policy`.
 ```
 
 ## Documentation architect
@@ -448,14 +448,14 @@ Before writing, define:
 5. what tool-specific files need to stay aligned
 
 Your responsibility includes automatic maintenance of:
-- DECISIONS.md — ensure all architectural/behavioral decisions are recorded
+- DECISIONS.md or equivalent policy target — ensure all architectural/behavioral decisions are recorded according to `prompt-budget.yml` -> `decision_log.policy`
 - ARCHITECTURE.md — ensure module map, interfaces, data flow, and
   external dependencies reflect the current codebase
 - project/project-manifest.md — ensure newly discovered project-local rules are captured
 
 After any code change that affects architecture, contracts, or decisions,
 run this documentation sync check:
-1. DECISIONS.md has entries for all decisions made in this task
+1. Decisions made in this task are recorded according to `prompt-budget.yml` -> `decision_log.policy`
 2. ARCHITECTURE.md reflects any structural changes
 3. `project/project-manifest.md` includes any newly discovered project-local rules
 4. Tool-specific files (.claude/agents/, .github/copilot-instructions.md)

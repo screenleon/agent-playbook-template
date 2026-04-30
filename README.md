@@ -9,7 +9,7 @@ Choose the path that fits your situation — all three lead to the same governan
 1. Open `prompt-budget.yml`. Set `budget.profile` and `execution_mode`.
 2. If `budget.profile` is `nano`: read `docs/rules-nano.md` and stop — that is your complete rule surface.
 3. Otherwise: read `AGENTS.md` (loading order) → `docs/rules-quickstart.md` (minimal Layer 1).
-4. Run `bash scripts/adoption-audit.sh --strict` to confirm the template is intact.
+4. Run `bash scripts/adoption-audit.sh --template-mode` to confirm this template repo is intact. Use `--strict` after adopting the template into a real project.
 
 ### Day 1 — First real task
 
@@ -17,7 +17,7 @@ Choose the path that fits your situation — all three lead to the same governan
 2. Triage the task scale (`skills/demand-triage/SKILL.md`): Small / Medium / Large.
 3. Small → implement directly, run targeted tests, done.
 4. Medium/Large → read `DECISIONS.md` for contradictions → plan → critic → approve → implement → validate.
-5. Record any architecture/behavior decisions in `DECISIONS.md`.
+5. Record any architecture/behavior decisions according to `prompt-budget.yml` -> `decision_log.policy` (`DECISIONS.md` in adopted projects, task summary or trace in this template repo).
 
 ### Day 7 — Ongoing operations
 
@@ -95,7 +95,7 @@ Use case: add a new repository rule that all API handlers must enforce request I
 1. Update rule source: add the non-negotiable rule in `project/project-manifest.md` under `Non-negotiable constraints`.
 2. Align routing and role guidance: update `docs/agent-playbook.md` if any role ownership changes.
 3. Sync tool instructions: update `.github/copilot-instructions.md` to keep tool-specific guidance consistent.
-4. Record the decision: append a dated entry to `DECISIONS.md` with context, decision, alternatives, and constraints.
+4. Record the decision according to `prompt-budget.yml` -> `decision_log.policy`: append a dated `DECISIONS.md` entry in adopted projects, or record it in the task summary/trace when this template repo is in `example_only` mode.
 5. Validate consistency: ensure `AGENTS.md` matches `docs/operating-rules.md` and `docs/agent-playbook.md`.
 
 Outcome: every future implementation task follows the same logging requirement with traceable reasoning.

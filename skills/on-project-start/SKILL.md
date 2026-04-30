@@ -39,7 +39,7 @@ Use this skill only when entering a repository for the first time in a session, 
    - Write the selected budget profile to `prompt-budget.yml` → `budget.profile` (create the file from `docs/prompt-budget-examples.md` if it does not exist yet).
    - Summarize confirmed boundaries in concise bullets.
    - Add or update `project/project-manifest.md` with the confirmed constraints.
-   - If a new durable architectural constraint is discovered, append to `DECISIONS.md`.
+   - If a new durable architectural constraint is discovered, record it according to `prompt-budget.yml` -> `decision_log.policy`.
 
 4. Continue with normal workflow
    - Run `repo-exploration` then `demand-triage`.

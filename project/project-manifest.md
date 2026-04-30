@@ -21,7 +21,7 @@ Project-local boundaries and constraints for this repository.
 - Build: N/A — no compiled artifact
 - Unit tests: N/A — repository uses script-based validation instead of a unit test suite
 - Integration tests: `bash scripts/agent-review.sh`
-- Lint/static analysis: `bash scripts/lint-layered-rules.sh && bash scripts/lint-doc-consistency.sh && bash scripts/adoption-audit.sh --strict`
+- Lint/static analysis: `bash scripts/lint-layered-rules.sh && bash scripts/lint-doc-consistency.sh && bash scripts/adoption-audit.sh --template-mode`
 
 ## Deployment and operations boundaries
 

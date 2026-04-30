@@ -25,7 +25,7 @@ Use this skill for ordinary application changes — frontend, service-layer, or 
 - **Minimize blast radius** — change only what is needed. If a refactor would help, propose it separately rather than bundling it with the feature.
 - **Handle errors at every boundary** — network calls, file I/O, user input parsing, and type conversions are all boundaries. Each needs explicit error handling.
 - **Write tests before marking complete** — at minimum, test the happy path and one error path. Use the project's existing test patterns.
-- **Update documentation** — if the change introduces a new pattern or modifies a documented behavior, update `ARCHITECTURE.md` or `DECISIONS.md` as described in the `documentation-architecture` skill.
+- **Update documentation** — if the change introduces a new pattern or modifies a documented behavior, update `ARCHITECTURE.md` or record a decision according to `prompt-budget.yml` -> `decision_log.policy` as described in the `documentation-architecture` skill.
 
 ## Common mistakes to avoid
 
