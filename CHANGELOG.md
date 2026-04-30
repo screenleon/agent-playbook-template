@@ -6,6 +6,59 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.20.0] - 2026-04-30
+
+### Added
+
+- **`VERSION`** — new release metadata file tracking the current template
+  version. The template now declares `0.20.0` in a small machine-readable file
+  instead of relying only on changelog headings.
+
+### Changed
+
+- **`README.md`** — rewritten project introduction so first-time readers can
+  immediately understand the repository's purpose: a portable governance layer
+  for AI coding agents, not an app runtime. Added a concrete inventory covering
+  rules, skills, adapter harnesses, scripts, GitHub workflows, evals, context
+  packs, and release metadata.
+
+- **Decision policy guidance** — README, reusable templates, and documentation
+  skills now describe decision capture in terms of `prompt-budget.yml` →
+  `decision_log.policy`. Adopted projects normally write `DECISIONS.md`; this
+  template repo keeps `DECISIONS.md` example-only and records task decisions in
+  summaries, handoffs, or traces.
+
+- **Rule contract governance** — domain rule templates now use the canonical
+  rule-entry contract (`Directive`, `Rationale`, `Conflict handling`, `Example`,
+  `Non-example`). `scripts/lint-layered-rules.sh` now rejects active rules that
+  omit required canonical fields or leave whole-field placeholders behind.
+
+- **Budget reporting** — `scripts/budget-report.sh` now checks the actual
+  `skills.always_load` set against `layer2_max_tokens` and reports the full
+  skill catalog as informational. The tracked `prompt-budget.yml` targets were
+  updated to match the current standard-profile baseline while the optimization
+  roadmap continues to track future slimming.
+
+### Fixed
+
+- **Context-pack decision parsing** — `scripts/build-context-pack.py` and
+  `scripts/decisions-conflict-check.py` now ignore HTML comment blocks in
+  `DECISIONS.md`, preventing the example decision template from being treated
+  as a real decision entry.
+
+- **Trace review alignment** — `docs/schemas/trace.schema.yaml` and the bundled
+  medium trace example now agree that Medium/Large traces include
+  `task_summary`; `scripts/agent-review.sh` no longer reports a finding on the
+  checked-in example trace.
+
+### Tooling
+
+- **`evals/tooling/context-pack-determinism/expected.json`** — refreshed after
+  the context-pack parser and rule/budget metadata changes so deterministic
+  tooling tests reflect the current contract.
+
+---
+
 ## [0.19.0] - 2026-04-29
 
 ### Added
@@ -663,6 +716,7 @@ Initial release of the agent playbook template.
 
 ---
 
+[0.20.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.18.0...v0.19.0
 [0.3.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.2.0...v0.3.0
 [0.5.0]: https://github.com/screenleon/agent-playbook-template/compare/v0.4.0...v0.5.0

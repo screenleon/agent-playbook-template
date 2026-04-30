@@ -19,11 +19,11 @@ Use this skill when documentation is the primary output, or when code changes re
 
 Documentation rots when it is only updated manually. These rules ensure agents keep docs current as a side effect of normal work, not as a separate task.
 
-### `DECISIONS.md` — auto-append after decisions
+### Decision record — capture after decisions
 
 Trigger: any agent makes an architectural or behavioral decision during implementation.
 
-Action: append a new entry using the format in `docs/operating-rules.md` → Decision log.
+Action: record the decision according to `prompt-budget.yml` -> `decision_log.policy` using the format in `docs/operating-rules.md` -> Decision log. In adopted projects this usually means appending to `DECISIONS.md`; in this template repo it means recording in the task summary, handoff artifact, or trace file.
 
 Agents must not skip this step. If a decision was made but not recorded, the risk-reviewer should flag it.
 
@@ -79,7 +79,7 @@ Action: add it to `project/project-manifest.md`.
 
 After any code change that affects architecture, contracts, or decisions, agents must verify:
 
-1. `DECISIONS.md` has entries for all decisions made in this task
+1. Decisions made in this task are recorded according to `prompt-budget.yml` -> `decision_log.policy`
 2. `ARCHITECTURE.md` reflects any structural changes
 3. `project/project-manifest.md` includes any newly discovered project-local rules
 4. Tool-specific files (`.claude/agents/`, `.github/copilot-instructions.md`) are still aligned with the source-of-truth docs
@@ -108,7 +108,7 @@ Before marking documentation work as complete, verify:
 
 - [ ] Audience and source of truth were identified before writing
 - [ ] Each doc focuses on one topic; no unbounded appending
-- [ ] `DECISIONS.md` has entries for all decisions made in this task
+- [ ] Decisions made in this task are recorded according to `prompt-budget.yml` -> `decision_log.policy`
 - [ ] `ARCHITECTURE.md` reflects any structural changes
 - [ ] Tool-specific files (`.claude/agents/`, `.github/copilot-instructions.md`) are aligned with source-of-truth docs
 - [ ] Tables are used for structured data; examples are concrete, not abstract

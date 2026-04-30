@@ -105,6 +105,7 @@ def parse_decisions(md: str) -> list[dict]:
     Split DECISIONS.md into entries. An entry starts with `## ` at line start.
     Returns list of dicts: {heading, body}.
     """
+    md = re.sub(r"<!--.*?-->", "", md, flags=re.DOTALL)
     entries: list[dict] = []
     current_heading: str | None = None
     current_body: list[str] = []

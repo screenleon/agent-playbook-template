@@ -42,9 +42,16 @@ declare -A RULE_STATUS
 declare -A RULE_STABILITY
 declare -A RULE_SUPERSEDES
 declare -A RULE_SUPERSEDED_BY
+declare -A RULE_OWNER
+declare -A RULE_SCOPE
+declare -A RULE_DIRECTIVE
+declare -A RULE_RATIONALE
+declare -A RULE_CONFLICT
+declare -A RULE_EXAMPLE
+declare -A RULE_NON_EXAMPLE
 
 for f in "${layered_files[@]}"; do
-  while IFS=$'\t' read -r line_no rule_id status stability supersedes superseded_by; do
+  while IFS=$'\t' read -r line_no rule_id status stability supersedes superseded_by owner scope directive rationale conflict example non_example; do
     [[ -z "$rule_id" ]] && continue
     [[ "$rule_id" == *"<"* ]] && continue
 
@@ -60,13 +67,24 @@ for f in "${layered_files[@]}"; do
     RULE_STABILITY[$rule_id]="$stability"
     RULE_SUPERSEDES[$rule_id]="$supersedes"
     RULE_SUPERSEDED_BY[$rule_id]="$superseded_by"
+    RULE_OWNER[$rule_id]="$owner"
+    RULE_SCOPE[$rule_id]="$scope"
+    RULE_DIRECTIVE[$rule_id]="$directive"
+    RULE_RATIONALE[$rule_id]="$rationale"
+    RULE_CONFLICT[$rule_id]="$conflict"
+    RULE_EXAMPLE[$rule_id]="$example"
+    RULE_NON_EXAMPLE[$rule_id]="$non_example"
   done < <(
     awk '
       function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
+      function field(s) {
+        s = trim(s)
+        return (s == "") ? "__EMPTY__" : s
+      }
       function emit() {
         if (id != "") {
           st = (stability == "") ? "__MISSING__" : trim(stability)
-          print line_no "\t" trim(id) "\t" trim(status) "\t" st "\t" trim(supersedes) "\t" trim(superseded_by)
+          print line_no "\t" trim(id) "\t" field(status) "\t" st "\t" field(supersedes) "\t" field(superseded_by) "\t" field(owner) "\t" field(scope) "\t" field(directive) "\t" field(rationale) "\t" field(conflict) "\t" field(example) "\t" field(non_example)
         }
       }
       /^### Rule:[[:space:]]*/ {
@@ -78,7 +96,22 @@ for f in "${layered_files[@]}"; do
         stability = ""
         supersedes = ""
         superseded_by = ""
+        owner = ""
+        scope = ""
+        directive = ""
+        rationale = ""
+        conflict = ""
+        example = ""
+        non_example = ""
         next
+      }
+      /^-[[:space:]]*Owner layer:[[:space:]]*/ {
+        owner = $0
+        sub(/^-+[[:space:]]*Owner layer:[[:space:]]*/, "", owner)
+      }
+      /^-[[:space:]]*Scope:[[:space:]]*/ {
+        scope = $0
+        sub(/^-+[[:space:]]*Scope:[[:space:]]*/, "", scope)
       }
       /^-[[:space:]]*Status:[[:space:]]*/ {
         status = $0
@@ -96,6 +129,26 @@ for f in "${layered_files[@]}"; do
         superseded_by = $0
         sub(/^-+[[:space:]]*Superseded by:[[:space:]]*/, "", superseded_by)
       }
+      /^-[[:space:]]*Directive:[[:space:]]*/ {
+        directive = $0
+        sub(/^-+[[:space:]]*Directive:[[:space:]]*/, "", directive)
+      }
+      /^-[[:space:]]*Rationale:[[:space:]]*/ {
+        rationale = $0
+        sub(/^-+[[:space:]]*Rationale:[[:space:]]*/, "", rationale)
+      }
+      /^-[[:space:]]*Conflict handling:[[:space:]]*/ {
+        conflict = $0
+        sub(/^-+[[:space:]]*Conflict handling:[[:space:]]*/, "", conflict)
+      }
+      /^-[[:space:]]*Example:[[:space:]]*/ {
+        example = $0
+        sub(/^-+[[:space:]]*Example:[[:space:]]*/, "", example)
+      }
+      /^-[[:space:]]*Non-example:[[:space:]]*/ {
+        non_example = $0
+        sub(/^-+[[:space:]]*Non-example:[[:space:]]*/, "", non_example)
+      }
       END { emit() }
     ' "$f"
   )
@@ -106,14 +159,22 @@ for rule_id in "${!RULE_FILE[@]}"; do
   supersedes="${RULE_SUPERSEDES[$rule_id]}"
   superseded_by="${RULE_SUPERSEDED_BY[$rule_id]}"
 
-  if [[ -n "$supersedes" && "$supersedes" != "N/A" && "$supersedes" != *"<"* ]]; then
+  if [[ -z "$status" || "$status" == "__empty__" || "$status" == *"<"* ]]; then
+    echo "[rule-lint][error] rule '$rule_id' is missing '- Status:' field (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+    EXIT_CODE=1
+  elif [[ "$status" != "active" && "$status" != "draft" && "$status" != "superseded" ]]; then
+    echo "[rule-lint][error] rule '$rule_id' has invalid status '$status' — must be active, draft, or superseded (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+    EXIT_CODE=1
+  fi
+
+  if [[ -n "$supersedes" && "$supersedes" != "__EMPTY__" && "$supersedes" != "N/A" && "$supersedes" != *"<"* ]]; then
     if [[ -z "${RULE_FILE[$supersedes]:-}" ]]; then
       echo "[rule-lint][error] rule '$rule_id' supersedes unknown rule '$supersedes' (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
       EXIT_CODE=1
     fi
   fi
 
-  if [[ -n "$superseded_by" && "$superseded_by" != "N/A" && "$superseded_by" != *"<"* ]]; then
+  if [[ -n "$superseded_by" && "$superseded_by" != "__EMPTY__" && "$superseded_by" != "N/A" && "$superseded_by" != *"<"* ]]; then
     if [[ -z "${RULE_FILE[$superseded_by]:-}" ]]; then
       echo "[rule-lint][error] rule '$rule_id' references unknown replacement '$superseded_by' (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
       EXIT_CODE=1
@@ -121,7 +182,7 @@ for rule_id in "${!RULE_FILE[@]}"; do
   fi
 
   if [[ "$status" == "superseded" ]]; then
-    if [[ -z "$superseded_by" || "$superseded_by" == "N/A" || "$superseded_by" == *"<"* ]]; then
+    if [[ -z "$superseded_by" || "$superseded_by" == "__EMPTY__" || "$superseded_by" == "N/A" || "$superseded_by" == *"<"* ]]; then
       echo "[rule-lint][error] superseded rule '$rule_id' must define '- Superseded by:' with a real rule ID (placeholders such as '<RULE_ID>' are not allowed) (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
       EXIT_CODE=1
     fi
@@ -135,6 +196,27 @@ for rule_id in "${!RULE_FILE[@]}"; do
   elif [[ "$stability" != "core" && "$stability" != "behavior" && "$stability" != "experimental" ]]; then
     echo "[rule-lint][error] rule '$rule_id' has invalid stability '$stability' — must be core, behavior, or experimental (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
     EXIT_CODE=1
+  fi
+
+  if [[ "$status" == "active" ]]; then
+    for field in owner scope directive rationale conflict example non_example; do
+      case "$field" in
+        owner) value="${RULE_OWNER[$rule_id]}"; label="Owner layer" ;;
+        scope) value="${RULE_SCOPE[$rule_id]}"; label="Scope" ;;
+        directive) value="${RULE_DIRECTIVE[$rule_id]}"; label="Directive" ;;
+        rationale) value="${RULE_RATIONALE[$rule_id]}"; label="Rationale" ;;
+        conflict) value="${RULE_CONFLICT[$rule_id]}"; label="Conflict handling" ;;
+        example) value="${RULE_EXAMPLE[$rule_id]}"; label="Example" ;;
+        non_example) value="${RULE_NON_EXAMPLE[$rule_id]}"; label="Non-example" ;;
+      esac
+      if [[ -z "$value" || "$value" == "__EMPTY__" ]]; then
+        echo "[rule-lint][error] active rule '$rule_id' is missing '- ${label}:' field (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+        EXIT_CODE=1
+      elif [[ "$value" =~ ^\<[^[:space:]][^\>]*\>$ ]]; then
+        echo "[rule-lint][error] active rule '$rule_id' has placeholder '- ${label}:' field (${RULE_FILE[$rule_id]}:${RULE_LINE[$rule_id]})"
+        EXIT_CODE=1
+      fi
+    done
   fi
 done
 

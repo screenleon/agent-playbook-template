@@ -89,7 +89,33 @@ L1_NANO="$(estimate_tokens "$ROOT_DIR/docs/rules-nano.md")"
 L1_STATUS="$(status_label "$L1_TOKENS" "$L1_TARGET")"
 [[ "$L1_STATUS" == OVER* ]] && EXIT_CODE=1
 
-# ── Layer 2: skills ───────────────────────────────────────────────────────────
+# ── Layer 2: selected skills ──────────────────────────────────────────────────
+
+read_always_load_skills() {
+  awk '
+    /^[[:space:]]*always_load:[[:space:]]*$/ { in_list = 1; next }
+    in_list && /^[[:space:]]*[a-zA-Z0-9_-]+:[[:space:]]*/ { in_list = 0 }
+    in_list && /^[[:space:]]*-[[:space:]]*/ {
+      v = $0
+      sub(/^[[:space:]]*-[[:space:]]*/, "", v)
+      sub(/[[:space:]]+#.*/, "", v)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+      if (v != "") print v
+    }
+  ' "$ROOT_DIR/prompt-budget.yml" 2>/dev/null
+}
+
+L2_ALWAYS_FILES=()
+while IFS= read -r skill_name; do
+  skill_file="$ROOT_DIR/skills/$skill_name/SKILL.md"
+  [[ -f "$skill_file" ]] && L2_ALWAYS_FILES+=("$skill_file")
+done < <(read_always_load_skills)
+
+L2_ALWAYS_TOKENS="$(estimate_tokens "${L2_ALWAYS_FILES[@]}")"
+L2_ALWAYS_STATUS="$(status_label "$L2_ALWAYS_TOKENS" "$L2_MAX")"
+[[ "$L2_ALWAYS_STATUS" == OVER* ]] && EXIT_CODE=1
+
+# ── Layer 2 catalog: all skills, informational only ───────────────────────────
 
 L2_FILES=()
 while IFS= read -r skill_dir; do
@@ -98,8 +124,6 @@ while IFS= read -r skill_dir; do
 done < <(find "$ROOT_DIR/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
 
 L2_TOKENS="$(estimate_tokens "${L2_FILES[@]}")"
-L2_STATUS="$(status_label "$L2_TOKENS" "$L2_MAX")"
-[[ "$L2_STATUS" == OVER* ]] && EXIT_CODE=1
 
 # ── Layer 3: project state ────────────────────────────────────────────────────
 
@@ -139,7 +163,8 @@ if [[ "$JSON_OUTPUT" -eq 1 ]]; then
     "L1_standard": { "tokens": $L1_TOKENS, "target": $L1_TARGET, "status": "$L1_STATUS" },
     "L1_minimal": { "tokens": $L1_QUICKSTART, "target": $L1_TARGET, "status": "$(status_label "$L1_QUICKSTART" "$L1_TARGET")" },
     "L1_nano": { "tokens": $L1_NANO, "target": $L1_TARGET, "status": "$(status_label "$L1_NANO" "$L1_TARGET")" },
-    "L2_all_skills": { "tokens": $L2_TOKENS, "target": $L2_MAX, "status": "$L2_STATUS" },
+    "L2_always_load": { "tokens": $L2_ALWAYS_TOKENS, "target": $L2_MAX, "status": "$L2_ALWAYS_STATUS" },
+    "L2_all_skills": { "tokens": $L2_TOKENS, "target": null, "status": "info" },
     "L3_project_state": { "tokens": $L3_TOKENS, "target": $L3_MAX, "status": "$L3_STATUS" },
     "L4_volatile": { "tokens": $L4_TOKENS, "target": null, "status": "info" }
   },
@@ -154,7 +179,8 @@ else
   printf "║  %-30s  %7s / %-7s  %s\n" "Layer 1 (standard profile)" "~${L1_TOKENS}" "${L1_TARGET}" "$L1_STATUS"
   printf "║  %-30s  %7s / %-7s  %s\n" "Layer 1 (minimal profile)"  "~${L1_QUICKSTART}" "${L1_TARGET}" "$(status_label "$L1_QUICKSTART" "$L1_TARGET")"
   printf "║  %-30s  %7s / %-7s  %s\n" "Layer 1 (nano profile)"     "~${L1_NANO}" "${L1_TARGET}" "$(status_label "$L1_NANO" "$L1_TARGET")"
-  printf "║  %-30s  %7s / %-7s  %s\n" "Layer 2 (all skills)"       "~${L2_TOKENS}" "${L2_MAX}" "$L2_STATUS"
+  printf "║  %-30s  %7s / %-7s  %s\n" "Layer 2 (always_load)"     "~${L2_ALWAYS_TOKENS}" "${L2_MAX}" "$L2_ALWAYS_STATUS"
+  printf "║  %-30s  %7s / %-7s  %s\n" "Layer 2 (all skills)"       "~${L2_TOKENS}" "n/a" "info"
   printf "║  %-30s  %7s / %-7s  %s\n" "Layer 3 (project state)"    "~${L3_TOKENS}" "${L3_MAX}" "$L3_STATUS"
   printf "║  %-30s  %7s / %-7s  %s\n" "Layer 4 (volatile/traces)"  "~${L4_TOKENS}" "n/a" "info"
   echo "╠══════════════════════════════════════════════════════════════╣"

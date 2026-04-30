@@ -32,6 +32,8 @@ Load this file alongside `rules/global/code-quality-baseline.md` and
   - **DIR (Decision Logic)**: The system makes the correct decision at a branch point. The assertion targets which path was taken — including acceptance/rejection, routing, permission enforcement, and boundary-guard responses such as authorization failures, rate-limit rejections, and input validation refusals.
 - Rationale: Ambiguous category definitions cause misclassification drift. Explicit definitions make the classification mechanical enough to audit and reviewable enough to challenge. DIR explicitly covers boundary guards (auth, rate-limit, validation refusals) because these are decision outcomes, not stability properties — the system is not merely "not crashing"; it is actively enforcing a policy.
 - Conflict handling: When unsure between INV and DIR: ask "Is the system enforcing a policy decision, or merely surviving?" Policy enforcement → DIR. Survival → INV.
+- Example: `POST /users` with valid payload returns `201` with `id` field → MFT; the same endpoint without `Authorization` returns `401` → DIR.
+- Non-example: Label every endpoint test as MFT even when the primary assertion is a permission, validation, or idempotency decision.
 - Example (MFT): `POST /users` with valid payload returns `201` with `id` field → MFT.
 - Example (INV): `POST /users` called twice with the same payload does not create a duplicate → INV. `POST /users` with `name: null` does not panic → INV.
 - Example (DIR): `POST /users` without `Authorization` header returns `401` → DIR. `POST /users` with an expired token returns `403` → DIR. `POST /users` with a payload exceeding the size limit returns `413` → DIR.
