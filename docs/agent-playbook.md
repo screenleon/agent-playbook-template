@@ -569,6 +569,8 @@ Context isolation is not just a guideline — it should be verified. Use the fol
 
 Isolation verification is a **quality signal**, not a hard stop. Some tool platforms cannot enforce strict context separation. The goal is visibility, not blocking.
 
+For multi-reviewer gates specifically, see `docs/multi-reviewer-orchestration.md` — it covers sequential vs parallel reviewer modes, when reviewer independence matters, and how to preserve per-reviewer handoff artifacts even when context is shared.
+
 ## Ownership principles
 
 - Planning agents define scope, order, dependencies, and validation.

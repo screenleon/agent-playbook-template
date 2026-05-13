@@ -1,0 +1,9 @@
+# Invalid: a files[] entry is missing the required 'action' field
+working_dir: /example/project
+goal: Test that a file entry without action is rejected.
+files:
+  - path: rules/domain/backend-api.md
+acceptance:
+  - some check passes
+self_verify:
+  - some verification

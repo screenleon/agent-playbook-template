@@ -1,0 +1,9 @@
+# Invalid: a files[] entry is missing the required 'path' field
+working_dir: /example/project
+goal: Test that a file entry without path is rejected.
+files:
+  - action: edit
+acceptance:
+  - some check passes
+self_verify:
+  - some verification

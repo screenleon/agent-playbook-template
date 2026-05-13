@@ -87,3 +87,4 @@ Global security rules that apply across all projects and domains.
 - Conflict handling: Project rules may define the log format and retention policy, but must not permit logging credentials or suppress security event logging entirely.
 - Example: Log failed login attempts with timestamp, IP, and username (not password). Mask card numbers before logging payment events.
 - Non-example: Log the full Authorization header value; suppress all auth error logs to "reduce noise"; print API keys in stack traces.
+- See also: `docs/data-classification-guidance.md` for T1/T2/T3/T4 data-sensitivity tiers and the corresponding hard blocks in security review.

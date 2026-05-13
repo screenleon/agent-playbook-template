@@ -149,6 +149,146 @@ Use this for review-first roles such as `risk-reviewer` and `critic`.
 [Short conclusion or "No findings."]
 ```
 
+## Task brief contract
+
+Use a task brief when delegating one bounded unit of work to another agent or executor. The brief must be tool-agnostic: describe the objective, paths, constraints, acceptance criteria, and verification evidence without naming runtime-specific commands, flags, or dispatch wrappers.
+
+Every task brief must include `working_dir`, `goal`, `files`, `acceptance`, and `self_verify`. Optional fields may add constraints or context but must not replace the required completion criteria. If a receiving runtime requires an adapter-specific wrapper, keep that wrapper outside the brief and preserve this neutral field structure as the portable source. The machine-readable companion is `docs/schemas/codex-brief.schema.yaml`.
+
+### Required fields
+
+| Field | Contract |
+|---|---|
+| `working_dir` | Absolute repository or workspace path. It must exist before execution starts. |
+| `goal` | One sentence describing what changes after the task runs. |
+| `files` | Concrete paths tagged by intended use: `read`, `write`, `new`, or `edit`. |
+| `acceptance` | Testable post-conditions that an external reviewer can re-check. |
+| `self_verify` | Executor-internal proof steps showing how the executor knows the work is complete. This is separate from `acceptance`; acceptance is re-checked externally. |
+
+### Optional fields
+
+| Field | Purpose |
+|---|---|
+| `constraints` | Non-negotiable boundaries such as scope limits, wording rules, compatibility requirements, or forbidden changes. |
+| `context` | Background facts, source references, examples, or rationale needed to complete the task. |
+| `task` | More detailed step guidance when `goal` alone is too compact. |
+| `output_format` | Required response or artifact shape, such as a patch summary, report path, table, or structured result. |
+
+### Edit brief skeleton
+
+For small, well-specified textual edits where the target files and replacement intent are already known.
+
+```yaml
+working_dir: /absolute/path/to/repo
+goal: Replace the outdated wording with the approved wording.
+files:
+  - action: edit
+    path: docs/example.md
+acceptance:
+  - The old wording no longer appears in docs/example.md.
+  - The approved wording appears exactly once.
+self_verify:
+  - Search for the old wording and confirm zero matches.
+  - Search for the approved wording and confirm one match.
+constraints:
+  - Do not reformat unrelated paragraphs.
+context: |
+  OLD: Outdated wording
+  NEW: Approved wording
+output_format: Short summary plus verification commands run.
+```
+
+### Audit brief skeleton
+
+For read-only review that produces a report artifact.
+
+```yaml
+working_dir: /absolute/path/to/repo
+goal: Audit the configured surface and write a findings report.
+files:
+  - action: read
+    path: docs/
+  - action: new
+    path: reports/audit-summary.md
+acceptance:
+  - reports/audit-summary.md exists.
+  - Each finding includes severity, evidence, and a recommended next action.
+  - No source files outside the report are modified.
+self_verify:
+  - git-status no-collateral-damage: confirm only the report path changed.
+  - cross-source: for each finding, verify ≥2 independent sources from the inspected file set.
+constraints:
+  - Do not edit the audited files.
+output_format: Report file path and concise findings summary.
+```
+
+### Content-add brief skeleton
+
+For adding new entries to an existing file family that already has a schema or local pattern.
+
+```yaml
+working_dir: /absolute/path/to/repo
+goal: Add the approved entries to the existing schema-backed file family.
+files:
+  - action: read
+    path: docs/reference-entry.md
+  - action: edit
+    path: docs/entries/example-entry.md
+acceptance:
+  - Every new entry follows the reference entry's required keys, types, and value style.
+  - New identifiers are unique across the target file set.
+self_verify:
+  - schema-match: every new entry matches reference file's keys/types/values.
+  - dedup-across-N: confirm <key> is unique across all files in set.
+constraints:
+  - Preserve existing ordering rules in the file family.
+context: |
+  Use docs/reference-entry.md as the structural source.
+output_format: List of entries added and verification evidence.
+```
+
+### Refactor brief skeleton
+
+For renaming or restructuring across multiple files while preserving behavior.
+
+```yaml
+working_dir: /absolute/path/to/repo
+goal: Rename the selected concept across the allowlisted files while preserving behavior.
+files:
+  - action: edit
+    path: src/example-a.ext
+  - action: edit
+    path: src/example-b.ext
+  - action: read
+    path: tests/
+acceptance:
+  - The old concept name is removed from allowlisted implementation paths.
+  - The new concept name is used consistently in updated paths.
+  - Existing behavior remains unchanged.
+self_verify:
+  - Search allowlisted paths for the old and new concept names.
+  - Run the nearest available tests for the affected files.
+  - git-status no-collateral-damage: confirm only allowlisted files changed.
+constraints:
+  - Do not change public behavior, data shape, or unrelated naming.
+context: |
+  OLD: old_concept
+  NEW: new_concept
+output_format: Summary of renamed paths, behavior-preservation checks, and tests run.
+```
+
+## Verification patterns
+
+Use these macro names in `self_verify` when a recurring proof pattern is clearer than a one-off command. Keep the macro name exact, then bind the placeholders to the current task.
+
+| Macro | Use when | Required evidence |
+|---|---|---|
+| `cross-source` | A claim or finding must be backed by more than one source. | For each `<item>`, verify `≥N` independent sources from `<list>`. |
+| `sample-N OK re-check` | A report classifies many items and some are marked OK. | After reporting, re-verify `N` random `OK` items. |
+| `git-status no-collateral-damage` | The task has an allowlisted file scope. | Confirm only allowlisted files changed. |
+| `dedup-across-N` | New entries require unique keys or identifiers. | Confirm `<key>` is unique across all files in set. |
+| `schema-match` | New entries must follow an existing schema or reference example. | Every new entry matches reference file's keys/types/values. |
+
 ## Agent preamble
 
 > **Note**: Ensure the active Layer 1 rules for the current budget profile are loaded before using these templates. At `nano`, that is `docs/rules-nano.md`; at `minimal`, `docs/rules-quickstart.md`; at `standard`/`full`, `docs/operating-rules.md` plus `docs/agent-playbook.md`. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools.

@@ -48,8 +48,8 @@
     },
     "determinism": {
       "builder_version": "1.0.0",
-      "input_hash": "sha256:12c89274afa60281d42317847967718c1f27b5b26013d7430db17597f2ac43a2",
-      "output_hash": "sha256:ed00d4ccbd0dca37799cc214308e73e3e157d6b580606447a80f036738558c25"
+      "input_hash": "sha256:a3246491194d64dafa3459d5700359b60aa25e58f76698f00f5c14f62c90bd6b",
+      "output_hash": "sha256:66a840a9fe38a3da2811889f9d659285ae67b6eb214321cf20ad40b4205ef71b"
     },
     "dropped": [
       {
@@ -114,6 +114,10 @@
       },
       {
         "reason": "budget exhausted",
+        "ref": "docs/schemas/codex-brief.schema.yaml"
+      },
+      {
+        "reason": "budget exhausted",
         "ref": "docs/schemas/context-pack.schema.json"
       },
       {
@@ -161,6 +165,7 @@
   "schema_version": "1.1.0",
   "source_of_truth": {
     "contract_refs": [
+      "docs/schemas/codex-brief.schema.yaml",
       "docs/schemas/context-pack.schema.json",
       "docs/schemas/handoff-artifact.schema.yaml",
       "docs/schemas/trace.schema.yaml"

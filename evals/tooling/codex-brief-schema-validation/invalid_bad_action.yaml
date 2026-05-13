@@ -1,0 +1,10 @@
+# Invalid: 'modify' is not in the files[].action enum (must be read/write/new/edit)
+working_dir: /example/project
+goal: Test that an invalid action value is rejected.
+files:
+  - action: modify
+    path: some/file.md
+acceptance:
+  - check passes
+self_verify:
+  - some verification
