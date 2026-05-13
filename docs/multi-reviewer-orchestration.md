@@ -38,11 +38,13 @@ Sequential mode is the default multi-reviewer gate.
 
 Pattern:
 
-1. All reviewers run in one shared session or shared review context.
-2. Reviewers execute in a fixed order.
-3. Each later reviewer can see earlier findings.
-4. The final output may be produced by the last reviewer or by a lightweight
-   synthesis step.
+1. A shared evidence bundle (diff, context summary, prior reviewer outputs) is
+   assembled and passed forward via structured handoff artifacts — each reviewer
+   still produces its own discrete output.
+2. Reviewers execute in a fixed order, each receiving the cumulative handoff.
+3. Each later reviewer can see earlier findings via the handoff artifact.
+4. The final output is produced by the last reviewer or a lightweight synthesis
+   step that reads all prior handoff artifacts.
 
 Benefits:
 
@@ -138,4 +140,3 @@ shape, or security behavior, return to the standard or high-stakes set.
 | Best for | Routine or cost-sensitive changes | High-risk or independence-critical changes |
 | Typical gate strength | Standard checkpoint support | Strong checkpoint evidence |
 | Required final step | Optional or lightweight synthesis | Explicit synthesis before verdict |
-
