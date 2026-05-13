@@ -149,6 +149,46 @@ Use this for review-first roles such as `risk-reviewer` and `critic`.
 [Short conclusion or "No findings."]
 ```
 
+## Task brief contract
+
+Use a task brief to delegate one bounded unit of work to an executor. Required fields: `working_dir`, `goal`, `files`, `acceptance`, `self_verify`. Schema: `docs/schemas/codex-brief.schema.yaml`.
+
+| Field | Contract |
+|---|---|
+| `working_dir` | Absolute path; must exist before execution. |
+| `goal` | One sentence: what changes after the task runs. |
+| `files` | Paths tagged by intent: `read`, `write`, `new`, or `edit`. |
+| `acceptance` | Testable post-conditions re-checkable by an external reviewer. |
+| `self_verify` | Executor-internal proof (distinct from `acceptance`). |
+
+Optional: `constraints` (scope limits), `context` (background facts), `task` (step detail), `output_format` (artifact shape).
+
+```yaml
+working_dir: /absolute/path/to/repo
+goal: Replace the outdated wording with the approved wording.
+files:
+  - action: edit
+    path: docs/example.md
+acceptance:
+  - Old wording absent from docs/example.md.
+  - Approved wording appears exactly once.
+self_verify:
+  - git-status no-collateral-damage.
+  - grep confirms zero old-wording matches.
+```
+
+## Verification patterns
+
+Use these macro names in `self_verify`. Keep the macro name exact; bind placeholders to the current task.
+
+| Macro | Use when |
+|---|---|
+| `cross-source` | A finding must be backed by ≥N independent sources. |
+| `sample-N OK re-check` | A report has OK-classified items; re-verify N at random. |
+| `git-status no-collateral-damage` | Task has an allowlisted file scope; confirm no extras changed. |
+| `dedup-across-N` | New entries require unique keys across a file set. |
+| `schema-match` | New entries must match an existing schema or reference file. |
+
 ## Agent preamble
 
 > **Note**: Ensure the active Layer 1 rules for the current budget profile are loaded before using these templates. At `nano`, that is `docs/rules-nano.md`; at `minimal`, `docs/rules-quickstart.md`; at `standard`/`full`, `docs/operating-rules.md` plus `docs/agent-playbook.md`. The steps below are provided as a quick-reference checklist for manual prompt construction or non-integrated tools.

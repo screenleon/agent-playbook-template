@@ -1,0 +1,9 @@
+# Invalid: missing required 'goal' field
+working_dir: /example/project
+files:
+  - action: edit
+    path: rules/domain/backend-api.md
+acceptance:
+  - something passes
+self_verify:
+  - some check

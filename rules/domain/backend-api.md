@@ -53,3 +53,18 @@ Repeat this block for each rule.
 - Non-example: Rename a response property in place and rely on clients to adapt.
 - Supersedes: N/A
 - Superseded by: N/A
+
+### Rule: API-003
+
+- Owner layer: Domain
+- Domain: backend-api
+- Stability: core
+- Status: active
+- Scope: all new features and endpoints crossing a platform or consumer boundary
+- Directive: The API contract must be updated and reviewed before implementation begins, using the project's chosen contract format such as OpenAPI, GraphQL schema, gRPC proto, or an equivalent binding contract. Code must match the reviewed contract.
+- Rationale: Contract-first development keeps cross-platform consumers such as mobile apps, web frontends, and third-party integrators compatible. Code-first development causes contract drift, where the contract becomes a lagging description of implementation behavior instead of a binding agreement.
+- Conflict handling: A project may specify the contract format and tooling, but cannot waive contract-first authoring for features that cross a platform or consumer boundary. For purely internal, single-consumer refactors, the project may define a lighter-weight contract review process.
+- Example: Before adding a new search endpoint, update the contract with the request and response schema, have the contract reviewed, then generate types and implement the endpoint.
+- Non-example: Implement the endpoint first, then run a generator to retroactively document what was built.
+- Supersedes: N/A
+- Superseded by: N/A

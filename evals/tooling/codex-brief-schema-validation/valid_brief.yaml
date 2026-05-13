@@ -1,0 +1,13 @@
+working_dir: /example/project
+goal: Add API-003 rule entry to rules/domain/backend-api.md.
+files:
+  - action: edit
+    path: rules/domain/backend-api.md
+  - action: read
+    path: rules/domain/README.md
+acceptance:
+  - rules/domain/backend-api.md contains the new API-003 rule block
+  - bash scripts/lint-layered-rules.sh exits 0
+self_verify:
+  - grep "API-003" rules/domain/backend-api.md
+  - git-status no-collateral-damage

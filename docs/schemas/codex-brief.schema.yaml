@@ -1,0 +1,95 @@
+# Task Brief Schema
+#
+# Lightweight structural definition for task briefs that delegate one bounded
+# unit of work to an agent or executor. This is intentionally tool-agnostic:
+# adapter-specific launch syntax belongs outside the brief.
+#
+# The text template in docs/agent-templates.md remains the human-readable
+# contract. This schema is the machine-readable companion for validation,
+# generation, and handoff tooling.
+
+type: object
+required:
+  - working_dir
+  - goal
+  - files
+  - acceptance
+  - self_verify
+
+properties:
+  working_dir:
+    type: string
+    description: Absolute repository or workspace path. It must exist before execution starts.
+
+  goal:
+    type: string
+    description: One-sentence description of what changes after the task runs.
+
+  files:
+    type: array
+    description: Concrete paths that define the task's read/write boundary.
+    minItems: 1
+    items:
+      type: object
+      required:
+        - action
+        - path
+      properties:
+        action:
+          type: string
+          description: Intended use of this path within the task.
+          enum:
+            - read
+            - write
+            - new
+            - edit
+        path:
+          type: string
+          description: Repository-relative path or path glob within working_dir.
+        reason:
+          type: string
+          description: Optional explanation for why this path is included.
+
+  acceptance:
+    type: array
+    description: Testable post-conditions that an external reviewer can re-check.
+    minItems: 1
+    items:
+      type: string
+
+  self_verify:
+    type: array
+    description: Executor-internal proof steps showing how the executor knows the work is complete.
+    minItems: 1
+    items:
+      type: string
+
+  constraints:
+    type: array
+    description: Non-negotiable boundaries such as scope limits, wording rules, compatibility requirements, or forbidden changes.
+    items:
+      type: string
+
+  context:
+    type: string
+    description: Background facts, source references, examples, or rationale needed to complete the task.
+
+  task:
+    type: string
+    description: More detailed step guidance when goal alone is too compact.
+
+  output_format:
+    type: string
+    description: Required response or artifact shape, such as a patch summary, report path, table, or structured result.
+
+  verification_macros:
+    type: array
+    description: Optional catalog of verification macro names used by self_verify entries.
+    items:
+      type: string
+      enum:
+        - cross-source
+        - sample-N OK re-check
+        - git-status no-collateral-damage
+        - dedup-across-N
+        - schema-match

@@ -1,0 +1,10 @@
+# Invalid: working_dir and goal are explicitly set to null
+working_dir: null
+goal: null
+files:
+  - action: edit
+    path: rules/domain/backend-api.md
+acceptance:
+  - some check passes
+self_verify:
+  - some verification

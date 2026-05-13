@@ -87,6 +87,8 @@ Important boundary: **tier escalation is runtime-local retry policy for the same
 
 If your tool chooses models automatically or hides model selection completely, omit `model_routing` and rely on the tool's native behavior.
 
+For a concrete reference implementation of this abstract policy, see `docs/model-tier-policy-examples.md`.
+
 ## Constitutional principles
 
 These principles are **non-bypassable**. No trust level, autonomous-mode override, project-specific constraint, or override annotation can weaken or skip them. They represent the absolute floor of agent behavior.

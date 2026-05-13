@@ -90,12 +90,25 @@ run_context_pack_determinism() {
   return $rc
 }
 
+run_codex_brief_schema_validation() {
+  local name="codex-brief-schema-validation"
+  python3 "$REPO_ROOT/scripts/validate-codex-brief-schema.py"
+  local rc=$?
+  if [ $rc -eq 0 ]; then
+    echo "[$name] PASS"
+  else
+    echo "[$name] FAIL" >&2
+  fi
+  return $rc
+}
+
 dispatch() {
   local fixture_dir="$1"
   local name
   name="$(basename "$fixture_dir")"
   case "$name" in
-    context-pack-determinism) run_context_pack_determinism "$fixture_dir" ;;
+    context-pack-determinism)        run_context_pack_determinism "$fixture_dir" ;;
+    codex-brief-schema-validation)   run_codex_brief_schema_validation ;;
     *)
       # An unwired fixture is a failure, not a skip: silently skipping
       # hides regressions where someone adds a fixture without wiring it.

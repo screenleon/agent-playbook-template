@@ -1,0 +1,10 @@
+# Invalid: a files[] entry has an empty path value
+working_dir: /example/project
+goal: Test that an empty path value is rejected.
+files:
+  - action: edit
+    path:
+acceptance:
+  - some check passes
+self_verify:
+  - some verification

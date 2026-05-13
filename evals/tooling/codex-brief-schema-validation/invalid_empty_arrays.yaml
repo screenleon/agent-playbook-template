@@ -1,0 +1,6 @@
+# Invalid: files, acceptance, and self_verify are empty arrays (minItems: 1 violation)
+working_dir: /example/project
+goal: Test that empty required arrays are rejected.
+files: []
+acceptance: []
+self_verify: []

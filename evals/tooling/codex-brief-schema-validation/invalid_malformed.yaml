@@ -1,0 +1,9 @@
+  indented-working_dir: /path
+  indented-goal: none of these are at column 0
+  indented-files:
+    - action: edit
+      path: file.md
+  indented-acceptance:
+    - check
+  indented-self_verify:
+    - check
