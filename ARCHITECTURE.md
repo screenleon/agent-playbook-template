@@ -1,5 +1,8 @@
 # Architecture Overview
 
+> **Repository status:** archived/reference-only. Active runtime and enforcement
+> live in `pm-dispatch`; see [the migration boundary](docs/pm-dispatch-migration.md).
+
 Architecture for this repository. Replace with your own module map and data flow when adopting.
 
 ## Module map
@@ -28,7 +31,10 @@ Primary flow for repository usage:
 2. Agent reads `AGENTS.md` and resolves profile, execution mode, and any optional abstract model-tier policy from `prompt-budget.yml`.
 3. Agent loads rules from `docs/rules-quickstart.md` or `docs/rules-nano.md`, then expands into `docs/operating-rules.md` and `docs/agent-playbook.md` when profile requires it.
 4. Agent loads applicable `skills/*/SKILL.md` files for discovery, triage, implementation, and validation.
-5. Agent performs repository changes and records durable decisions in `DECISIONS.md`.
+5. Agent performs repository changes. In this template repository,
+   `decision_log.policy: example_only` keeps `DECISIONS.md` as a format example;
+   adopted projects or the active runtime record durable state according to
+   their canonical policy.
 6. Validation loop executes tests/lint and applies error recovery as needed.
 7. Governance scripts (`scripts/lint-doc-consistency.sh`, `scripts/lint-layered-rules.sh`) and CI workflows enforce documentation/rule consistency.
 
@@ -39,7 +45,10 @@ Primary flow for repository usage:
 - `prompt-budget.yml` — runtime control plane contract for `execution_mode`, `budget.profile`, enabled roles/skills, and optional abstract model-tier routing policy.
 - `docs/schemas/handoff-artifact.schema.yaml` — structured handoff artifact contract between roles.
 - `docs/schemas/trace.schema.yaml` — adapter-neutral trace contract consumed by `scripts/trace-query.py`, `scripts/score-eval.py`, `scripts/agent-review.sh`, and CI workflows.
-- `docs/schemas/context-pack.schema.json` — adapter-neutral context-pack contract (schema 1.1.0). Emitted by `scripts/build-context-pack.py`, verified by `evals/tooling/context-pack-determinism/`.
+- `docs/schemas/context-pack.schema.json` — archived adapter-neutral reference
+  contract (schema 1.1.0), not the pm-dispatch runtime schema. The local builder
+  and tooling fixture are retained only to verify this repository's historical
+  reference behavior.
 - `evals/schema/expected-behavior.schema.yaml` — per-fixture eval contract used by `scripts/score-eval.py`.
 - `DECISIONS.md` format — contradiction-check contract used before planning and implementation.
 

@@ -6,6 +6,22 @@ upgrading an adopted repository.
 
 For full release notes, see `CHANGELOG.md`.
 
+## Archived status and pm-dispatch migration
+
+This repository is now reference-only. New implementation work belongs in
+`pm-dispatch`, which owns executable dispatch behavior, runtime state, adapter
+integration, enforcement, and production schemas.
+
+Before copying any rule or schema, read
+[`docs/pm-dispatch-migration.md`](docs/pm-dispatch-migration.md). Generic
+security, prompt-injection, test-taxonomy, and simplicity/assumption rules may
+be reconciled into pm-dispatch when they have a concrete consumer. Template
+schemas, adapter harnesses, domain examples, and workflow prose must not be
+copied wholesale.
+
+The archive boundary is checked locally with
+`bash scripts/check-archive-boundary.sh` and in the Rule Governance workflow.
+
 ---
 
 ## Upgrading to 0.18.x — adapter-neutral observability and evals

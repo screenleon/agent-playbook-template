@@ -1,5 +1,9 @@
 # Operating Rules
 
+> **Repository status:** archived/reference-only. These rules are retained as
+> portable reference material; executable policy and enforcement belong to
+> `pm-dispatch`. See [the migration boundary](pm-dispatch-migration.md).
+
 This file is the source of truth for safety, scope control, validation, destructive-action rules, codebase discovery, error recovery, and project-specific constraints.
 
 ## Agent-deference principle

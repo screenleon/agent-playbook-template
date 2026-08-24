@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- Marked the repository archived/reference-only and established
+  `pm-dispatch` as the active implementation owner.
+- Added a migration boundary that distinguishes portable rules from runtime
+  schemas, adapters, state, gates, and enforcement.
+- Marked the remaining workflow entrypoints as reference-only and added an
+  archive-boundary check to prevent an obvious second runtime tree.
+- Added local tooling and harness checks to the documented validation surface.
+
+### Fixed
+
+- Updated the context-pack determinism fixture after the archived reference
+  builder's input set changed.
+
 ---
 
 ## [0.20.0] - 2026-04-30

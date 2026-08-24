@@ -1,5 +1,9 @@
 # Agent Playbook
 
+> **Repository status:** archived/reference-only. This document describes the
+> historical portable template workflow. Active dispatch, state, schema,
+> adapter, and gate behavior belongs to `pm-dispatch`.
+
 ## Three-layer architecture
 
 All agent work follows three layers:
