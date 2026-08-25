@@ -88,3 +88,24 @@ jobs:
 
       - name: Validate prompt-budget.yml (and local example if present)
         run: python3 scripts/validate-prompt-budget.py --all
+
+  tooling-and-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run deterministic tooling checks
+        run: bash scripts/test-tooling.sh
+
+      - name: Run harness checks
+        run: bash harness/test.sh
+
+  archive-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check archived repository boundary
+        run: bash scripts/check-archive-boundary.sh

@@ -1,5 +1,10 @@
 # Agent Playbook
 
+> **Repository status:** archived/reference-only. The active implementation,
+> runtime, schemas, adapters, state, and gates live in `pm-dispatch`.
+> Use this repository only for portable governance reference and migration
+> guidance; do not add a second implementation here.
+
 Read these files before starting work:
 
 0. Read `prompt-budget.yml` → `budget.profile` to determine loading depth:

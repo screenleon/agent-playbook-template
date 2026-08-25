@@ -6,6 +6,8 @@ Project-local boundaries and constraints for this repository.
 
 - Name: agent-playbook-template
 - Repository type: documentation and agent-governance template
+- Lifecycle: archived/reference-only; active implementation is maintained in pm-dispatch
+- Archive boundary: new runtime, adapter, state, or production-schema work is out of scope
 - Primary language(s): Markdown, YAML, Bash
 - Runtime framework(s): GitHub Actions, shell-based local tooling
 
@@ -20,7 +22,8 @@ Project-local boundaries and constraints for this repository.
 
 - Build: N/A — no compiled artifact
 - Unit tests: N/A — repository uses script-based validation instead of a unit test suite
-- Integration tests: `bash scripts/agent-review.sh`
+- Integration tests: `bash scripts/check-archive-boundary.sh && bash harness/test.sh && bash scripts/test-tooling.sh`
+- Agent trace review: `bash scripts/agent-review.sh`
 - Lint/static analysis: `bash scripts/lint-layered-rules.sh && bash scripts/lint-doc-consistency.sh && bash scripts/adoption-audit.sh --template-mode`
 
 ## Deployment and operations boundaries

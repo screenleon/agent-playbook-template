@@ -1,13 +1,22 @@
 # Agent Playbook Template
 
+> **Status: archived / reference-only**
+>
+> Active implementation has moved to [`pm-dispatch`](https://github.com/screenleon/pm-dispatch).
+> This repository is retained for portable governance concepts, adoption
+> guidance, and historical reference. Do not add new runtime, adapter, state,
+> or duplicate schema implementations here. See
+> [`docs/pm-dispatch-migration.md`](docs/pm-dispatch-migration.md) for the
+> migration boundary and the small set of generic rules worth carrying forward.
+
 Agent Playbook Template is a portable governance framework for AI coding agents.
 It gives a repository a version-controlled source of truth for how agents load
 context, route work by role, handle approval gates, validate changes, record
 decisions, and hand off structured context across tools.
 
-Use this template when you want repeatable agent behavior across Codex, Claude,
-Copilot, Cursor, OpenCode, Windsurf, or a generic CLI workflow. It is not an app
-runtime or product framework; it is the operating layer around agent-assisted
+Use this template as a reference when you want repeatable agent behavior across
+Codex, Claude, Copilot, Cursor, OpenCode, Windsurf, or a generic CLI workflow.
+It is not an app runtime or product framework; it is the operating layer around agent-assisted
 software work.
 
 ## What This Repository Contains
